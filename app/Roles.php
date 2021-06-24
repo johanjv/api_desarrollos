@@ -10,6 +10,8 @@ class Roles extends Model
 {
     use HasFactory;
 
+    protected  $table = "MASTER.Roles";
+
     protected $fillable = [
         'nomb_rol', 
         'estado'

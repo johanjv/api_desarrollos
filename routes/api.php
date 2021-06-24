@@ -24,7 +24,7 @@ Route::post('/register', 'RegisterController@register');
 /* Globals Routes */
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', 'LoginController@logout');
-    Route::get('getUsers', 'GlobalsController@getUsers');
+    Route::get('getCountDash', 'GlobalsController@getCountDash');
     
 });
 
