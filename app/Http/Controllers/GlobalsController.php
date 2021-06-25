@@ -20,6 +20,7 @@ class GlobalsController extends Controller
             "countDesarrollos"  => $countDesarrollos,
             "countRoles"        => $countRoles
         ],200);
+<<<<<<< HEAD
     }    
 
     public function insertDesarrollo(Request $request)
@@ -41,4 +42,33 @@ class GlobalsController extends Controller
         return response()->json(["desarrollos" => $desarrollos, "status" => "ok"]);
     }
 
+=======
+    }
+
+    public function getAllUsers(Request $request)
+    {
+        $users = User::all();
+        return response()->json(["users" => $users],200);
+    }
+
+    public function saveEditUser(Request $request)
+    {
+        $data = $request->all();
+        $user = User::where('id', $data['id'])->update([
+            'name' =>  $data['name']
+        ]);
+
+        $usersRefresh = User::all();
+        return response()->json(["usersRefresh" => $usersRefresh], 200); 
+        
+    }
+    
+    
+    public function getRoles(Request $request)
+    {
+        $roles = Roles::all();
+        return response()->json(["roles" => $roles],200);
+    }
+    
+>>>>>>> f53b80a4c2e297119deb6da6d0451f0adf1e8a2f
 }
