@@ -25,6 +25,9 @@ Route::post('/register', 'RegisterController@register');
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', 'LoginController@logout');
     Route::get('getCountDash', 'GlobalsController@getCountDash');
+    Route::get('getAllUsers', 'GlobalsController@getAllUsers');
+    Route::post('saveEditUser', 'GlobalsController@saveEditUser');
+    Route::get('getRoles', 'GlobalsController@getRoles');
     
 });
 
