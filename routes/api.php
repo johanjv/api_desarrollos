@@ -25,7 +25,8 @@ Route::post('/register', 'RegisterController@register');
 Route::middleware('auth:api')->group(function () {
     Route::post('/logout', 'LoginController@logout');
     Route::get('getCountDash', 'GlobalsController@getCountDash');
-    
+    Route::post('insertDesarrollo', 'GlobalsController@insertDesarrollo');
+    Route::get('consultaDesarrollo', 'GlobalsController@consultaDesarrollo'); 
 });
 
 

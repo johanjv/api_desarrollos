@@ -21,4 +21,24 @@ class GlobalsController extends Controller
             "countRoles"        => $countRoles
         ],200);
     }    
+
+    public function insertDesarrollo(Request $request)
+    {
+        $insert = Desarrollos::create([
+            "nomb_desarrollo" => $request['nomb_des']
+        ]);
+
+        $desarrollos = Desarrollos::all();
+        
+        return response()->json([
+            "desarrollos" =>  $desarrollos
+        ],200);
+    }   
+    
+    public function consultaDesarrollo(Request $request)
+    {
+        $desarrollos = Desarrollos::all();
+        return response()->json(["desarrollos" => $desarrollos, "status" => "ok"]);
+    }
+
 }
