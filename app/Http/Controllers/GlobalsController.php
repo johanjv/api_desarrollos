@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Desarrollos;
 use App\Roles;
+use App\Modulos;
 use Illuminate\Http\Request;
 
 class GlobalsController extends Controller
@@ -20,7 +21,6 @@ class GlobalsController extends Controller
             "countDesarrollos"  => $countDesarrollos,
             "countRoles"        => $countRoles
         ],200);
-<<<<<<< HEAD
     }    
 
     public function insertDesarrollo(Request $request)
@@ -42,9 +42,6 @@ class GlobalsController extends Controller
         return response()->json(["desarrollos" => $desarrollos, "status" => "ok"]);
     }
 
-=======
-    }
-
     public function getAllUsers(Request $request)
     {
         $users = User::all();
@@ -63,12 +60,32 @@ class GlobalsController extends Controller
         
     }
     
-    
     public function getRoles(Request $request)
     {
         $roles = Roles::all();
         return response()->json(["roles" => $roles],200);
     }
+
+    public function insertModulo(Request $request)
+    {
+        $insert = Modulos::create([
+            "nomb_modulo" => $request['nomb_modulo'],
+            "desarrollo_id" => $request['desarrollo_id'],
+        ]);
+
+        $modulo = Modulos::all();
+        $modulo->load('desarrollo');
+        
+        return response()->json([
+            "modulo" =>  $modulo
+        ],200);
+    } 
+
+    public function consultaModulos(Request $request)
+    {
+        $modulos = Modulos::all();
+        $modulos->load('desarrollo');
+        return response()->json(["modulos" => $modulos, "status" => "ok"]);
+    }
     
->>>>>>> f53b80a4c2e297119deb6da6d0451f0adf1e8a2f
 }
