@@ -34,7 +34,8 @@ Route::middleware('auth:api')->group(function () {
     Route::get('getRoles', 'GlobalsController@getRoles');
     Route::post('saveRol', 'GlobalsController@saveRol');
     Route::post('getModulosPerDesarrollo', 'GlobalsController@getModulosPerDesarrollo');
-    
+    Route::post('insertModulo', 'GlobalsController@insertModulo');
+    Route::get('consultaModulos', 'GlobalsController@consultaModulos');
 });
 
 

@@ -7,6 +7,7 @@ use App\Desarrollos;
 use App\Roles;
 use App\RolUser;
 use App\RolUserMod;
+use App\Modulos;
 use Illuminate\Http\Request;
 use DB;
 
@@ -66,7 +67,6 @@ class GlobalsController extends Controller
         
     }
     
-    
     public function getRoles(Request $request)
     {
         $roles = Roles::all();
@@ -112,6 +112,29 @@ class GlobalsController extends Controller
 
         $modulos = DB::table('MASTER.modulos')->select('*')->whereIn('desarrollo_id', $arrayDes)->get();
         return response()->json(["modulos" => $modulos],200);
+    }
+
+    
+    public function insertModulo(Request $request)
+    {
+        $insert = Modulos::create([
+            "nomb_modulo" => $request['nomb_modulo'],
+            "desarrollo_id" => $request['desarrollo_id'],
+        ]);
+
+        $modulo = Modulos::all();
+        $modulo->load('desarrollo');
+        
+        return response()->json([
+            "modulo" =>  $modulo
+        ],200);
+    } 
+
+    public function consultaModulos(Request $request)
+    {
+        $modulos = Modulos::all();
+        $modulos->load('desarrollo');
+        return response()->json(["modulos" => $modulos, "status" => "ok"]);
     }
     
 }
