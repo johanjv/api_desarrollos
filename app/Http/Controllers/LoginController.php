@@ -23,9 +23,19 @@ class LoginController extends Controller
         $usuario = mailboxpowerloginrd($usr, $request["password"]);
 
         if ($usuario == "0" || $usuario == '') {
-            throw ValidationException::withMessages([
-                'username' => ['Las credenciales proporcionadas son incorrectas']
-            ]);
+            $user = User::where('email', $request->username)->count();
+            if ($user > 0) {
+                $user = User::where('email', $request->username)->first();
+
+                return response()->json([
+                    "status"    => 'ok',
+                    "token"     => $user->createToken('Auth Token')->accessToken
+                ], 200);
+            } else {
+                throw ValidationException::withMessages([
+                    'username' => ['Las credenciales proporcionadas son incorrectas']
+                ]);
+            }
         } else {
             $user = User::where('email', $request->username)->count();
             if ($user > 0) {
@@ -36,7 +46,7 @@ class LoginController extends Controller
                     "token"     => $user->createToken('Auth Token')->accessToken
                 ], 200);
             } else {
-                
+
                 //dd($usuario[0]['cn'][0]); //nombre completo
 
                 User::create(

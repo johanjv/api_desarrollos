@@ -17,8 +17,8 @@ class Roles extends Model
         'estado'
     ];
 
-    public function users()
+    /* public function rol()
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
-    }
+        return $this->belongsToMany('App\Roles', 'MASTER.rol_user' , 'rol_id')->withPivot('rol_id');
+    } */
 }
