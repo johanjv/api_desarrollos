@@ -41,6 +41,8 @@ class User extends Authenticatable
 
     public function roles()
     {
-        return $this->belongsToMany('App\Roles', 'MASTER.rol_user', 'user_id', 'rol_id');
+        //return $this->hasMany('App\Roles', 'MASTER.rol_user_mod', 'user_id', 'rol_id')->withPivot('modulo_id');
+        return $this->hasMany(RolUserMod::class);
     }
+    
 }

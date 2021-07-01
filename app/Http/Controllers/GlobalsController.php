@@ -10,6 +10,7 @@ use App\RolUserMod;
 use App\Modulos;
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class GlobalsController extends Controller
 {
@@ -76,24 +77,17 @@ class GlobalsController extends Controller
     public function saveRol(Request $request)
     {
         $data = $request->all();
-
-        /* Insert array roles */
-        foreach ($data['roles'] as $rol) {
-            $rolUser = RolUser::create([
-                "user_id" => $data['user']['id'],
-                "rol_id" => $rol['id']
-            ]);
-        }
-        
+               
         /* Insert array mod */
         foreach ($data['modulos'] as $modulo) {
             $rolUserMod = RolUserMod::create([
-                "rol_user_id" => $rolUser->id, 
-                "modulo_id" => $modulo['id']
+                "rol_id"    => $data['rol'],
+                "user_id"   => $data['user'],
+                "modulo_id" => $modulo
             ]);
         }
 
-        $users = User::with('roles')->get();
+        $users = User::all();
         foreach ($users as $user) {
             $user['newFecha'] = date_format($user['created_at'],"d/m/Y");
             $user['isDirec'] = $user['is_directory'] == 1 ? 'SI' : 'NO';
@@ -104,17 +98,10 @@ class GlobalsController extends Controller
     public function getModulosPerDesarrollo(Request $request)
     {
         $data = $request->all();
-        $arrayDes = [];
-        foreach ($data['desarrollo'] as $des) {
-            array_push($arrayDes, $des['id']);
-            /* Hacer un push a arrayDes para luego un whereIn en la consulta*/
-        }
-
-        $modulos = DB::table('MASTER.modulos')->select('*')->whereIn('desarrollo_id', $arrayDes)->get();
+        $modulos = Modulos::where('desarrollo_id', $data['desarrollo']['id'])->get();
         return response()->json(["modulos" => $modulos],200);
     }
 
-    
     public function insertModulo(Request $request)
     {
         $insert = Modulos::create([
@@ -135,6 +122,30 @@ class GlobalsController extends Controller
         $modulos = Modulos::all();
         $modulos->load('desarrollo');
         return response()->json(["modulos" => $modulos, "status" => "ok"]);
+    }
+
+    /* PERMISOS PARA EL SIDEBAR */
+    public function getMenuDash(Request $request)
+    {
+        $data       = $request->all();
+        $userAct    = Auth::user();
+        $user       = User::with('roles')->where('id', $userAct['id'])->first();
+        $countUser          = User::count();
+        $countDesarrollos   = Desarrollos::count();
+        $countRoles         = Roles::count();
+
+        $permisos = [];
+        foreach ($user->roles as $rol) {
+            array_push($permisos, $rol->modulo_id);
+        }
+        $modulos    = Modulos::whereIn('id', $permisos)->get();
+        return response()->json([
+            "modulos" => $modulos,
+            "countUser"         => $countUser,
+            "countDesarrollos"  => $countDesarrollos,
+            "countRoles"        => $countRoles
+        ]);
+
     }
     
 }

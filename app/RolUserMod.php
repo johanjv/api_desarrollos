@@ -12,7 +12,7 @@ class RolUserMod extends Model
     protected  $table = "MASTER.rol_user_mod";
     public $timestamps = false;
 
-    protected $fillable = ['id', 'modulo_id','rol_user_id'];
+    protected $fillable = ['id', 'modulo_id','rol_id', 'user_id'];
 
   
 }
