@@ -23,45 +23,70 @@ class LoginController extends Controller
 
         $usr = $request["username"];
         $usuario = mailboxpowerloginrd($usr, $request["password"]);
+       
 
-        /* VALIDAMOS SI EL USUARIO DEL DIRECTORIO ACTIVO EXISTE*/
-        if ($usuario == "0" || $usuario == '') {    //SI LAS CREDENCIALES SON INCORRECTAS
-            $user = User::where('email', $request->username)->count();  //CONTEO DEL USER QUE FUE ENVIADO POR REQUEST EN LA TABLA DE users
-            if ($user > 0) {    //SI EXISTE EN LA TABLA USER LE ASIGNO EL TOKEN
-                $user = User::with('roles')->where('email', $request->username)->first(); 
-                $permisos = [];
-                foreach ($user->roles as $rol) {
-                    array_push($permisos, $rol->modulo_id);
-                }
-                $modulos    = Modulos::whereIn('id', $permisos)->get();
+        if ($usuario == "0" || $usuario == '') {
+            //return "NO se encuentra en directorio activo";
+            $user = User::with('roles')->where('email', $request->username)->first();
+            if ($user) {
+                if (Hash::check($request['password'], $user->password)) {
+                    $permisos = [];
+                    foreach ($user->roles as $rol) {
+                        array_push($permisos, $rol->modulo_id);
+                    }
 
-                if (count($modulos) > 0) {   
-                    return response()->json(["status" => 'ok', "token" => $user->createToken('Auth Token')->accessToken], 200);
-                }else {
-                    return response()->json(["status" => 'ok', "token" => null], 200);
+                    $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
+                
+                    if (count($modulos) > 0 ) {   
+                        return response()->json(["status" => 'ok', "token" => $user->createToken('Auth Token')->accessToken], 200);
+                    } else {
+                        return response()->json(["status" => 'ok', "token" => 2], 200);
+                    }
+                } else {
+                    return response()->json(["status" => 'Credenciales Incorrectas', "token" => 1], 200);
                 }
-            } else {    //SI NO EXISTE EN EL DIRECTORIO ACTIVO O EN LA TABLA users DEVUELVO ERROR
-                throw ValidationException::withMessages([
-                    'username' => ['Las credenciales proporcionadas son incorrectas']
-                ]);
             }
-        } else {    //SI LAS CREDENCIALES DEL DIRECTORIO ACTIVO SON CORRECTAS
-            $user = User::where('email', $request->username)->count();  //VALIDO SI EXISTE EN LA TABLA users
-            if ($user > 0) {    //SI EXISTE EN LA TABLA users LE ASIGNO EL TOKEN
-                $user = User::with('roles')->where('email', $request->username)->first();
-                    return response()->json(["status" => 'ok',"token" => $user->createToken('Auth Token')->accessToken], 200);
-            } else { //SI LAS CREDENCIALES DEL DIRECTORIO ACTIVO SON CORRECTAS PERO NO ESTA EN LA TABLA users LO INSERTO EN users
-                //dd($usuario[0]['cn'][0]); //nombre completo
-                User::with('roles')->create(
-                    [
-                        'email'     => $request->username,
-                        'name'      => $usuario[0]['cn'][0],
-                        'password' => bcrypt($request['password'])
-                    ]
-                );
-                /* ASIGNO EL TOKEN*/
-                $user = User::with('roles')->where('email', $request->username)->first();
-                return response()->json(["status"    => 'ok',"token"     => $user->createToken('Auth Token')->accessToken], 200);
+        } else {
+            $user = User::with('roles')->where('email', $request->username)->first();
+            if ($user) {
+                //return "se encuentra en directorio activo y en la tabla usuarios";
+                if (Hash::check($request['password'], $user->password)) {
+                    $permisos = [];
+                    foreach ($user->roles as $rol) {
+                        array_push($permisos, $rol->modulo_id);
+                    }
+
+                    $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
+                
+                    if (count($modulos) > 0 ) {   
+                        return response()->json(["status" => 'ok', "token" => $user->createToken('Auth Token')->accessToken], 200);
+                    } else {
+                        return response()->json(["status" => 'ok', "token" => 2], 200);
+                    }
+                } else {
+                    return response()->json(["status" => 'Credenciales Incorrectas', "token" => 1], 200);
+                }
+            }else{
+                //return "se encuentra en directorio activo y NO en la tabla usuarios";
+                User::create([
+                    'email'     => $request->username,
+                    'name'      => $usuario[0]['cn'][0],
+                    'password' => bcrypt($request['password'])
+                ]);
+
+                    $user = User::with('roles')->where('email', $request->username)->first();
+                    $permisos = [];
+                        foreach ($user->roles as $rol) {
+                            array_push($permisos, $rol->modulo_id);
+                        }
+
+                    $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
+            
+                if (count($modulos) > 0 ) {   
+                    return response()->json(["status" => 'ok', "token" => $user->createToken('Auth Token')->accessToken], 200);
+                } else {
+                    return response()->json(["status" => 'ok', "token" => 2], 200);
+                }
             }
         }
     }
@@ -93,4 +118,25 @@ class LoginController extends Controller
         }
 
     }
+
+    public function saveNewUser(Request $request)
+    {
+        $data = $request->all();
+        $userCreate = User::create([
+            'name'          => $data['name'],
+            'email'         => $data['email'],
+            'is_directory'  => "0",
+            'password'      => bcrypt($request['password'])
+        ]);
+
+        $users = User::with('roles')->get();
+        foreach ($users as $user) {
+            $user['newFecha'] = date_format($user['created_at'],"d/m/Y");
+            $user['isDirec'] = $user['is_directory'] == 1 ? 'SI' : 'NO';
+        }
+
+        return response()->json(["users" => $users], 200);
+
+    }
+
 }

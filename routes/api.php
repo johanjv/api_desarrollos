@@ -39,6 +39,7 @@ use App\User;
         Route::post('getModulosPerDesarrollo',  'GlobalsController@getModulosPerDesarrollo');
         Route::post('insertModulo',             'GlobalsController@insertModulo');
         Route::get('consultaModulos',           'GlobalsController@consultaModulos');
+        Route::post('saveNewUser',              'LoginController@saveNewUser');
     });
 
 
