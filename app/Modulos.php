@@ -21,7 +21,6 @@ class Modulos extends Model
 
     public function desarrollo()
     {
-        //return $this->belongsToMany('App\Desarrollos', 'MASTER.rol_user_mod', 'id', 'modulo_id');
-        return $this->belongsTo('App\Desarrollos', 'MASTER.rol_user_mod', 'id', 'modulo_id');
+        return $this->hasOne('App\Desarrollos', 'id', 'desarrollo_id');
     }
 }
