@@ -13,9 +13,13 @@ class RolUser extends Model
 
     protected $fillable = ['id', 'user_id','rol_id'];
 
-    /* public function rol_user()
+    public function user()
     {
-        return $this->belongsToMany('App\User', 'MASTER.rol_user', 'user_id')
-                        ->withPivot('user_id', 'rol_id');
-    } */
+        return $this->belongsTo('App\User', 'user_id');
+    }
+
+    public function rol()
+    {
+        return $this->belongsTo('App\Roles', 'rol_id');
+    }
 }

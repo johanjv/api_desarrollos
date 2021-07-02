@@ -10,6 +10,7 @@ use App\RolUserMod;
 use App\Modulos;
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class GlobalsController extends Controller
 {
@@ -18,13 +19,13 @@ class GlobalsController extends Controller
         $countUser          = User::count();
         $countDesarrollos   = Desarrollos::count();
         $countRoles         = Roles::count();
-        
+
         return response()->json([
             "countUser"         => $countUser,
             "countDesarrollos"  => $countDesarrollos,
             "countRoles"        => $countRoles
-        ],200);
-    }    
+        ], 200);
+    }
 
     public function insertDesarrollo(Request $request)
     {
@@ -33,12 +34,12 @@ class GlobalsController extends Controller
         ]);
 
         $desarrollos = Desarrollos::all();
-        
+
         return response()->json([
             "desarrollos" =>  $desarrollos
-        ],200);
-    }   
-    
+        ], 200);
+    }
+
     public function consultaDesarrollo(Request $request)
     {
         $desarrollos = Desarrollos::all();
@@ -49,10 +50,10 @@ class GlobalsController extends Controller
     {
         $users = User::with('roles')->get();
         foreach ($users as $user) {
-            $user['newFecha'] = date_format($user['created_at'],"d/m/Y");
+            $user['newFecha'] = date_format($user['created_at'], "d/m/Y");
             $user['isDirec'] = $user['is_directory'] == 1 ? 'SI' : 'NO';
         }
-        return response()->json(["users" => $users],200);
+        return response()->json(["users" => $users], 200);
     }
 
     public function saveEditUser(Request $request)
@@ -63,58 +64,43 @@ class GlobalsController extends Controller
         ]);
 
         $usersRefresh = User::all();
-        return response()->json(["usersRefresh" => $usersRefresh], 200); 
-        
+        return response()->json(["usersRefresh" => $usersRefresh], 200);
     }
-    
+
     public function getRoles(Request $request)
     {
         $roles = Roles::all();
-        return response()->json(["roles" => $roles],200);
+        return response()->json(["roles" => $roles], 200);
     }
 
     public function saveRol(Request $request)
     {
         $data = $request->all();
 
-        /* Insert array roles */
-        foreach ($data['roles'] as $rol) {
-            $rolUser = RolUser::create([
-                "user_id" => $data['user']['id'],
-                "rol_id" => $rol['id']
-            ]);
-        }
-        
         /* Insert array mod */
         foreach ($data['modulos'] as $modulo) {
             $rolUserMod = RolUserMod::create([
-                "rol_user_id" => $rolUser->id, 
-                "modulo_id" => $modulo['id']
+                "rol_id"    => $data['rol'],
+                "user_id"   => $data['user'],
+                "modulo_id" => $modulo
             ]);
         }
 
-        $users = User::with('roles')->get();
+        $users = User::all();
         foreach ($users as $user) {
-            $user['newFecha'] = date_format($user['created_at'],"d/m/Y");
+            $user['newFecha'] = date_format($user['created_at'], "d/m/Y");
             $user['isDirec'] = $user['is_directory'] == 1 ? 'SI' : 'NO';
         }
-        return response()->json(["users" => $users],200);
+        return response()->json(["users" => $users], 200);
     }
 
     public function getModulosPerDesarrollo(Request $request)
     {
         $data = $request->all();
-        $arrayDes = [];
-        foreach ($data['desarrollo'] as $des) {
-            array_push($arrayDes, $des['id']);
-            /* Hacer un push a arrayDes para luego un whereIn en la consulta*/
-        }
-
-        $modulos = DB::table('MASTER.modulos')->select('*')->whereIn('desarrollo_id', $arrayDes)->get();
-        return response()->json(["modulos" => $modulos],200);
+        $modulos = Modulos::where('desarrollo_id', $data['desarrollo']['id'])->get();
+        return response()->json(["modulos" => $modulos], 200);
     }
 
-    
     public function insertModulo(Request $request)
     {
         $insert = Modulos::create([
@@ -124,11 +110,11 @@ class GlobalsController extends Controller
 
         $modulo = Modulos::all();
         $modulo->load('desarrollo');
-        
+
         return response()->json([
             "modulo" =>  $modulo
-        ],200);
-    } 
+        ], 200);
+    }
 
     public function consultaModulos(Request $request)
     {
@@ -144,10 +130,10 @@ class GlobalsController extends Controller
         ]);
 
         $roles = Roles::all();
-        
+
         return response()->json([
             "roles" =>  $roles
-        ],200);
+        ], 200);
     }
 
     public function consultaRoles(Request $request)
@@ -155,5 +141,26 @@ class GlobalsController extends Controller
         $roles = Roles::all();
         return response()->json(["roles" => $roles, "status" => "ok"]);
     }
-    
+    /* PERMISOS PARA EL SIDEBAR */
+    public function getMenuDash(Request $request)
+    {
+        $data       = $request->all();
+        $userAct    = Auth::user();
+        $user       = User::with('roles')->where('id', $userAct['id'])->first();
+        $countUser          = User::count();
+        $countDesarrollos   = Desarrollos::count();
+        $countRoles         = Roles::count();
+
+        $permisos = [];
+        foreach ($user->roles as $rol) {
+            array_push($permisos, $rol->modulo_id);
+        }
+        $modulos    = Modulos::whereIn('id', $permisos)->get();
+        return response()->json([
+            "modulos" => $modulos,
+            "countUser"         => $countUser,
+            "countDesarrollos"  => $countDesarrollos,
+            "countRoles"        => $countRoles
+        ]);
+    }
 }
