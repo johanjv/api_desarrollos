@@ -136,5 +136,24 @@ class GlobalsController extends Controller
         $modulos->load('desarrollo');
         return response()->json(["modulos" => $modulos, "status" => "ok"]);
     }
+
+    public function insertRol(Request $request)
+    {
+        $insert = Roles::create([
+            "nomb_rol" => $request['nomb_rol']
+        ]);
+
+        $roles = Roles::all();
+        
+        return response()->json([
+            "roles" =>  $roles
+        ],200);
+    }
+
+    public function consultaRoles(Request $request)
+    {
+        $roles = Roles::all();
+        return response()->json(["roles" => $roles, "status" => "ok"]);
+    }
     
 }
