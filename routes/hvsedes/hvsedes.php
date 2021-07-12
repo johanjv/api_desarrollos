@@ -13,5 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
-Route::get('getPrueba', 'hvsedes\PruebaController@getPrueba');
+Route::middleware('auth:api')->group(function () {
+    Route::get('/getSucursales',    'Hvsedes\HomeController@getSucursales');
+    Route::get('/getUnidades',      'Hvsedes\HomeController@getUnidades');
+    Route::get('/loadData',         'Hvsedes\HomeController@loadData');
+    Route::get('/loadservicios',    'Hvsedes\HomeController@loadservicios');
+    Route::get('/getDataTable',     'Hvsedes\HomeController@getDataTable');
+});
