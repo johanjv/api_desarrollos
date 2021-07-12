@@ -155,7 +155,7 @@ class GlobalsController extends Controller
         foreach ($user->roles as $rol) {
             array_push($permisos, $rol->modulo_id);
         }
-        $modulos    = Modulos::whereIn('id', $permisos)->get();
+        $modulos    = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['desarrollo_id'])->get();
         return response()->json([
             "modulos" => $modulos,
             "countUser"         => $countUser,
