@@ -109,6 +109,12 @@ class HomeController extends Controller
             }
             if ($data['opc'] == "Infraestructura") {
                 $list    = DB::select('exec HOJADEVIDASEDES.SP_INFRAESTRUCTURA_X_SEDE "' . $data['nombUnidad'] . '"');
+                $list2    = DB::select('exec HOJADEVIDASEDES.SP_CONSULTORIOS_EN_USO_X_SEDE "' . $data['nombUnidad'] . '"');
+                return response()->json([
+                    "list" => $list, 
+                    "list2" => $list2, 
+                    "status" => "ok"
+                ]);
             }
         }else{
             $list = null;
