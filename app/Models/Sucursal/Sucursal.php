@@ -12,6 +12,7 @@ class Sucursal extends Model
     protected  $table = "HOJADEVIDASEDES.SUC_SUCURSAL";
 
     protected $fillable = [
+        'SUC_ID',
         'SUC_DEPARTAMENTO',
         'SUC_CODIGO_DEPARTAMENTO',
         'SUC_MUNICIPIO',
@@ -19,6 +20,4 @@ class Sucursal extends Model
         'SUC_CODIGO_DANE',
         'SUC_FECHA_MODIFICACION',
     ];
-
-
 }
