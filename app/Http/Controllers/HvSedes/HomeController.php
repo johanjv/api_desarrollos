@@ -198,18 +198,8 @@ class HomeController extends Controller
 
     public function getData(Request $request)
     {
-            /* SELECT 
-            SV.[SED_CODIGO_HABILITACION_SEDE]
-            ,S.SED_NOMBRE_SEDE
-            ,SS.SER_NOMBRE_SERVICIO
-        FROM [Pruebas].[HOJADEVIDASEDES].[SHA_SERVICIOS_HABILITADOS] AS SV
-        JOIN [HOJADEVIDASEDES].[SED_SEDE] AS S ON S.SED_CODIGO_HABILITACION_SEDE = SV.SED_CODIGO_HABILITACION_SEDE
-        JOIN [HOJADEVIDASEDES].[SER_SERVICIOS] AS SS ON SS.SER_CODIGO_SERVICIO = SV.SER_CODIGO_SERVICIO
-        GROUP BY SV.[SED_CODIGO_HABILITACION_SEDE], S.SED_NOMBRE_SEDE, SS.SER_NOMBRE_SERVICIO */
-
-
         $item = DB::
-                  table('Pruebas.HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS AS SV')
+                  table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS AS SV')
                 ->selectRaw('S.SED_NOMBRE_SEDE, COUNT(SV.SER_CODIGO_SERVICIO) as CantidadServ')
                 ->join('HOJADEVIDASEDES.SED_SEDE AS S', 'S.SED_CODIGO_HABILITACION_SEDE', '=', 'SV.SED_CODIGO_HABILITACION_SEDE')
                 ->join('HOJADEVIDASEDES.SER_SERVICIOS AS SS', 'SS.SER_CODIGO_SERVICIO', '=', 'SV.SER_CODIGO_SERVICIO')
@@ -285,6 +275,20 @@ class HomeController extends Controller
 
         return response()->json([
             "update" =>  $update
+        ], 200);
+    }
+
+    public function getSedesPorSucursal()
+    {
+        $sedesPorSucursal = DB::table('HOJADEVIDASEDES.SED_SEDE AS SED')
+            ->selectRaw('SUC.SUC_DEPARTAMENTO, COUNT(SED.SED_NOMBRE_SEDE) as CantidadSedes')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DANE', '=', 'SED.SUC_CODIGO_DANE')
+            ->groupBy('SUC.SUC_DEPARTAMENTO')
+            ->orderBy('CantidadSedes', 'DESC')
+            ->get();
+
+        return response()->json([
+            "sedesPorSucursal" =>  $sedesPorSucursal
         ], 200);
     }
 
