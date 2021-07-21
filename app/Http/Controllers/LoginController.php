@@ -46,6 +46,8 @@ class LoginController extends Controller
                 } else {
                     return response()->json(["status" => 'Credenciales Incorrectas', "token" => 1], 200);
                 }
+            } else {
+                return response()->json(["status" => 'Credenciales Incorrectas', "token" => 1], 200);
             }
         } else {
             $user = User::with('roles')->where('email', $request->username)->first();
