@@ -24,8 +24,12 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/getServicios',     'Hvsedes\HomeController@getServicios');
     Route::post('/saveServicio',    'Hvsedes\HomeController@saveServicio');
     Route::get('/getSed',           'Hvsedes\HomeController@getSed');
-    Route::post('/saveVinculacion',    'Hvsedes\HomeController@saveVinculacion');
-    Route::get('/getServHabs',    'Hvsedes\HomeController@getServHabs');
-    Route::get('/getData',    'Hvsedes\HomeController@getData');
-    
+    Route::post('/saveVinculacion', 'Hvsedes\HomeController@saveVinculacion');
+    Route::get('/getServHabs',      'Hvsedes\HomeController@getServHabs');
+    Route::get('/getData',          'Hvsedes\HomeController@getData');
+    Route::post('insertSedes',      'Hvsedes\HomeController@insertSedes');
+    Route::post('getCodSucursales', 'Hvsedes\HomeController@getCodSucursales');
+    Route::post('consultaSedes',    'Hvsedes\HomeController@consultaSedes');
+    Route::post('estado',           'Hvsedes\HomeController@estado');
+    Route::post('editarSedes',      'Hvsedes\HomeController@editarSedes');
 });

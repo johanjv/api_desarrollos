@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\hvsedes\Servicios;
 use Illuminate\Http\Request;
 use App\Models\ServHab\ServicioHabilitado;
+use App\Models\Sucursal\Estado;
 use App\Models\Sucursal\Sucursal;
 use App\Models\Sucursal\Unidad;
 use App\Models\Sucursal\UniUnidad;
@@ -84,7 +85,7 @@ class HomeController extends Controller
         $sha                = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $data['nombUnidad'] . '"');
         $cod_habilitacion   = SedSede::where('SED_NOMBRE_SEDE', $data['nombUnidad'])->pluck('SED_CODIGO_HABILITACION_SEDE');
         $servPorUnidad      = UniUnidad::where('SED_CODIGO_HABILITACION_SEDE', $cod_habilitacion)->get();
-        $servPorUnidadAg    =  DB::table('HOJADEVIDASEDES.UNI_UNIDAD')->selectRaw('TXU_CODIGO_UNIDAD, COUNT(TXU_CODIGO_UNIDAD) as sumaUni')->whereIn('SED_CODIGO_HABILITACION_SEDE', $cod_habilitacion)->groupBy('TXU_CODIGO_UNIDAD')->get();
+        $servPorUnidadAg    = DB::table('HOJADEVIDASEDES.UNI_UNIDAD')->selectRaw('TXU_CODIGO_UNIDAD, COUNT(TXU_CODIGO_UNIDAD) as sumaUni')->whereIn('SED_CODIGO_HABILITACION_SEDE', $cod_habilitacion)->groupBy('TXU_CODIGO_UNIDAD')->get();
 
         return response()->json([
             "servHab"           => $sha,
@@ -222,5 +223,69 @@ class HomeController extends Controller
     
     
 
+    public function insertSedes(Request $request)
+    {
+        //cuenta los cdigitos que vienen incluyendo el cero
+        $cod_sede = strlen($request["cod_sede"]);
+        $cod_hab = strlen($request["cod_hab"]);
+        //////////////////////////////////////////////////
+        if ($cod_sede > 1 && $cod_hab > 9) {
+            $insert = SedSede::create([
+            'SED_CODIGO_HABILITACION_SEDE'  => $request["cod_hab_sede"],
+            'SED_CODIGO_HABILITACION'       => $request["cod_hab"],
+            'SED_NOMBRE_SEDE'               => $request["nomb_sede"],
+            'SED_CODIGO_SEDE'               => $request["cod_sede"],
+            'EST_CODIGO_ESTADO'             => "A",
+            'SUC_CODIGO_DANE'               => $request["codsucursal"]["SUC_CODIGO_DANE"],
+            'SED_CODIGO_DEPARTAMENTO'       => $request["codsucursal"]["SUC_CODIGO_DEPARTAMENTO"],
+        ]);
+
+        $sedes = SedSede::all();
+        $sedes->load('sucursal');
+
+        return response()->json([
+            "sedes" =>  $sedes
+        ], 200);
+
+        } else {
+            return response()->json([
+                "sedes" =>  false
+            ], 200);
+        }
+    }
+
+    public function getCodSucursales(Request $request)
+    {
+        $codsucursales = Sucursal::where('SUC_DEPARTAMENTO', $request["codsucursales"])->get();
+        return $codsucursales;
+    }
+
+    public function consultaSedes(Request $request)
+    {
+        $sedes = SedSede::all();
+        $sedes->load('sucursal');
+        return response()->json(["sedes" => $sedes, "status" => "ok"]);
+    }
+
+    public function estado(Request $request)
+    {
+        $estado = Estado::all();
+        return response()->json(["estado" => $estado, "status" => "ok"]);
+    }
+
+    public function editarSedes(Request $request)
+    {
+        $data = $request->all();
+        $update = SedSede::where("SED_ID", $data["id_edit"])->update([
+            'EST_CODIGO_ESTADO'  => $data["estado_edit"]["EST_CODIGO_ESTADO"],
+            'SED_NOMBRE_SEDE'    => $data["nomb_sede_edit"],
+        ]);
+
+        $update = SedSede::all();
+
+        return response()->json([
+            "update" =>  $update
+        ], 200);
+    }
 
 }

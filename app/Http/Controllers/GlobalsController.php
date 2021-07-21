@@ -104,9 +104,15 @@ class GlobalsController extends Controller
 
     public function insertModulo(Request $request)
     {
+        //convierte en minuscula
+        $minusculas = strtolower($request['nomb_modulo']);
+        //quita los espacios por un guin -
+        $slug = str_replace(" ", "-", $minusculas);
+
         $insert = Modulos::create([
             "nomb_modulo" => $request['nomb_modulo'],
             "desarrollo_id" => $request['desarrollo_id'],
+            "slug" => $slug,
         ]);
 
         $modulo = Modulos::all();
