@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Modulos;
+use App\Submodulos;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -100,22 +101,28 @@ class LoginController extends Controller
     {
         $data = $request->all();
 
-        $userAct        = Auth::user();
-        $user           = User::with('roles')->with('roles')->where('id', $userAct['id'])->first();
-        $modPermitidos  = Modulos::where('slug', $data['url'])->first('id');
+        $userAct           = Auth::user();
+        $user              = User::with('roles')->with('roles')->where('id', $userAct['id'])->first();
+
         $permisos = [];
         foreach ($user->roles as $rol) {
             array_push($permisos, $rol->modulo_id); 
         }
         
-        $modulos    = Modulos::whereIn('id', $permisos)->get();
+        $modulos    = Modulos::with('submodulos')->whereIn('id', $permisos)->get();
         
-
         foreach ($modulos as $mod) {
             if ($mod->slug == $data['url']) {
                 return response()->json(["modulos" => $mod->slug]); 
             }
+            foreach ($mod->submodulos as $sub) {
+                if ($sub->slug == $data['url']) {
+                    return response()->json(["modulos" => $sub->slug]); 
+                }
+            }
         }
+
+        
 
     }
 

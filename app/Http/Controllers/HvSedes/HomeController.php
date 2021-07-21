@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\HvSedes;
 
+use App\Models\hvsedes\Grupos;
 use App\Http\Controllers\Controller;
+use App\Models\hvsedes\Servicios;
 use Illuminate\Http\Request;
 use App\Models\ServHab\ServicioHabilitado;
 use App\Models\Sucursal\Sucursal;
@@ -103,7 +105,7 @@ class HomeController extends Controller
     public function getDataTable(Request $request)
     {
         $data = $request->all();
-        if (isset($data['nombUnidad'])){
+        if (isset($data['nombUnidad'])) {
             if ($data['opc'] == "Servicios Habilitados") {
                 $list    = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $data['nombUnidad'] . '"');
             }
@@ -111,16 +113,114 @@ class HomeController extends Controller
                 $list    = DB::select('exec HOJADEVIDASEDES.SP_INFRAESTRUCTURA_X_SEDE "' . $data['nombUnidad'] . '"');
                 $list2    = DB::select('exec HOJADEVIDASEDES.SP_CONSULTORIOS_EN_USO_X_SEDE "' . $data['nombUnidad'] . '"');
                 return response()->json([
-                    "list" => $list, 
-                    "list2" => $list2, 
+                    "list" => $list,
+                    "list2" => $list2,
                     "status" => "ok"
                 ]);
             }
-        }else{
+        } else {
             $list = null;
         }
-        
+
         return response()->json(["list" => $list, "status" => "ok"]);
+    }
+
+    public function getGrupos(Request $request)
+    {
+        $grupos = Grupos::all();
+        return response()->json(["grupos" => $grupos, "status" => "ok"]);
+    }
+
+    public function saveGrupo(Request $request)
+    {
+        $insert = Grupos::create([
+            "GRU_NOMBRE_GRUPO_SERVICIO" => strtoupper($request['nomb_grupo']),
+        ]);
+        
+        $grupos = Grupos::all();
+
+        return response()->json(["grupos" => $grupos, "status" => "ok"]);
+    }
+
+    public function getServicios(Request $request)
+    {
+        $servicios = Servicios::all();
+        return response()->json(["servicios" => $servicios, "status" => "ok"]);
+    }
+
+    public function saveServicio(Request $request)
+    {
+        $insert = Servicios::create([
+            "SER_CODIGO_SERVICIO" => $request['cod_serv'],        
+            "SER_NOMBRE_SERVICIO" => strtoupper($request['nomb_serv']),
+        ]);
+        
+        $servicios = Servicios::all();
+
+        return response()->json(["servicios" => $servicios, "status" => "ok"]);
+    }
+
+    public function getSed(Request $request)
+    {
+        $sedes = SedSede::all();
+        return response()->json(["sedes" => $sedes, "status" => "ok"]);
+    }
+
+    public function saveVinculacion(Request $request)
+    {
+        $data = $request->all();
+
+        $sede = $data["formData"]["sede"]["SED_CODIGO_HABILITACION_SEDE"];
+
+        foreach ($data["formData"]["grupo"] as $dt) {   
+                foreach ($dt["servicio"] as $serv) {
+                    $insert = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->insert([
+                        'SED_CODIGO_HABILITACION_SEDE'  => $sede, 
+                        'GRU_CODIGO_GRUPO'              => $dt["GRU_CODIGO_GRUPO"],
+                        'EST_CODIGO_ESTADO'             => "A",
+                        'SER_CODIGO_SERVICIO' => $serv["SER_CODIGO_SERVICIO"],
+                        'SHA_FECHA_MODIFICACION'        => "2022-07-06 00:00:00.000"
+                    ]);
+            }
+        }
+
+        $servHab =  DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->get();
+
+        return response()->json(["servHab" => $servHab, "status" => "ok"]);
+    }
+
+    public function getServHabs(Request $request)
+    {
+        $servHabs =  DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->get();
+        return response()->json(["servHabs" => $servHabs, "status" => "ok"]);
+    }
+
+    public function getData(Request $request)
+    {
+            /* SELECT 
+            SV.[SED_CODIGO_HABILITACION_SEDE]
+            ,S.SED_NOMBRE_SEDE
+            ,SS.SER_NOMBRE_SERVICIO
+        FROM [Pruebas].[HOJADEVIDASEDES].[SHA_SERVICIOS_HABILITADOS] AS SV
+        JOIN [HOJADEVIDASEDES].[SED_SEDE] AS S ON S.SED_CODIGO_HABILITACION_SEDE = SV.SED_CODIGO_HABILITACION_SEDE
+        JOIN [HOJADEVIDASEDES].[SER_SERVICIOS] AS SS ON SS.SER_CODIGO_SERVICIO = SV.SER_CODIGO_SERVICIO
+        GROUP BY SV.[SED_CODIGO_HABILITACION_SEDE], S.SED_NOMBRE_SEDE, SS.SER_NOMBRE_SERVICIO */
+
+
+        $item = DB::
+                  table('Pruebas.HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS AS SV')
+                ->selectRaw('S.SED_NOMBRE_SEDE, COUNT(SV.SER_CODIGO_SERVICIO) as CantidadServ')
+                ->join('HOJADEVIDASEDES.SED_SEDE AS S', 'S.SED_CODIGO_HABILITACION_SEDE', '=', 'SV.SED_CODIGO_HABILITACION_SEDE')
+                ->join('HOJADEVIDASEDES.SER_SERVICIOS AS SS', 'SS.SER_CODIGO_SERVICIO', '=', 'SV.SER_CODIGO_SERVICIO')
+                ->groupBy('SV.SED_CODIGO_HABILITACION_SEDE', 'S.SED_NOMBRE_SEDE')
+                ->orderBy('CantidadServ', 'DESC')
+                ->get();
+        return response()->json(["item" => $item, "status" => "ok"]);
 
     }
+
+    
+    
+
+
 }

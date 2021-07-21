@@ -8,6 +8,7 @@ use App\Roles;
 use App\RolUser;
 use App\RolUserMod;
 use App\Modulos;
+use App\Submodulos;
 use Illuminate\Http\Request;
 use DB;
 use Illuminate\Support\Facades\Auth;
@@ -156,6 +157,7 @@ class GlobalsController extends Controller
             array_push($permisos, $rol->modulo_id);
         }
         $modulos    = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['desarrollo_id'])->get();
+        $modulos->load("submodulos");
         return response()->json([
             "modulos" => $modulos,
             "countUser"         => $countUser,
@@ -163,4 +165,35 @@ class GlobalsController extends Controller
             "countRoles"        => $countRoles
         ]);
     }
+
+    public function saveSubmodulo(Request $request)
+    {
+        
+        $insert = Submodulos::create([
+            "nomb_sub_modulo"   => $request['objSubmodulo']['nomb_sub_mod'],
+            "modulo_id"         => $request['objSubmodulo']['modulo_id'],
+            "slug"              => $this->slugify($request['objSubmodulo']['nomb_sub_mod'])
+        ]);
+
+        $subs = Submodulos::all();
+
+        return response()->json(["subs" => $subs, "status" => "ok"]);
+
+    }
+
+    function slugify ($string) {
+        $string = utf8_encode($string);
+        $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);   
+        $string = preg_replace('/[^a-z0-9- ]/i', '', $string);
+        $string = str_replace(' ', '-', $string);
+        $string = trim($string, '-');
+        $string = strtolower($string);
+    
+        if (empty($string)) {
+            return 'n-a';
+        }
+    
+        return $string;
+    }
+
 }
