@@ -67,7 +67,7 @@ class LoginController extends Controller
                         return response()->json(["status" => 'ok', "user" => $user, "token" => 2], 200);
                     }
                 } else {
-                    return response()->json(["status" => 'Credenciales Incorrectas aaaaa', "token" => 1], 200);
+                    return response()->json(["status" => 'Credenciales Incorrectas', "token" => 1], 200);
                 }
             }else{
                 //return "se encuentra en directorio activo y NO en la tabla usuarios";
