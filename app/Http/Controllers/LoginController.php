@@ -39,9 +39,9 @@ class LoginController extends Controller
                     $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
                 
                     if (count($modulos) > 0 ) {   
-                        return response()->json(["status" => 'ok', "token" => $user->createToken('Auth Token')->accessToken], 200);
+                        return response()->json(["status" => 'ok', "user" => $user, "token" => $user->createToken('Auth Token')->accessToken], 200);
                     } else {
-                        return response()->json(["status" => 'ok', "token" => 2], 200);
+                        return response()->json(["status" => 'ok', "user" => $user, "token" => 2], 200);
                     }
                 } else {
                     return response()->json(["status" => 'Credenciales Incorrectas', "token" => 1], 200);
@@ -62,12 +62,12 @@ class LoginController extends Controller
                     $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
                 
                     if (count($modulos) > 0 ) {   
-                        return response()->json(["status" => 'ok', "token" => $user->createToken('Auth Token')->accessToken], 200);
+                        return response()->json(["status" => 'ok', "user" => $user, "token" => $user->createToken('Auth Token')->accessToken], 200);
                     } else {
-                        return response()->json(["status" => 'ok', "token" => 2], 200);
+                        return response()->json(["status" => 'ok', "user" => $user, "token" => 2], 200);
                     }
                 } else {
-                    return response()->json(["status" => 'Credenciales Incorrectas', "token" => 1], 200);
+                    return response()->json(["status" => 'Credenciales Incorrectas aaaaa', "token" => 1], 200);
                 }
             }else{
                 //return "se encuentra en directorio activo y NO en la tabla usuarios";
@@ -86,9 +86,9 @@ class LoginController extends Controller
                     $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
             
                 if (count($modulos) > 0 ) {   
-                    return response()->json(["status" => 'ok', "token" => $user->createToken('Auth Token')->accessToken], 200);
+                    return response()->json(["status" => 'ok', "user" => $user, "token" => $user->createToken('Auth Token')->accessToken], 200);
                 } else {
-                    return response()->json(["status" => 'ok', "token" => 2], 200);
+                    return response()->json(["status" => 'ok', "user" => $user, "token" => 2], 200);
                 }
             }
         }
