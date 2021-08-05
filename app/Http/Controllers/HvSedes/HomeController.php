@@ -137,7 +137,7 @@ class HomeController extends Controller
         $insert = Grupos::create([
             "GRU_NOMBRE_GRUPO_SERVICIO" => strtoupper($request['nomb_grupo']),
         ]);
-        
+
         $grupos = Grupos::all();
 
         return response()->json(["grupos" => $grupos, "status" => "ok"]);
@@ -152,10 +152,10 @@ class HomeController extends Controller
     public function saveServicio(Request $request)
     {
         $insert = Servicios::create([
-            "SER_CODIGO_SERVICIO" => $request['cod_serv'],        
+            "SER_CODIGO_SERVICIO" => $request['cod_serv'],
             "SER_NOMBRE_SERVICIO" => strtoupper($request['nomb_serv']),
         ]);
-        
+
         $servicios = Servicios::all();
 
         return response()->json(["servicios" => $servicios, "status" => "ok"]);
@@ -173,15 +173,15 @@ class HomeController extends Controller
 
         $sede = $data["formData"]["sede"]["SED_CODIGO_HABILITACION_SEDE"];
 
-        foreach ($data["formData"]["grupo"] as $dt) {   
-                foreach ($dt["servicio"] as $serv) {
-                    $insert = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->insert([
-                        'SED_CODIGO_HABILITACION_SEDE'  => $sede, 
-                        'GRU_CODIGO_GRUPO'              => $dt["GRU_CODIGO_GRUPO"],
-                        'EST_CODIGO_ESTADO'             => "A",
-                        'SER_CODIGO_SERVICIO' => $serv["SER_CODIGO_SERVICIO"],
-                        'SHA_FECHA_MODIFICACION'        => "2022-07-06 00:00:00.000"
-                    ]);
+        foreach ($data["formData"]["grupo"] as $dt) {
+            foreach ($dt["servicio"] as $serv) {
+                $insert = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->insert([
+                    'SED_CODIGO_HABILITACION_SEDE'  => $sede,
+                    'GRU_CODIGO_GRUPO'              => $dt["GRU_CODIGO_GRUPO"],
+                    'EST_CODIGO_ESTADO'             => "A",
+                    'SER_CODIGO_SERVICIO' => $serv["SER_CODIGO_SERVICIO"],
+                    'SHA_FECHA_MODIFICACION'        => "2022-07-06 00:00:00.000"
+                ]);
             }
         }
 
@@ -198,20 +198,18 @@ class HomeController extends Controller
 
     public function getData(Request $request)
     {
-        $item = DB::
-                  table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS AS SV')
-                ->selectRaw('S.SED_NOMBRE_SEDE, COUNT(SV.SER_CODIGO_SERVICIO) as CantidadServ')
-                ->join('HOJADEVIDASEDES.SED_SEDE AS S', 'S.SED_CODIGO_HABILITACION_SEDE', '=', 'SV.SED_CODIGO_HABILITACION_SEDE')
-                ->join('HOJADEVIDASEDES.SER_SERVICIOS AS SS', 'SS.SER_CODIGO_SERVICIO', '=', 'SV.SER_CODIGO_SERVICIO')
-                ->groupBy('SV.SED_CODIGO_HABILITACION_SEDE', 'S.SED_NOMBRE_SEDE')
-                ->orderBy('CantidadServ', 'DESC')
-                ->get();
+        $item = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS AS SV')
+            ->selectRaw('S.SED_NOMBRE_SEDE, COUNT(SV.SER_CODIGO_SERVICIO) as CantidadServ')
+            ->join('HOJADEVIDASEDES.SED_SEDE AS S', 'S.SED_CODIGO_HABILITACION_SEDE', '=', 'SV.SED_CODIGO_HABILITACION_SEDE')
+            ->join('HOJADEVIDASEDES.SER_SERVICIOS AS SS', 'SS.SER_CODIGO_SERVICIO', '=', 'SV.SER_CODIGO_SERVICIO')
+            ->groupBy('SV.SED_CODIGO_HABILITACION_SEDE', 'S.SED_NOMBRE_SEDE')
+            ->orderBy('CantidadServ', 'DESC')
+            ->get();
         return response()->json(["item" => $item, "status" => "ok"]);
-
     }
 
-    
-    
+
+
 
     public function insertSedes(Request $request)
     {
@@ -221,22 +219,21 @@ class HomeController extends Controller
         //////////////////////////////////////////////////
         if ($cod_sede > 1 && $cod_hab > 9) {
             $insert = SedSede::create([
-            'SED_CODIGO_HABILITACION_SEDE'  => $request["cod_hab_sede"],
-            'SED_CODIGO_HABILITACION'       => $request["cod_hab"],
-            'SED_NOMBRE_SEDE'               => $request["nomb_sede"],
-            'SED_CODIGO_SEDE'               => $request["cod_sede"],
-            'EST_CODIGO_ESTADO'             => "A",
-            'SUC_CODIGO_DANE'               => $request["codsucursal"]["SUC_CODIGO_DANE"],
-            'SED_CODIGO_DEPARTAMENTO'       => $request["codsucursal"]["SUC_CODIGO_DEPARTAMENTO"],
-        ]);
+                'SED_CODIGO_HABILITACION_SEDE'  => $request["cod_hab_sede"],
+                'SED_CODIGO_HABILITACION'       => $request["cod_hab"],
+                'SED_NOMBRE_SEDE'               => $request["nomb_sede"],
+                'SED_CODIGO_SEDE'               => $request["cod_sede"],
+                'EST_CODIGO_ESTADO'             => "A",
+                'SUC_CODIGO_DANE'               => $request["codsucursal"]["SUC_CODIGO_DANE"],
+                'SED_CODIGO_DEPARTAMENTO'       => $request["codsucursal"]["SUC_CODIGO_DEPARTAMENTO"],
+            ]);
 
-        $sedes = SedSede::all();
-        $sedes->load('sucursal');
+            $sedes = SedSede::all();
+            $sedes->load('sucursal');
 
-        return response()->json([
-            "sedes" =>  $sedes
-        ], 200);
-
+            return response()->json([
+                "sedes" =>  $sedes
+            ], 200);
         } else {
             return response()->json([
                 "sedes" =>  false
@@ -292,4 +289,19 @@ class HomeController extends Controller
         ], 200);
     }
 
+    public function getSucursalesConSedes()
+    {
+
+        $sucursales =  DB::table('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC')
+            ->selectRaw('SUC.SUC_DEPARTAMENTO, SUC_CODIGO_DEPARTAMENTO')
+            ->join('HOJADEVIDASEDES.SED_SEDE AS SED', 'SED.SED_CODIGO_DEPARTAMENTO', '=', 'SUC.SUC_CODIGO_DEPARTAMENTO')
+            ->groupBy('SUC.SUC_DEPARTAMENTO')
+            ->groupBy('SUC.SUC_CODIGO_DEPARTAMENTO')
+            ->orderBy('SUC.SUC_DEPARTAMENTO')
+            ->get();
+
+        return response()->json([
+            "sucursales" =>  $sucursales
+        ], 200);
+    }
 }

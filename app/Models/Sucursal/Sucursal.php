@@ -20,4 +20,9 @@ class Sucursal extends Model
         'SUC_CODIGO_DANE',
         'SUC_FECHA_MODIFICACION',
     ];
+
+    public function sedes()
+    {
+        return $this->hasMany(SedSede::class, 'SED_CODIGO_DEPARTAMENTO', 'SUC_CODIGO_DEPARTAMENTO');
+    }
 }

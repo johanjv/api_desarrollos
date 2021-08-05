@@ -23,6 +23,7 @@ Route::post('/login',       'LoginController@login');
 Route::post('/register',    'RegisterController@register');
 
 /* Globals Routes */
+Route::post('/check',                   'LoginController@check');
 Route::middleware('auth:api')->group(function () {
     Route::post('/checkAutorizacion',       'LoginController@checkAutorizacion');
     Route::post('/logout',                  'LoginController@logout');

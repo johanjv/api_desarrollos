@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->group(function () {
+Route::middleware(['auth:api'])->group(function () {
     Route::get('/getSucursales',        'Hvsedes\HomeController@getSucursales');
     Route::get('/getUnidades',          'Hvsedes\HomeController@getUnidades');
     Route::get('/loadData',             'Hvsedes\HomeController@loadData');
@@ -33,4 +33,5 @@ Route::middleware('auth:api')->group(function () {
     Route::post('estado',               'Hvsedes\HomeController@estado');
     Route::post('editarSedes',          'Hvsedes\HomeController@editarSedes');
     Route::get('getSedesPorSucursal',  'Hvsedes\HomeController@getSedesPorSucursal');
+    Route::get('getSucursalesConSedes',  'Hvsedes\HomeController@getSucursalesConSedes');
 });

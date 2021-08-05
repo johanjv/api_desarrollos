@@ -9,9 +9,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Passport\Passport;
 
 class LoginController extends Controller
 {
+    /* public function __construct()
+    {
+        $this->middleware('auth:api')->except('check');
+    } */
+
     public function login(Request $request)
     {
         $request->validate([
@@ -31,6 +37,7 @@ class LoginController extends Controller
             $user = User::with('roles')->where('email', $request->username)->first();
             if ($user) {
                 if (Hash::check($request['password'], $user->password)) {
+                    $request->session()->regenerate();
                     $permisos = [];
                     foreach ($user->roles as $rol) {
                         array_push($permisos, $rol->modulo_id);
@@ -39,7 +46,9 @@ class LoginController extends Controller
                     $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
                 
                     if (count($modulos) > 0 ) {   
-                        return response()->json(["status" => 'ok', "user" => $user, "token" => $user->createToken('Auth Token')->accessToken], 200);
+                        $tokenUser = $user->createToken('Auth Token')->accessToken;
+                        $fechaExpiraToken = Passport::tokensExpireIn();
+                        return response()->json(["status" => 'ok', "user" => $user, "token" => $tokenUser, 'fechaExpiraToken' => $fechaExpiraToken], 200);
                     } else {
                         return response()->json(["status" => 'ok', "user" => $user, "token" => 2], 200);
                     }
@@ -54,6 +63,7 @@ class LoginController extends Controller
             if ($user) {
                 //return "se encuentra en directorio activo y en la tabla usuarios";
                 if (Hash::check($request['password'], $user->password)) {
+                    $request->session()->regenerate();
                     $permisos = [];
                     foreach ($user->roles as $rol) {
                         array_push($permisos, $rol->modulo_id);
@@ -62,7 +72,9 @@ class LoginController extends Controller
                     $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
                 
                     if (count($modulos) > 0 ) {   
-                        return response()->json(["status" => 'ok', "user" => $user, "token" => $user->createToken('Auth Token')->accessToken], 200);
+                        $tokenUser = $user->createToken('Auth Token')->accessToken;
+                        $fechaExpiraToken = Passport::tokensExpireIn();
+                        return response()->json(["status" => 'ok', "user" => $user, "token" => $tokenUser, 'fechaExpiraToken' => $fechaExpiraToken], 200);
                     } else {
                         return response()->json(["status" => 'ok', "user" => $user, "token" => 2], 200);
                     }
@@ -86,7 +98,9 @@ class LoginController extends Controller
                     $modulos = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['idDesarrollo'])->get();
             
                 if (count($modulos) > 0 ) {   
-                    return response()->json(["status" => 'ok', "user" => $user, "token" => $user->createToken('Auth Token')->accessToken], 200);
+                    $tokenUser = $user->createToken('Auth Token')->accessToken;
+                    $fechaExpiraToken = Passport::tokensExpireIn();
+                    return response()->json(["status" => 'ok', "user" => $user, "token" => $tokenUser, 'fechaExpiraToken' => $fechaExpiraToken], 200);
                 } else {
                     return response()->json(["status" => 'ok', "user" => $user, "token" => 2], 200);
                 }
@@ -126,6 +140,14 @@ class LoginController extends Controller
 
         
 
+    }
+
+    public function check(Request $request)
+    {
+        //$session_act = false;
+        $session_act = Auth::check();
+        $user = Auth::user();
+        return response()->json(["status" => 'ok', "session_act" => $session_act, "user" => $user], 200);       
     }
 
     public function saveNewUser(Request $request)
