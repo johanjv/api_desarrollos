@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models\AdminGlobal;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,6 +20,6 @@ class RolUser extends Model
 
     public function rol()
     {
-        return $this->belongsTo('App\Roles', 'rol_id');
+        return $this->belongsTo('App\Models\AdminGlobal\Roles', 'rol_id');
     }
 }

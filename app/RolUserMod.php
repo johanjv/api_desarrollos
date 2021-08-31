@@ -14,5 +14,5 @@ class RolUserMod extends Model
 
     protected $fillable = ['id', 'modulo_id','rol_id', 'user_id'];
 
-  
+
 }

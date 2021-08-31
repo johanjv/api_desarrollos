@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models\AdminGlobal;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,7 +13,7 @@ class Roles extends Model
     protected  $table = "MASTER.Roles";
 
     protected $fillable = [
-        'nomb_rol', 
+        'nomb_rol',
         'estado'
     ];
 

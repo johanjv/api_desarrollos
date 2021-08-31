@@ -2,19 +2,23 @@
 
 namespace App\Http\Controllers\HvSedes;
 
-use App\Models\hvsedes\Grupos;
 use App\Http\Controllers\Controller;
-use App\Models\hvsedes\Servicios;
+use App\Models\AdminGlobal\Modulos;
 use Illuminate\Http\Request;
-use App\Models\ServHab\ServicioHabilitado;
-use App\Models\Sucursal\Estado;
-use App\Models\Sucursal\Sucursal;
-use App\Models\Sucursal\Unidad;
-use App\Models\Sucursal\UniUnidad;
-use App\Models\Sucursal\SedSede;
+use App\Models\HvSedes\Grupos;
+use App\Models\HvSedes\Servicios;
+use App\Models\HvSedes\ServHab\ServicioHabilitado;
+use App\Models\HvSedes\Sucursal\Estado;
+use App\Models\HvSedes\Sucursal\Sucursal;
+use App\Models\HvSedes\Sucursal\Unidad;
+use App\Models\HvSedes\Sucursal\UniUnidad;
+use App\Models\HvSedes\Sucursal\SedSede;
+use App\RolUserMod;
+use App\User;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
-class HomeController extends Controller
+class HVSedesController extends Controller
 {
     /**
      * Create a new controller instance.
@@ -40,9 +44,9 @@ class HomeController extends Controller
     /**
      * funcion encargada de obtener las unidades disponibles segun la sucursal recibida por get para retornarlas a la vista.
      *
-     * @return "unidades segun la sucursal seleccionada"    => $unidades, 
-     * @return "Conteo de servicios por unidades"           => $countUnidades, 
-     * @return "nombre de la unidad"                        => $data['suc'], 
+     * @return "unidades segun la sucursal seleccionada"    => $unidades,
+     * @return "Conteo de servicios por unidades"           => $countUnidades,
+     * @return "nombre de la unidad"                        => $data['suc'],
      * @return "procedimiento almacenado"                    => $servPorUnidad,
      * @return 'todos los servicios por unidades'           => $servPorUnidadAg,
      */
@@ -208,9 +212,6 @@ class HomeController extends Controller
         return response()->json(["item" => $item, "status" => "ok"]);
     }
 
-
-
-
     public function insertSedes(Request $request)
     {
         //cuenta los cdigitos que vienen incluyendo el cero
@@ -282,10 +283,19 @@ class HomeController extends Controller
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DANE', '=', 'SED.SUC_CODIGO_DANE')
             ->groupBy('SUC.SUC_DEPARTAMENTO')
             ->orderBy('CantidadSedes', 'DESC')
-            ->get();
+        ->get();
+
+        $serviciosPorSucursal = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS as sh')
+            ->selectRaw('suc.SUC_DEPARTAMENTO,COUNT(sh.SER_CODIGO_SERVICIO) as cantServ')
+            ->join('HOJADEVIDASEDES.SED_SEDE AS sede', 'sh.SED_CODIGO_HABILITACION_SEDE', '=', 'sede.SED_CODIGO_HABILITACION_SEDE')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS suc', 'suc.SUC_CODIGO_DANE', '=', 'sede.SUC_CODIGO_DANE')
+            ->groupBy('SUC.SUC_DEPARTAMENTO')
+            ->orderBy('cantServ', 'DESC')
+        ->get();
 
         return response()->json([
-            "sedesPorSucursal" =>  $sedesPorSucursal
+            "sedesPorSucursal" =>  $sedesPorSucursal,
+            "serviciosPorSucursal" =>  $serviciosPorSucursal
         ], 200);
     }
 
@@ -304,4 +314,101 @@ class HomeController extends Controller
             "sucursales" =>  $sucursales
         ], 200);
     }
+
+    public function getUserFilter(Request $request)
+    {
+        $data = $request->all();
+        $userAct     = Auth::user();
+        if ($data['item'] != null) {
+            $users = User::with('roles')->where('name', 'LIKE', '%'.$data['item'].'%')->where('email', "!=", $userAct['email'])->get();
+        }else{
+            $users = User::with('roles')->where('email', "!=", $userAct['email'])->get();
+        }
+
+        foreach ($users as $user) {
+            $user['newFecha'] = date_format($user['created_at'], "d/m/Y");
+            $user['isDirec'] = $user['is_directory'] == 1 ? 'SI' : 'NO';
+        }
+
+        return response()->json(["users" => $users], 200);
+
+    }
+
+    public function getPermisosUser(Request $request)
+    {
+        $data = $request->all();
+        $modulos = Modulos::where('desarrollo_id', $data['idDesarrollo'])->get();
+        $userPermisos = RolUserMod::where('user_id', $data['user'])->get();
+
+        return response()->json([
+            'modulos' => $modulos,
+            'permisos' => $userPermisos
+        ], 200);
+    }
+
+    public function savePermisosUser(Request $request)
+    {
+        $data = $request->all();
+        $userPermisos = RolUserMod::where('user_id', $data['user'])->delete();
+        $permisosNuevos = [];
+
+        foreach ($data['permisos'] as $perm) {
+            array_push($permisosNuevos, $perm);
+        }
+
+        foreach ($permisosNuevos as $pnew) {
+            RolUserMod::create([
+                'rol_id' => 1,
+                'user_id' => $data['user'],
+                'modulo_id' => $pnew
+            ]);
+        }
+
+        $userPermisosNew = RolUserMod::where('user_id', $data['user'])->get();
+
+        return $userPermisosNew;
+    }
+
+    public function saveEditgrupo(Request $request)
+    {
+        $data = $request->all();
+        if (isset($data['item']['ESTADO']['EST_ID'])) {
+            $grupoEdit = Grupos::where('GRU_CODIGO_GRUPO', $data['item']['GRU_CODIGO_GRUPO'])->update([
+                'GRU_NOMBRE_GRUPO_SERVICIO' => $data['item']['GRU_NOMBRE_GRUPO_SERVICIO'],
+                'ESTADO' => $data['item']['ESTADO']['EST_ID']
+            ]);
+        }else{
+            $grupoEdit = Grupos::where('GRU_CODIGO_GRUPO', $data['item']['GRU_CODIGO_GRUPO'])->update([
+                'GRU_NOMBRE_GRUPO_SERVICIO' => $data['item']['GRU_NOMBRE_GRUPO_SERVICIO']
+            ]);
+        }
+
+        $grupos = Grupos::all();
+
+        return response()->json([
+            'grupos' => $grupos,
+        ], 200);
+    }
+
+    public function saveEditServicio(Request $request)
+    {
+        $data = $request->all();
+        if (isset($data['item']['ESTADO']['EST_ID'])) {
+            $servicioEdit = Servicios::where('SER_CODIGO_SERVICIO', $data['item']['SER_CODIGO_SERVICIO'])->update([
+                'SER_NOMBRE_SERVICIO' => $data['item']['SER_NOMBRE_SERVICIO'],
+                'ESTADO' => $data['item']['ESTADO']['EST_ID']
+            ]);
+        }else{
+            $servicioEdit = Servicios::where('SER_CODIGO_SERVICIO', $data['item']['SER_CODIGO_SERVICIO'])->update([
+                'SER_NOMBRE_SERVICIO' => $data['item']['SER_NOMBRE_SERVICIO']
+            ]);
+        }
+
+        $servicios = Servicios::all();
+
+        return response()->json([
+            'servicios' => $servicios,
+        ], 200);
+    }
+
 }

@@ -125,6 +125,40 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Variables de entorno personalizadas
+    |--------------------------------------------------------------------------
+    |
+    | Estas son las variables definidas para cada desarrollo y asi poder
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'admGlobal' => env('APP_ADMINGLOBAL', 1),
+    'hvSedes' => env('APP_HVSEDES', 25),
+    'factuControl' => env('APP_FACTUCONTROL', 3),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles HVSEDES
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'superAdmin'    => env('APP_SUPERADMIN', 1),
+    'administrador' => env('APP_ADMINISTRADOR', 2),
+    'hvConsultor'   => env('APP_CONSULTOR', 3),
+    'hvSupervisor'  => env('APP_SUPERVISOR', 3),
+    'hvAdmServHab'  => env('APP_ADM_SERV_HAB', 5),
+    'hvAdmInfra'    => env('APP_ADM_INFRA', 6),
+
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Autoloaded Service Providers
     |--------------------------------------------------------------------------
     |

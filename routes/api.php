@@ -22,25 +22,29 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/login',       'LoginController@login');
 Route::post('/register',    'RegisterController@register');
 
-/* Globals Routes */
+
 Route::post('/check',                   'LoginController@check');
+
+/* Globals Routes */
 Route::middleware('auth:api')->group(function () {
+    Route::get('/checkSession',    'LoginController@check');
     Route::post('/checkAutorizacion',       'LoginController@checkAutorizacion');
     Route::post('/logout',                  'LoginController@logout');
-    Route::post('getMenuDash',              'GlobalsController@getMenuDash'); /* Carga el menu */
-    Route::get('getCountDash',              'GlobalsController@getCountDash');
-    Route::post('insertDesarrollo',         'GlobalsController@insertDesarrollo');
-    Route::get('consultaDesarrollo',        'GlobalsController@consultaDesarrollo');
-    Route::get('getAllUsers',               'GlobalsController@getAllUsers');
-    Route::post('saveEditUser',             'GlobalsController@saveEditUser');
-    Route::get('getRoles',                  'GlobalsController@getRoles');
-    Route::post('saveRol',                  'GlobalsController@saveRol');
-    Route::post('getModulosPerDesarrollo',  'GlobalsController@getModulosPerDesarrollo');
-    Route::post('insertModulo',             'GlobalsController@insertModulo');
-    Route::get('consultaModulos',           'GlobalsController@consultaModulos');
     Route::post('saveNewUser',              'LoginController@saveNewUser');
-    Route::post('insertRol',                'GlobalsController@insertRol');
-    Route::get('consultaRoles',             'GlobalsController@consultaRoles');
-    Route::post('saveSubmodulo',             'GlobalsController@saveSubmodulo');
-    Route::get('consultaRoles',             'GlobalsController@consultaRoles');    
+
+    Route::post('getMenuDash',              'AdminGlobal\GlobalsController@getMenuDash'); /* Carga el menu */
+    Route::get('getCountDash',              'AdminGlobal\GlobalsController@getCountDash');
+    Route::post('insertDesarrollo',         'AdminGlobal\GlobalsController@insertDesarrollo');
+    Route::get('consultaDesarrollo',        'AdminGlobal\GlobalsController@consultaDesarrollo');
+    Route::get('getAllUsers',               'AdminGlobal\GlobalsController@getAllUsers');
+    Route::post('saveEditUser',             'AdminGlobal\GlobalsController@saveEditUser');
+    Route::get('getRoles',                  'AdminGlobal\GlobalsController@getRoles');
+    Route::post('saveRol',                  'AdminGlobal\GlobalsController@saveRol');
+    Route::post('getModulosPerDesarrollo',  'AdminGlobal\GlobalsController@getModulosPerDesarrollo');
+    Route::post('insertModulo',             'AdminGlobal\GlobalsController@insertModulo');
+    Route::get('consultaModulos',           'AdminGlobal\GlobalsController@consultaModulos');
+    Route::post('insertRol',                'AdminGlobal\GlobalsController@insertRol');
+    Route::get('consultaRoles',             'AdminGlobal\GlobalsController@consultaRoles');
+    Route::post('saveSubmodulo',             'AdminGlobal\GlobalsController@saveSubmodulo');
+    Route::get('consultaRoles',             'AdminGlobal\GlobalsController@consultaRoles');
 });

@@ -6,7 +6,6 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
-use App\Roles;
 
 class User extends Authenticatable
 {
@@ -18,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'is_directory'
+        'nro_doc', 'name', 'last_name', 'email', 'correo', 'rol', 'cargo', 'empresa', 'password', 'is_directory', 'estado'
     ];
 
     /**
@@ -44,5 +43,6 @@ class User extends Authenticatable
         //return $this->hasMany('App\Roles', 'MASTER.rol_user_mod', 'user_id', 'rol_id')->withPivot('modulo_id');
         return $this->hasMany(RolUserMod::class);
     }
-    
+
 }
+

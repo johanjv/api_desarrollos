@@ -1,17 +1,22 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\AdminGlobal;
 
-use App\User;
-use App\Desarrollos;
-use App\Roles;
-use App\RolUser;
-use App\RolUserMod;
-use App\Modulos;
-use App\Submodulos;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\AdminGlobal\Desarrollos;
+use App\Models\Hvsedes\Grupos;
+use App\Models\Hvsedes\Servicios;
+use App\Models\Hvsedes\Sucursal\SedSede;
+use App\Models\Hvsedes\Sucursal\Sucursal;
+use App\Models\AdminGlobal\Roles;
+use App\Models\AdminGlobal\RolUser;
+use App\RolUserMod;
+use App\Models\AdminGlobal\Modulos;
+use App\Models\AdminGlobal\Submodulos;
+use App\User;
+use DB;
 
 class GlobalsController extends Controller
 {
@@ -148,33 +153,10 @@ class GlobalsController extends Controller
         $roles = Roles::all();
         return response()->json(["roles" => $roles, "status" => "ok"]);
     }
-    /* PERMISOS PARA EL SIDEBAR */
-    public function getMenuDash(Request $request)
-    {
-        $data       = $request->all();
-        $userAct    = Auth::user();
-        $user       = User::with('roles')->where('id', $userAct['id'])->first();
-        $countUser          = User::count();
-        $countDesarrollos   = Desarrollos::count();
-        $countRoles         = Roles::count();
-
-        $permisos = [];
-        foreach ($user->roles as $rol) {
-            array_push($permisos, $rol->modulo_id);
-        }
-        $modulos    = Modulos::whereIn('id', $permisos)->where('desarrollo_id', $request['desarrollo_id'])->get();
-        $modulos->load("submodulos");
-        return response()->json([
-            "modulos" => $modulos,
-            "countUser"         => $countUser,
-            "countDesarrollos"  => $countDesarrollos,
-            "countRoles"        => $countRoles
-        ]);
-    }
 
     public function saveSubmodulo(Request $request)
     {
-        
+
         $insert = Submodulos::create([
             "nomb_sub_modulo"   => $request['objSubmodulo']['nomb_sub_mod'],
             "modulo_id"         => $request['objSubmodulo']['modulo_id'],
@@ -189,17 +171,78 @@ class GlobalsController extends Controller
 
     function slugify ($string) {
         $string = utf8_encode($string);
-        $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);   
+        $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
         $string = preg_replace('/[^a-z0-9- ]/i', '', $string);
         $string = str_replace(' ', '-', $string);
         $string = trim($string, '-');
         $string = strtolower($string);
-    
+
         if (empty($string)) {
             return 'n-a';
         }
-    
+
         return $string;
     }
+
+    /* PERMISOS PARA EL SIDEBAR */
+    public function getMenuDash(Request $request)
+    {
+        $countSedes  = SedSede::count();
+        $countSuc    = Sucursal::count();
+        $countServ   = Servicios::count();
+        $countGrupos = Grupos::count();
+        $countDes    = Desarrollos::count();
+        $countUser   = User::count();
+
+        $modulos = $this->getMenuPerGrupos($request['desarrollo_id']);
+
+        return response()->json([
+            "modulos"     => $modulos,
+            'countSedes'  => $countSedes,
+            'countSuc'    => $countSuc,
+            'countServ'   => $countServ,
+            'countGrupos' => $countGrupos,
+            'countDes'    => $countDes,
+            'countUser'   => $countUser
+        ]);
+    }
+
+    /* OBTENER MENU PARA HVSEDES */
+    public function getMenuPerGrupos($idDesarrollo)
+    {
+
+        $userAct    = Auth::user();
+        $permisos   = json_decode($userAct->rol);
+
+        if ($idDesarrollo == config('app.hvSedes')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $modulos->load("submodulos");
+            }else if (in_array(config('app.hvConsultor'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '!=', '10027')->get();
+                $modulos->load("submodulos");
+            }else if (in_array(config('app.hvAdmServHab'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '21')->orWhere('id', '=', '10027')->get();
+
+                /* $modulos->load("submodulos" => function($q){
+                    return $q->where('id', '=', '2')->orWhere('id', '=', '3');
+                }); */
+
+                $loads = [
+                    'submodulos' => function ($q) {
+                        $q->where('id', '=', '2')->orWhere('id', '=', '3');
+                    }
+                ];
+
+                $modulos->load($loads);
+
+            }
+        }else{
+            $modulos = null;
+        }
+        return $modulos;
+
+    }
+
 
 }

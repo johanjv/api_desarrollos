@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Sucursal;
+namespace App\Models\Hvsedes\Sucursal;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +27,7 @@ class SedSede extends Model
 
     public function sucursal()
     {
-        return $this->hasOne('App\Models\Sucursal\Sucursal', 'SUC_CODIGO_DEPARTAMENTO', 'SED_CODIGO_DEPARTAMENTO');
+        return $this->hasOne('App\Models\Hvsedes\Sucursal\Sucursal', 'SUC_CODIGO_DEPARTAMENTO', 'SED_CODIGO_DEPARTAMENTO');
     }
 
 }

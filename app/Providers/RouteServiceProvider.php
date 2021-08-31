@@ -78,6 +78,7 @@ class RouteServiceProvider extends ServiceProvider
             ->group(function(){
                 require base_path('routes/api.php');
                 require base_path('routes/hvsedes/hvsedes.php');
+                require base_path('routes/factucontrol/factucontrol.php');
             });
     }
 }

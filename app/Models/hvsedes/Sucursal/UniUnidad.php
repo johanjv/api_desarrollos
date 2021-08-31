@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Sucursal;
+namespace App\Models\Hvsedes\Sucursal;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

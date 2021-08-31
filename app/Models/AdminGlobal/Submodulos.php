@@ -1,31 +1,26 @@
 <?php
 
-namespace App;
+namespace App\Models\AdminGlobal;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Modulos extends Model
+class Submodulos extends Model
 {
     use HasFactory;
 
-    protected  $table = "MASTER.modulos";
+    protected  $table = "MASTER.submodulos";
     public $timestamps = false;
 
     protected $fillable = [
         'id',
-        'nomb_modulo',
-        'desarrollo_id', 
+        'nomb_sub_modulo',
+        'modulo_id',
         'slug'
     ];
 
-    public function desarrollo()
+/*     public function desarrollo()
     {
         return $this->hasOne('App\Desarrollos', 'id', 'desarrollo_id');
-    }
-
-    public function submodulos()
-    {
-        return $this->hasMany('App\Submodulos', 'modulo_id' );
-    }
+    } */
 }

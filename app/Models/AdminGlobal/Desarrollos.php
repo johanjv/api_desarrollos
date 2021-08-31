@@ -1,10 +1,10 @@
 <?php
 
-namespace App;
+namespace App\Models\AdminGlobal;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use app\Modulos;
+use App\Models\AdminGlobal\Modulos;
 
 class Desarrollos extends Model
 {
@@ -13,6 +13,6 @@ class Desarrollos extends Model
     protected  $table = "MASTER.desarrollos";
 
     protected $fillable = [
-        'nomb_desarrollo', 
+        'nomb_desarrollo',
     ];
 }
