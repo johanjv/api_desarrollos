@@ -57,7 +57,6 @@ class LoginController extends Controller
                                 ], 200);
 
                             } else { //Si son incorrectas las credenciales de la tabla user
-
                                 //Actualizo los permisos en la tabla user y la contraseña ya que puede que este actualizada en el directorio activo pero no en la tabla user
                                 $rolUser = $this->rolesUser($usuario);
                                 $updatePermisos = User::with('roles')->where('email', $request->username)->update([

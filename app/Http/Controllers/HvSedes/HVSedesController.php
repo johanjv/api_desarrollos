@@ -7,12 +7,14 @@ use App\Models\AdminGlobal\Modulos;
 use Illuminate\Http\Request;
 use App\Models\HvSedes\Grupos;
 use App\Models\HvSedes\Servicios;
-use App\Models\HvSedes\ServHab\ServicioHabilitado;
 use App\Models\HvSedes\Sucursal\Estado;
 use App\Models\HvSedes\Sucursal\Sucursal;
 use App\Models\HvSedes\Sucursal\Unidad;
 use App\Models\HvSedes\Sucursal\UniUnidad;
 use App\Models\HvSedes\Sucursal\SedSede;
+use App\Models\HvSedes\ServHab\ServicioHabilitado;
+use App\Models\Hvsedes\Infraestructura\Area;
+use App\Models\Hvsedes\Infraestructura\ServInfra;
 use App\RolUserMod;
 use App\User;
 use DB;
@@ -85,8 +87,16 @@ class HVSedesController extends Controller
 
     public function loadData(Request $request)
     {
-        $data               = $request->all();
-        $sha                = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $data['nombUnidad'] . '"');
+        $data = $request->all();
+
+        $gruposLDAP = Auth::user()->rol;
+        $a = json_decode($gruposLDAP);
+        if (in_array(1, $a) || in_array(2, $a)) {
+            $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $data['nombUnidad'] . '"');
+        }else{
+            $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE_2 "' . $data['nombUnidad'] . '"');
+        }
+
         $cod_habilitacion   = SedSede::where('SED_NOMBRE_SEDE', $data['nombUnidad'])->pluck('SED_CODIGO_HABILITACION_SEDE');
         $servPorUnidad      = UniUnidad::where('SED_CODIGO_HABILITACION_SEDE', $cod_habilitacion)->get();
         $servPorUnidadAg    = DB::table('HOJADEVIDASEDES.UNI_UNIDAD')->selectRaw('TXU_CODIGO_UNIDAD, COUNT(TXU_CODIGO_UNIDAD) as sumaUni')->whereIn('SED_CODIGO_HABILITACION_SEDE', $cod_habilitacion)->groupBy('TXU_CODIGO_UNIDAD')->get();
@@ -222,7 +232,7 @@ class HVSedesController extends Controller
             $insert = SedSede::create([
                 'SED_CODIGO_HABILITACION_SEDE'  => $request["cod_hab_sede"],
                 'SED_CODIGO_HABILITACION'       => $request["cod_hab"],
-                'SED_NOMBRE_SEDE'               => $request["nomb_sede"],
+                'SED_NOMBRE_SEDE'               => strtoupper($request["nomb_sede"]),
                 'SED_CODIGO_SEDE'               => $request["cod_sede"],
                 'EST_CODIGO_ESTADO'             => "A",
                 'SUC_CODIGO_DANE'               => $request["codsucursal"]["SUC_CODIGO_DANE"],
@@ -411,4 +421,178 @@ class HVSedesController extends Controller
         ], 200);
     }
 
+    public function getGruposPorSede(Request $request)
+    {
+        $data = $request->all();
+        $grupos = ServicioHabilitado::selectRaw('GRU_CODIGO_GRUPO')->where('SED_CODIGO_HABILITACION_SEDE', $data["SED_CODIGO_HABILITACION_SEDE"])->groupBy('GRU_CODIGO_GRUPO')->pluck('GRU_CODIGO_GRUPO');
+        $grup = Grupos::whereIn("GRU_CODIGO_GRUPO", $grupos)->get();
+
+        return response()->json(["grupos" => $grup, "status" => "ok"]);
+    }
+
+    public function cambiarEstadoSH(Request $request)
+    {
+        $change = $request['EST_CODIGO_ESTADO']  == 'A' ? 'I' : 'A';
+        $shEdit = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->where('SHA_ID', $request['SHA_ID'])->update([
+            'EST_CODIGO_ESTADO' => $change
+        ]);
+
+        $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $request['NOMBRE_SEDE'] . '"');
+
+        return response()->json([
+            "servHab" => $sha
+        ]);
+
+
+    }
+
+    public function saveArea(Request $request)
+    {
+        $data = $request->all();
+
+        $area = Area::create([
+            'AXU_NOMBRE_AREA' => strtoupper($data['nomb_area'])
+        ]);
+
+        $areas = Area::all();
+
+        return response()->json([
+            'areas' => $areas,
+        ], 200);
+    }
+
+    public function getAreas(Request $request)
+    {
+        $areas = Area::all();
+
+        return response()->json([
+            'areas' => $areas,
+        ], 200);
+    }
+
+    public function saveEditArea(Request $request)
+    {
+        $data = $request->all();
+        $area = Area::where('AXU_CODIGO_AREA', $data['item']['AXU_CODIGO_AREA'])->update([
+            'AXU_NOMBRE_AREA' => $data['item']['AXU_NOMBRE_AREA']
+        ]);
+
+        $areas = Area::all();
+
+        return response()->json([
+            'areas' => $areas,
+        ], 200);
+    }
+
+    public function saveServicioInfra(Request $request)
+    {
+        $insert = ServInfra::create([
+            "SXA_NOMBRE_SERVICIO" => strtoupper($request['nomb_serv']),
+        ]);
+
+        $servicios = ServInfra::all();
+
+        return response()->json(["servicios" => $servicios], 200);
+    }
+
+    public function getServiciosInfra(Request $request)
+    {
+        $servicios = ServInfra::all();
+        return response()->json(["servicios" => $servicios], 200);
+    }
+
+    public function saveEditServicioInfra(Request $request)
+    {
+        $data = $request->all();
+
+        $serv = ServInfra::where('SXA_CODIGO_SERVICIO', $data['item']['SXA_CODIGO_SERVICIO'])->update([
+            'SXA_NOMBRE_SERVICIO' => $data['item']['SXA_NOMBRE_SERVICIO']
+        ]);
+
+        $servicios = ServInfra::all();
+
+        return response()->json(["servicios" => $servicios], 200);
+    }
+
+    public function saveUnidad(Request $request)
+    {
+        $data = $request->all();
+
+        $inserNewUnidad = DB::table("HOJADEVIDASEDES.SXA_TIPO_X_UNIDAD")->insert([
+            "TXU_CODIGO_UNIDAD" => strtoupper($data['tipo']),
+            "TXU_NOMBRE_UNIDAD" => strtoupper($data['nomb_unidad'])
+        ]);
+
+        $insertUnidad = UniUnidad::create([
+            'EST_CODIGO_ESTADO' => $data['estado'],
+            'UNI_NOMBRE_UNIDAD' => strtoupper($data['nomb_unidad']),
+            'SED_CODIGO_HABILITACION_SEDE' => $data['sede'],
+            'TXU_CODIGO_UNIDAD' => strtoupper($data['tipo'])
+        ]);
+
+        $unidades = UniUnidad::all();
+        return response()->json(["unidades" => $unidades], 200);
+
+    }
+
+    public function getTiposUnidad(Request $request)
+    {
+        $tiposUnidad = DB::table('HOJADEVIDASEDES.SXA_TIPO_X_UNIDAD')->selectRaw('TXU_CODIGO_UNIDAD, TXU_NOMBRE_UNIDAD')->get();
+        return response()->json(["tiposUnidad" => $tiposUnidad], 200);
+    }
+
+    public function getUnidadesinfra(Request $request)
+    {
+        $unidades = UniUnidad::all();
+        return response()->json(["unidades" => $unidades], 200);
+    }
+
+    public function saveEditUnidad(Request $request)
+    {
+        $data = $request->all();
+
+        $unidad = UniUnidad::where('UNI_CODIGO', $data['item']['UNI_CODIGO'])->update([
+            'UNI_NOMBRE_UNIDAD' => $data['item']['UNI_NOMBRE_UNIDAD']
+        ]);
+
+        $unidades = UniUnidad::all();
+        return response()->json(["unidades" => $unidades], 200);
+
+    }
+
+    public function saveVinculacionInfra(Request $request)
+    {
+        $data = $request->all();
+        $unidad = $data["formData"]["unidad"];
+
+        foreach ($unidad["area"] as $area) {
+            foreach ($area["servicio"] as $servicio) {
+                $insertAsocia = DB::table('HOJADEVIDASEDES.CXU_CAPACIDAD_X_UNIDAD')->insert([
+                    "SED_CODIGO_HABILITACION_SEDE" => $data["formData"]["sede"]["SED_CODIGO_HABILITACION_SEDE"], //sede
+                    "TXU_CODIGO_UNIDAD"         => $unidad["TXU_CODIGO_UNIDAD"],
+                    "AXU_CODIGO_AREA"           => $area["AXU_CODIGO_AREA"], //area
+                    "SXA_CODIGO_SERVICIO"       => $servicio["SXA_CODIGO_SERVICIO"],
+                    "CXU_CANTIDAD_AM"           => $servicio["cantidad_am"],
+                    "CXU_CANTIDAD_PM"           => $servicio["cantidad_pm"],
+                    "CXU_OCUPACION_AM"          => $servicio["ocupado_am"],
+                    "CXU_OCUPACION_PM"          => $servicio["ocupado_pm"],
+                    "CXU_DISPONIBILIDAD_AM"     => $servicio["cantidad_am"] - $servicio["ocupado_am"],
+                    "CXU_DISPONIBILIDAD_PM"     => $servicio["cantidad_pm"] - $servicio["ocupado_pm"],
+                    "EST_CODIGO_ESTADO"         => "I",
+                    "SXU_FECHA_MODIFICACION"    => now()
+                ]);
+            }
+        }
+
+        return response()->json(["unidades" => $data], 200);
+
+    }
+
+    public function getUnidadesPorSede(Request $request)
+    {
+        $data = $request->all();
+        $unidades = UniUnidad::where("SED_CODIGO_HABILITACION_SEDE", $data["sede"])->get();
+        return response()->json(["unidades" => $unidades], 200);
+
+    }
 }
