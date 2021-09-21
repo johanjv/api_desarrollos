@@ -65,6 +65,11 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
         ],
 
+        'hvsedes_uploads' => [
+            'driver' => 'local',
+            'root'   => public_path() . '/uploads/hvsedes',
+        ],
+
     ],
 
     /*

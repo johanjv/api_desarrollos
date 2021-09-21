@@ -217,20 +217,29 @@ class GlobalsController extends Controller
         if ($idDesarrollo == config('app.hvSedes')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
-                $modulos->load("submodulos");
+                $loads = [
+                    'submodulos' => function ($q) {
+                        $q->where('id', '!=', '5');
+                    }
+                ];
+                $modulos->load($loads);
             }else if (in_array(config('app.hvConsultor'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '!=', '10027')->get();
                 $modulos->load("submodulos");
             }else if (in_array(config('app.hvAdmServHab'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '21')->orWhere('id', '=', '10027')->get();
-
-                /* $modulos->load("submodulos" => function($q){
-                    return $q->where('id', '=', '2')->orWhere('id', '=', '3');
-                }); */
-
                 $loads = [
                     'submodulos' => function ($q) {
                         $q->where('id', '=', '2')->orWhere('id', '=', '3');
+                    }
+                ];
+                $modulos->load($loads);
+            }else if (in_array(config('app.hvAdmInfra'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '22')->orWhere('id', '=', '10027')->get();
+
+                $loads = [
+                    'submodulos' => function ($q) {
+                        $q->where('id', '=', '9');
                     }
                 ];
 

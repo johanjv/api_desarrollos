@@ -7,20 +7,27 @@ use App\Models\AdminGlobal\Modulos;
 use Illuminate\Http\Request;
 use App\Models\HvSedes\Grupos;
 use App\Models\HvSedes\Servicios;
-use App\Models\HvSedes\ServHab\ServicioHabilitado;
 use App\Models\HvSedes\Sucursal\Estado;
 use App\Models\HvSedes\Sucursal\Sucursal;
 use App\Models\HvSedes\Sucursal\Unidad;
 use App\Models\HvSedes\Sucursal\UniUnidad;
 use App\Models\HvSedes\Sucursal\SedSede;
+use App\Models\HvSedes\ServHab\ServicioHabilitado;
+use App\Models\Hvsedes\Infraestructura\Area;
+use App\Models\Hvsedes\Infraestructura\ServInfra;
 use App\RolUserMod;
 use App\User;
 use DB;
+use Directory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\File;
+use Symfony\Component\Console\Input\Input;
+
 
 class HVSedesController extends Controller
 {
-    /**
+     /**
      * Create a new controller instance.
      *
      * @return void
@@ -30,8 +37,8 @@ class HVSedesController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * funcion encargada de obtener todos las sucursales disponibles en bd para retornarlas a la vista.
+     /**
+     * funcion encargada de retornar todos las sucursales disponibles en bd para retornarlas a la vista.
      *
      * @return "todas las sucursales por departamento"    => $sucursales
      */
@@ -41,8 +48,8 @@ class HVSedesController extends Controller
         return response()->json(["sucursales" => $sucursales, "status" => "ok"]);
     }
 
-    /**
-     * funcion encargada de obtener las unidades disponibles segun la sucursal recibida por get para retornarlas a la vista.
+     /**
+     * funcion encargada de retornar las unidades disponibles segun la sucursal recibida por get para retornarlas a la vista.
      *
      * @return "unidades segun la sucursal seleccionada"    => $unidades,
      * @return "Conteo de servicios por unidades"           => $countUnidades,
@@ -83,30 +90,65 @@ class HVSedesController extends Controller
         ]);
     }
 
+     /**
+     * funcion encargada de retornar los servicios habilitados, los servicios por unidad, el consolidado de la sede, nombre de la sucursal
+     * nombre de la unidad, el detalle de la sede. (Todo esto es obtenido desde los SP que filtran por sucursal y sede)
+     *
+     * @return "unidades segun la sucursal seleccionada"    => $unidades,
+     * @return "Conteo de servicios por unidades"           => $countUnidades,
+     * @return "nombre de la unidad"                        => $data['suc'],
+     * @return "procedimiento almacenado"                    => $servPorUnidad,
+     * @return 'todos los servicios por unidades'           => $servPorUnidadAg,
+     */
     public function loadData(Request $request)
     {
-        $data               = $request->all();
-        $sha                = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $data['nombUnidad'] . '"');
+        $data = $request->all();
+
+        $gruposLDAP = Auth::user()->rol;
+        $a = json_decode($gruposLDAP);
+        if (in_array(1, $a) || in_array(2, $a)) {
+            $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $data['nombUnidad'] . '"');
+        }else{
+            $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE_2 "' . $data['nombUnidad'] . '"');
+        }
+
         $cod_habilitacion   = SedSede::where('SED_NOMBRE_SEDE', $data['nombUnidad'])->pluck('SED_CODIGO_HABILITACION_SEDE');
         $servPorUnidad      = UniUnidad::where('SED_CODIGO_HABILITACION_SEDE', $cod_habilitacion)->get();
         $servPorUnidadAg    = DB::table('HOJADEVIDASEDES.UNI_UNIDAD')->selectRaw('TXU_CODIGO_UNIDAD, COUNT(TXU_CODIGO_UNIDAD) as sumaUni')->whereIn('SED_CODIGO_HABILITACION_SEDE', $cod_habilitacion)->groupBy('TXU_CODIGO_UNIDAD')->get();
+        $consolidado        = DB::table('HOJADEVIDASEDES.SED_SEDE AS A')->selectRaw('A.SED_CODIGO_HABILITACION_SEDE, A.SED_NOMBRE_SEDE, C.AXU_NOMBRE_AREA, COUNT(C.AXU_CODIGO_AREA) as AREA')
+        ->join('HOJADEVIDASEDES.CXU_CAPACIDAD_X_UNIDAD AS B', "A.SED_CODIGO_HABILITACION_SEDE", "=", "B.SED_CODIGO_HABILITACION_SEDE")
+        ->where('A.SED_NOMBRE_SEDE', $data['nombUnidad'])
+        ->join('HOJADEVIDASEDES.AXU_AREA_X_UNIDAD AS C', "C.AXU_CODIGO_AREA", "=", "B.AXU_CODIGO_AREA")
+        ->groupBy("A.SED_CODIGO_HABILITACION_SEDE", "A.SED_NOMBRE_SEDE", "C.AXU_CODIGO_AREA","C.AXU_NOMBRE_AREA")
+        ->orderBy("A.SED_NOMBRE_SEDE")
+        ->get();
+        $detalleSed   = SedSede::where('SED_NOMBRE_SEDE', $data['nombUnidad'])->first();
+
 
         return response()->json([
             "servHab"           => $sha,
             'servPorUnidad'     => $servPorUnidad,
             "servPorUnidadAg"   => $servPorUnidadAg,
-            "nombSuc"        => $data['nombSuc'],
+            "consolidado"       => $consolidado,
+            "nombSuc"           => $data['nombSuc'],
             "nombUnidad"        => $data['nombUnidad'],
+            "detalleSed"         => $detalleSed,
             "status"            => "ok"
         ]);
     }
 
-    public function getMenu(Request $request)
+    /* public function getMenu(Request $request)
     {
         $menu = DB::table('Opcion')->select('*')->get();
         return response()->json(["menu" => $menu, "status" => "ok"]);
-    }
+    } */
 
+     /**
+     * funcion encargada listar la Infraestructura de una sede segun la sucursal seleccionada
+     *
+     * @return "Infraestructura por sede"    => $list
+     * @return "Consultorios en uso por sede"    => $list2
+     */
     public function getDataTable(Request $request)
     {
         $data = $request->all();
@@ -130,12 +172,22 @@ class HVSedesController extends Controller
         return response()->json(["list" => $list, "status" => "ok"]);
     }
 
+     /**
+     * funcion encargada de retornar los grupos para visualizarlos en Servicios Habilitados
+     *
+     * @return "Todos los grupos de la BD" => $grupos
+     */
     public function getGrupos(Request $request)
     {
         $grupos = Grupos::all();
         return response()->json(["grupos" => $grupos, "status" => "ok"]);
     }
 
+     /**
+     * funcion encargada de almacenar/crear los grupos para visualizarlos en Servicios Habilitados
+     *
+     * @return "Todos los grupos de la BD" => $grupos
+     */
     public function saveGrupo(Request $request)
     {
         $insert = Grupos::create([
@@ -147,12 +199,22 @@ class HVSedesController extends Controller
         return response()->json(["grupos" => $grupos, "status" => "ok"]);
     }
 
+     /**
+     * funcion encargada de retornar los Servicios para visualizarlos en Servicios Habilitados
+     *
+     * @return "Todos los Servicios de la BD" => $servicios
+     */
     public function getServicios(Request $request)
     {
         $servicios = Servicios::all();
         return response()->json(["servicios" => $servicios, "status" => "ok"]);
     }
 
+     /**
+     * funcion encargada de almacenar/crear los Servicios para visualizarlos en Servicios Habilitados
+     *
+     * @return "Todos los Servicio de la BD" => $servicios
+     */
     public function saveServicio(Request $request)
     {
         $insert = Servicios::create([
@@ -165,12 +227,23 @@ class HVSedesController extends Controller
         return response()->json(["servicios" => $servicios, "status" => "ok"]);
     }
 
+
+     /**
+     * funcion encargada de retornar las sedes
+     *
+     * @return "Todas las Sedes de la BD" => $sedes
+     */
     public function getSed(Request $request)
     {
         $sedes = SedSede::all();
         return response()->json(["sedes" => $sedes, "status" => "ok"]);
     }
 
+     /**
+     * funcion encargada de almacenar/crear la vinculacion/asociacion de los grupos y servicios
+     *
+     * @return "Todos los servicios habilitados" => $servHab
+     */
     public function saveVinculacion(Request $request)
     {
         $data = $request->all();
@@ -194,13 +267,18 @@ class HVSedesController extends Controller
         return response()->json(["servHab" => $servHab, "status" => "ok"]);
     }
 
+     /**
+     * funcion encargada de retornar los servicios habilitados
+     *
+     * @return "Todos los servicios habilitados" => $servHab
+     */
     public function getServHabs(Request $request)
     {
         $servHabs =  DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->get();
         return response()->json(["servHabs" => $servHabs, "status" => "ok"]);
     }
 
-    public function getData(Request $request)
+    /* public function getData(Request $request)
     {
         $item = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS AS SV')
             ->selectRaw('S.SED_NOMBRE_SEDE, COUNT(SV.SER_CODIGO_SERVICIO) as CantidadServ')
@@ -210,8 +288,13 @@ class HVSedesController extends Controller
             ->orderBy('CantidadServ', 'DESC')
             ->get();
         return response()->json(["item" => $item, "status" => "ok"]);
-    }
+    } */
 
+     /**
+     * funcion encargada de almacenar/crear las sedes
+     *
+     * @return "Todas las sedes de la BD" => $sedes
+     */
     public function insertSedes(Request $request)
     {
         //cuenta los cdigitos que vienen incluyendo el cero
@@ -222,7 +305,7 @@ class HVSedesController extends Controller
             $insert = SedSede::create([
                 'SED_CODIGO_HABILITACION_SEDE'  => $request["cod_hab_sede"],
                 'SED_CODIGO_HABILITACION'       => $request["cod_hab"],
-                'SED_NOMBRE_SEDE'               => $request["nomb_sede"],
+                'SED_NOMBRE_SEDE'               => strtoupper($request["nomb_sede"]),
                 'SED_CODIGO_SEDE'               => $request["cod_sede"],
                 'EST_CODIGO_ESTADO'             => "A",
                 'SUC_CODIGO_DANE'               => $request["codsucursal"]["SUC_CODIGO_DANE"],
@@ -248,6 +331,11 @@ class HVSedesController extends Controller
         return $codsucursales;
     }
 
+    /**
+     * funcion encargada de retornar las sedes
+     *
+     * @return "Todas las sedes de la BD" => $sedes
+     */
     public function consultaSedes(Request $request)
     {
         $sedes = SedSede::all();
@@ -255,12 +343,22 @@ class HVSedesController extends Controller
         return response()->json(["sedes" => $sedes, "status" => "ok"]);
     }
 
+    /**
+     * funcion encargada de retornar los estados disponibles desde la BD
+     *
+     * @return "Todas los estados de la BD" => $sedes
+     */
     public function estado(Request $request)
     {
         $estado = Estado::all();
         return response()->json(["estado" => $estado, "status" => "ok"]);
     }
 
+    /**
+     * funcion encargada de modificar/actualizar una sede en especifico
+     *
+     * @return "Todas las sedes de la BD" => $sedes
+     */
     public function editarSedes(Request $request)
     {
         $data = $request->all();
@@ -276,6 +374,12 @@ class HVSedesController extends Controller
         ], 200);
     }
 
+    /**
+     * funcion encargada de retornar las sedes por sucursal y los servicios por sucursal (Graficos)
+     *
+     * @return "Sedes por Sucursal" => $sedesPorSucursal
+     * @return "Servicios por Sucursal" => $serviciosPorSucursal
+     */
     public function getSedesPorSucursal()
     {
         $sedesPorSucursal = DB::table('HOJADEVIDASEDES.SED_SEDE AS SED')
@@ -299,9 +403,14 @@ class HVSedesController extends Controller
         ], 200);
     }
 
+
+    /**
+     * funcion encargada de retornar las sucursal con sus respectivas sedes
+     *
+     * @return "Sucursales con sedes" => $sucursales
+     */
     public function getSucursalesConSedes()
     {
-
         $sucursales =  DB::table('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC')
             ->selectRaw('SUC.SUC_DEPARTAMENTO, SUC_CODIGO_DEPARTAMENTO')
             ->join('HOJADEVIDASEDES.SED_SEDE AS SED', 'SED.SED_CODIGO_DEPARTAMENTO', '=', 'SUC.SUC_CODIGO_DEPARTAMENTO')
@@ -315,7 +424,7 @@ class HVSedesController extends Controller
         ], 200);
     }
 
-    public function getUserFilter(Request $request)
+    /* public function getUserFilter(Request $request)
     {
         $data = $request->all();
         $userAct     = Auth::user();
@@ -332,9 +441,9 @@ class HVSedesController extends Controller
 
         return response()->json(["users" => $users], 200);
 
-    }
+    } */
 
-    public function getPermisosUser(Request $request)
+    /* public function getPermisosUser(Request $request)
     {
         $data = $request->all();
         $modulos = Modulos::where('desarrollo_id', $data['idDesarrollo'])->get();
@@ -344,9 +453,9 @@ class HVSedesController extends Controller
             'modulos' => $modulos,
             'permisos' => $userPermisos
         ], 200);
-    }
+    } */
 
-    public function savePermisosUser(Request $request)
+    /* public function savePermisosUser(Request $request)
     {
         $data = $request->all();
         $userPermisos = RolUserMod::where('user_id', $data['user'])->delete();
@@ -367,8 +476,13 @@ class HVSedesController extends Controller
         $userPermisosNew = RolUserMod::where('user_id', $data['user'])->get();
 
         return $userPermisosNew;
-    }
+    } */
 
+    /**
+     * funcion encargada de almacenar la edicion de los grupos de los servicios habilitados
+     *
+     * @return "Todos los grupos de la BD" => $grupos
+     */
     public function saveEditgrupo(Request $request)
     {
         $data = $request->all();
@@ -390,6 +504,11 @@ class HVSedesController extends Controller
         ], 200);
     }
 
+    /**
+     * funcion encargada de almacenar la edicion de los servicios de los servicios habilitados
+     *
+     * @return "Todos los servicios de la BD" => $servicios
+     */
     public function saveEditServicio(Request $request)
     {
         $data = $request->all();
@@ -410,5 +529,343 @@ class HVSedesController extends Controller
             'servicios' => $servicios,
         ], 200);
     }
+
+    /**
+     * funcion encargada de retornar los grupos por sede de los servicios habilitados
+     *
+     * @return "Todos los grupos segun la sede" => $grupos
+     */
+    public function getGruposPorSede(Request $request)
+    {
+        $data = $request->all();
+        $grupos = ServicioHabilitado::selectRaw('GRU_CODIGO_GRUPO')->where('SED_CODIGO_HABILITACION_SEDE', $data["SED_CODIGO_HABILITACION_SEDE"])->groupBy('GRU_CODIGO_GRUPO')->pluck('GRU_CODIGO_GRUPO');
+        $grup = Grupos::whereIn("GRU_CODIGO_GRUPO", $grupos)->get();
+
+        return response()->json(["grupos" => $grup, "status" => "ok"]);
+    }
+
+    /**
+     * funcion encargada de modificar el estado de los servicios habilitados (Habilitar o Deshabilitar)
+     *
+     * @return "Todos los servicios habilitados segun el SP definido" => $servHab
+     */
+    public function cambiarEstadoSH(Request $request)
+    {
+        $change = $request['EST_CODIGO_ESTADO']  == 'A' ? 'I' : 'A';
+        $shEdit = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->where('SHA_ID', $request['SHA_ID'])->update([
+            'EST_CODIGO_ESTADO' => $change
+        ]);
+
+        $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $request['NOMBRE_SEDE'] . '"');
+
+        return response()->json([
+            "servHab" => $sha
+        ]);
+
+
+    }
+
+    /**
+     * funcion encargada de almacenar/crear las areas de Infraestructura
+     *
+     * @return "Todas las areas de la BD" => $areas
+     */
+    public function saveArea(Request $request)
+    {
+        $data = $request->all();
+
+        $area = Area::create([
+            'AXU_NOMBRE_AREA' => strtoupper($data['nomb_area'])
+        ]);
+
+        $areas = Area::all();
+
+        return response()->json([
+            'areas' => $areas,
+        ], 200);
+    }
+
+    /**
+     * funcion encargada de retornar las areas de Infraestructura
+     *
+     * @return "Todas las areas de la BD" => $areas
+     */
+    public function getAreas(Request $request)
+    {
+        $areas = Area::all();
+
+        return response()->json([
+            'areas' => $areas,
+        ], 200);
+    }
+
+    /**
+     * funcion encargada de almacenar la edicion de las areas de Infraestructura
+     *
+     * @return "Todas las areas de la BD" => $areas
+     */
+    public function saveEditArea(Request $request)
+    {
+        $data = $request->all();
+        $area = Area::where('AXU_CODIGO_AREA', $data['item']['AXU_CODIGO_AREA'])->update([
+            'AXU_NOMBRE_AREA' => $data['item']['AXU_NOMBRE_AREA']
+        ]);
+
+        $areas = Area::all();
+
+        return response()->json([
+            'areas' => $areas,
+        ], 200);
+    }
+
+    /**
+     * funcion encargada de almacenar los servicios de Infraestructura
+     *
+     * @return "Todos los servicios de Infraestructura de la BD" => $servicios
+     */
+    public function saveServicioInfra(Request $request)
+    {
+        $insert = ServInfra::create([
+            "SXA_NOMBRE_SERVICIO" => strtoupper($request['nomb_serv']),
+        ]);
+
+        $servicios = ServInfra::all();
+
+        return response()->json(["servicios" => $servicios], 200);
+    }
+
+    /**
+     * funcion encargada de retornar los servicios de Infraestructura
+     *
+     * @return "Todos los servicios de Infraestructura de la BD" => $servicios
+     */
+    public function getServiciosInfra(Request $request)
+    {
+        $servicios = ServInfra::all();
+        return response()->json(["servicios" => $servicios], 200);
+    }
+
+    /**
+     * funcion encargada de almacenar la edicion de los servicios de Infraestructura
+     *
+     * @return "Todos los servicios de Infraestructura de la BD" => $servicios
+     */
+    public function saveEditServicioInfra(Request $request)
+    {
+        $data = $request->all();
+
+        $serv = ServInfra::where('SXA_CODIGO_SERVICIO', $data['item']['SXA_CODIGO_SERVICIO'])->update([
+            'SXA_NOMBRE_SERVICIO' => $data['item']['SXA_NOMBRE_SERVICIO']
+        ]);
+
+        $servicios = ServInfra::all();
+
+        return response()->json(["servicios" => $servicios], 200);
+    }
+
+    /**
+     * funcion encargada de almacenar las unidades de Infraestructura
+     *
+     * @return "Todas las unidades de Infraestructura de la BD" => $servicios
+     */
+    public function saveUnidad(Request $request)
+    {
+        $data = $request->all();
+
+        $inserNewUnidad = DB::table("HOJADEVIDASEDES.SXA_TIPO_X_UNIDAD")->insert([
+            "TXU_CODIGO_UNIDAD" => strtoupper($data['tipo']),
+            "TXU_NOMBRE_UNIDAD" => strtoupper($data['nomb_unidad'])
+        ]);
+
+        $insertUnidad = UniUnidad::create([
+            'EST_CODIGO_ESTADO' => $data['estado'],
+            'UNI_NOMBRE_UNIDAD' => strtoupper($data['nomb_unidad']),
+            'SED_CODIGO_HABILITACION_SEDE' => $data['sede'],
+            'TXU_CODIGO_UNIDAD' => strtoupper($data['tipo'])
+        ]);
+
+        $unidades = UniUnidad::all();
+        return response()->json(["unidades" => $unidades], 200);
+
+    }
+
+    /**
+     * funcion encargada de retornar los tipos de unidad de Infraestructura
+     *
+     * @return "Todos los tipos de unidad de Infraestructura de la BD" => $tiposUnidad
+     */
+    public function getTiposUnidad(Request $request)
+    {
+        $tiposUnidad = DB::table('HOJADEVIDASEDES.SXA_TIPO_X_UNIDAD')->selectRaw('TXU_CODIGO_UNIDAD, TXU_NOMBRE_UNIDAD')->get();
+        return response()->json(["tiposUnidad" => $tiposUnidad], 200);
+    }
+
+    /**
+     * funcion encargada de retornar las unidades de Infraestructura
+     *
+     * @return "Todas las unidades de Infraestructura de la BD" => $unidades
+     */
+    public function getUnidadesinfra(Request $request)
+    {
+        $unidades = UniUnidad::all();
+        return response()->json(["unidades" => $unidades], 200);
+    }
+
+    /**
+     * funcion encargada de almacenar la edicion de las unidades de Infraestructura
+     *
+     * @return "Tods las unidades de Infraestructura de la BD" => $unidades
+     */
+    public function saveEditUnidad(Request $request)
+    {
+        $data = $request->all();
+
+        $unidad = UniUnidad::where('UNI_CODIGO', $data['item']['UNI_CODIGO'])->update([
+            'UNI_NOMBRE_UNIDAD' => $data['item']['UNI_NOMBRE_UNIDAD']
+        ]);
+
+        $unidades = UniUnidad::all();
+        return response()->json(["unidades" => $unidades], 200);
+
+    }
+
+    /**
+     * funcion encargada de almacenar/crear la vinculacion/asociacion de las areas, unidades y servicios de Infraestructura
+     *
+     * @return "Devuelve el resultado del Insert 1 o 0, 1: correcto 0: Incorrecto" => $unidades
+     */
+    public function saveVinculacionInfra(Request $request)
+    {
+        $data = $request->all();
+        $unidad = $data["formData"]["unidad"];
+
+        foreach ($unidad["area"] as $area) {
+            foreach ($area["servicio"] as $servicio) {
+                $insertAsocia = DB::table('HOJADEVIDASEDES.CXU_CAPACIDAD_X_UNIDAD')->insert([
+                    "SED_CODIGO_HABILITACION_SEDE" => $data["formData"]["sede"]["SED_CODIGO_HABILITACION_SEDE"], //sede
+                    "TXU_CODIGO_UNIDAD"         => $unidad["TXU_CODIGO_UNIDAD"],
+                    "AXU_CODIGO_AREA"           => $area["AXU_CODIGO_AREA"], //area
+                    "SXA_CODIGO_SERVICIO"       => $servicio["SXA_CODIGO_SERVICIO"],
+                    "CXU_CANTIDAD_AM"           => $servicio["cantidad_am"],
+                    "CXU_CANTIDAD_PM"           => $servicio["cantidad_pm"],
+                    "CXU_OCUPACION_AM"          => $servicio["ocupado_am"],
+                    "CXU_OCUPACION_PM"          => $servicio["ocupado_pm"],
+                    "CXU_DISPONIBILIDAD_AM"     => $servicio["cantidad_am"] - $servicio["ocupado_am"],
+                    "CXU_DISPONIBILIDAD_PM"     => $servicio["cantidad_pm"] - $servicio["ocupado_pm"],
+                    "EST_CODIGO_ESTADO"         => "I",
+                    "SXU_FECHA_MODIFICACION"    => now()
+                ]);
+            }
+        }
+
+        return response()->json(["unidades" => $data], 200);
+
+    }
+
+    /**
+     * funcion encargada de retornar las unidades segun la sede seleccionada de Infraestructura
+     *
+     * @return "Todas las unidades de Infraestructura de acuerdo a la sede" => $unidades
+     */
+    public function getUnidadesPorSede(Request $request)
+    {
+        $data = $request->all();
+        $unidades = UniUnidad::where("SED_CODIGO_HABILITACION_SEDE", $data["sede"])->get();
+        return response()->json(["unidades" => $unidades], 200);
+    }
+
+    /**
+     * funcion encargada de almacenar en el servidor los PDF de documentacion de Infraestructura
+     * e insertarlos como referencia en una tabla en la BD ("HOJADEVIDASEDES.PDFs")
+     *
+     * @return "Lista de PDFs de la BD segun su estado, 1 ACTIVO, 2 INACTIVO" => $pdfs
+     */
+    public function saveDocumentos(Request $request)
+    {
+        $data = $request->all();
+        $tipoDocumento = '';
+        if ($request['tipo'] == 1){ $tipoDocumento = 0; } elseif ($request['tipo'] == 2){ $tipoDocumento = 1; } elseif ($request['tipo'] == 3){ $tipoDocumento = 2; }
+
+        $directorios = Storage::disk('hvsedes_uploads')->directories();
+            foreach ($directorios as $directorio) {
+                if ($data['sucursal'] == $directorio) {
+                    return "existe el directorio";
+                }else{
+                    $carpetaSuc = Storage::disk('hvsedes_uploads')->makeDirectory($directorios[$tipoDocumento]."/".$data['sucursal']); //crear directorio SUCURSAL
+                }
+
+                $suc = Storage::disk('hvsedes_uploads')->directories($directorio);
+                foreach ($suc as $sucursal) {
+                    if ($directorio."/".$data['sucursal'] == $sucursal) {
+                        $carpetaSede = Storage::disk('hvsedes_uploads')->makeDirectory($sucursal."/".$data['sede']); //crear directorio SEDE
+                    }
+                    $rutas = Storage::disk('hvsedes_uploads')->directories($sucursal);
+                    foreach ($rutas as $dirs) {
+                        if ($dirs === $directorio."/".$data['sucursal']."/".$data["sede"]) {
+                            $dirSelect = $dirs;
+                        }
+                    }
+                }
+            }
+
+            if($request->hasFile("files")){
+                $files = $request->file("files");
+                foreach ($files as $file) {
+                    $nombre = $file->getClientOriginalName();
+                    if($file->guessExtension() == "pdf"){
+                        $rt = public_path("uploads/hvsedes/".$dirSelect."/".$nombre);
+                        $rtBD = $dirSelect."/".$nombre;
+                        $insertPDF = DB::table("HOJADEVIDASEDES.PDFs")->insert([
+                            "NOMBRE" => $file->getClientOriginalName(),
+                            "TIPO"   => $tipoDocumento,
+                            "URL"    => $rtBD,
+                            "SUCURSAL"=> $data['sucursal'],
+                            "SEDE"=> $data['sede'],
+                            "ESTADO" => 1
+                            ]);
+                        copy($file, $rt);
+                    }
+                }
+            }
+
+        $pdfs = DB::table("HOJADEVIDASEDES.PDFs")->where('SUCURSAL', $request['sucursal'])->where('SEDE', $request['sede'])->where('ESTADO', 1)->where('TIPO', $tipoDocumento)->get();
+
+        return response()->json(["filesperTipo" => $pdfs], 200);
+
+    }
+
+    /**
+     * funcion encargada de retornar los PDF disponibles de documentacion de Infraestructura
+     * de acuerdo al tipo seleccionado
+     * TIPOS:
+     * 0: CERTIFICADOS DE HABILITACION
+     * 1: LICENCIA DE EQUIPOS
+     * 2: NORMATIVA
+     *
+     * @return "Lista de PDFs de la BD segun su estado, 1 ACTIVO, 2 INACTIVO" => $pdfs
+     */
+    public function getFilesPerTipo(Request $request)
+    {
+        $tipoDocumento = '';
+        if ($request['tipo'] == 1){ $tipoDocumento = 0; } elseif ($request['tipo'] == 2){ $tipoDocumento = 1; } elseif ($request['tipo'] == 3){ $tipoDocumento = 2; }
+        $pdfs = DB::table("HOJADEVIDASEDES.PDFs")->where('TIPO', $tipoDocumento)->where('SUCURSAL', $request['sucursal'])->where('SEDE', $request['sede'])->where('ESTADO', 1)->get();
+        return response()->json(["filesperTipo" => $pdfs], 200);
+    }
+
+    /**
+     * funcion encargada de inhabilitar los PDFs de documentacion de Infraestructura
+     *
+     * @return "Lista de PDFs de la BD segun su estado, 1 ACTIVO, 2 INACTIVO" => $pdfs
+     */
+    public function deletePdf(Request $request)
+    {
+        if ($request['tipo'] == 1){ $tipoDocumento = 0; } elseif ($request['tipo'] == 2){ $tipoDocumento = 1; } elseif ($request['tipo'] == 3){ $tipoDocumento = 2; }
+        $pdf = DB::table("HOJADEVIDASEDES.PDFs")->where('ID', $request['file']['ID'])->update([
+            'ESTADO' => 0
+        ]);
+        $pdfs = DB::table("HOJADEVIDASEDES.PDFs")->where('TIPO', $tipoDocumento)->where('SUCURSAL', $request['sucursal'])->where('SEDE', $request['sede'])->where('ESTADO', 1)->get();
+        return response()->json(["filesperTipo" => $pdfs], 200);
+    }
+
 
 }

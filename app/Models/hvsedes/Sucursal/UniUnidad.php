@@ -11,6 +11,9 @@ class UniUnidad extends Model
 
     protected  $table = "HOJADEVIDASEDES.UNI_UNIDAD";
 
+    const CREATED_AT = null;
+    const UPDATED_AT = 'UNI_FECHA_MODIFICACION';
+
     protected $fillable = [
       'SED_CODIGO_HABILITACION_SEDE',
       'TXU_CODIGO_UNIDAD',

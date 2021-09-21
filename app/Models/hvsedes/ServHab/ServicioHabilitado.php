@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\ServHab;
+namespace App\Models\Hvsedes\ServHab;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +12,8 @@ class ServicioHabilitado extends Model
     protected  $table = "HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS";
 
     protected $fillable = [
+        'SHA_ID',
+        'SED_CODIGO_HABILITACION_SEDE',
         'SHA_CODIGO_HABILITACION_SEDE',
         'SHA_CODIGO_HABILITACION',
         'SHA_CODIGO_SEDE',

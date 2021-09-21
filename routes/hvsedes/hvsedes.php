@@ -6,10 +6,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | API HVSEDES Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| is assigned the "api" middleware group. Enjoy building your API!
+| Estas son las rutas para acceder al aplicativo HVSEDES
 |
 */
 
@@ -39,4 +36,22 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('savePermisosUser',     'Hvsedes\HVSedesController@savePermisosUser');
     Route::post('saveEditgrupo',        'Hvsedes\HVSedesController@saveEditgrupo');
     Route::post('saveEditServicio',     'Hvsedes\HVSedesController@saveEditServicio');
+    Route::post('getGruposPorSede',     'Hvsedes\HVSedesController@getGruposPorSede');
+    Route::post('cambiarEstadoSH',      'Hvsedes\HVSedesController@cambiarEstadoSH');
+    Route::post('saveArea',             'Hvsedes\HVSedesController@saveArea');
+    Route::get('getAreas',              'Hvsedes\HVSedesController@getAreas');
+    Route::post('saveEditArea',         'Hvsedes\HVSedesController@saveEditArea');
+    Route::post('saveServicioInfra',    'Hvsedes\HVSedesController@saveServicioInfra');
+    Route::get('getServiciosInfra',     'Hvsedes\HVSedesController@getServiciosInfra');
+    Route::post('saveEditServicioInfra','Hvsedes\HVSedesController@saveEditServicioInfra');
+    Route::post('saveUnidad',           'Hvsedes\HVSedesController@saveUnidad');
+    Route::get('getTiposUnidad',        'Hvsedes\HVSedesController@getTiposUnidad');
+    Route::get('getUnidadesinfra',      'Hvsedes\HVSedesController@getUnidadesinfra');
+    Route::post('saveEditUnidad',       'Hvsedes\HVSedesController@saveEditUnidad');
+    Route::post('saveVinculacionInfra', 'Hvsedes\HVSedesController@saveVinculacionInfra');
+    Route::get('getUnidadesPorSede',    'Hvsedes\HVSedesController@getUnidadesPorSede');
+    Route::post('saveDocumentos',       'Hvsedes\HVSedesController@saveDocumentos');
+    Route::get('getFilesPerTipo',       'Hvsedes\HVSedesController@getFilesPerTipo');
+    Route::get('getPDF',                'Hvsedes\HVSedesController@getPDF');
+    Route::post('deletePdf',             'Hvsedes\HVSedesController@deletePdf');
 });
