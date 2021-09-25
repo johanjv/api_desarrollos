@@ -15,6 +15,7 @@ use App\Models\HvSedes\Sucursal\SedSede;
 use App\Models\HvSedes\ServHab\ServicioHabilitado;
 use App\Models\Hvsedes\Infraestructura\Area;
 use App\Models\Hvsedes\Infraestructura\ServInfra;
+use App\Models\Hvsedes\TalentoHumano\Colaboradores;
 use App\RolUserMod;
 use App\User;
 use DB;
@@ -34,7 +35,7 @@ class HVSedesController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+        $this->middleware('auth:api');
     }
 
      /**
@@ -45,7 +46,7 @@ class HVSedesController extends Controller
     public function getSucursales(Request $request)
     {
         $sucursales = Sucursal::select('SUC_DEPARTAMENTO')->distinct()->get();
-        return response()->json(["sucursales" => $sucursales, "status" => "ok"]);
+        return response()->json(["sucursales" => $sucursales, "status" => "ok"], 200);
     }
 
      /**
@@ -87,7 +88,7 @@ class HVSedesController extends Controller
             'servPorUnidadAg'   => $servPorUnidadAg,
             'servCR'            => $servCR,
             "status"            => "ok",
-        ]);
+        ], 200);
     }
 
      /**
@@ -134,13 +135,13 @@ class HVSedesController extends Controller
             "nombUnidad"        => $data['nombUnidad'],
             "detalleSed"         => $detalleSed,
             "status"            => "ok"
-        ]);
+        ], 200);
     }
 
     /* public function getMenu(Request $request)
     {
         $menu = DB::table('Opcion')->select('*')->get();
-        return response()->json(["menu" => $menu, "status" => "ok"]);
+        return response()->json(["menu" => $menu, "status" => "ok"], 200);
     } */
 
      /**
@@ -163,13 +164,35 @@ class HVSedesController extends Controller
                     "list" => $list,
                     "list2" => $list2,
                     "status" => "ok"
+                ], 200);
+            }
+            if ($data['opc'] == "TalentoHumano") {
+                $sede = SedSede::where('SED_NOMBRE_SEDE', $request['nombUnidad'])->first();
+                $planta = Colaboradores::with([
+                    'eps',
+                    'cargos' => function($q){
+                        return $q->with('cargoDetalle');
+                    }
+                ])->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->get();
+
+
+            $consolidado = Colaboradores::selectRaw('CCC.COD_CARGO,CCC.NOMBRE_CARGO,COUNT(CCC.COD_CARGO) as CANT_CARGO')
+                ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
+                ->join('dbo.CARGOS AS CCC', 'CCC.COD_CARGO', '=', 'CC.COD_CARGO')
+                ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+                ->groupBy('CCC.COD_CARGO', 'CCC.NOMBRE_CARGO')
+                ->get();
+
+                return response()->json([
+                    "list" => $planta,
+                    "list2" => $consolidado,
                 ]);
             }
         } else {
             $list = null;
         }
 
-        return response()->json(["list" => $list, "status" => "ok"]);
+        return response()->json(["list" => $list, "status" => "ok"], 200);
     }
 
      /**
@@ -180,7 +203,7 @@ class HVSedesController extends Controller
     public function getGrupos(Request $request)
     {
         $grupos = Grupos::all();
-        return response()->json(["grupos" => $grupos, "status" => "ok"]);
+        return response()->json(["grupos" => $grupos, "status" => "ok"], 200);
     }
 
      /**
@@ -196,7 +219,7 @@ class HVSedesController extends Controller
 
         $grupos = Grupos::all();
 
-        return response()->json(["grupos" => $grupos, "status" => "ok"]);
+        return response()->json(["grupos" => $grupos, "status" => "ok"], 200);
     }
 
      /**
@@ -207,7 +230,7 @@ class HVSedesController extends Controller
     public function getServicios(Request $request)
     {
         $servicios = Servicios::all();
-        return response()->json(["servicios" => $servicios, "status" => "ok"]);
+        return response()->json(["servicios" => $servicios, "status" => "ok"], 200);
     }
 
      /**
@@ -224,7 +247,7 @@ class HVSedesController extends Controller
 
         $servicios = Servicios::all();
 
-        return response()->json(["servicios" => $servicios, "status" => "ok"]);
+        return response()->json(["servicios" => $servicios, "status" => "ok"], 200);
     }
 
 
@@ -236,7 +259,7 @@ class HVSedesController extends Controller
     public function getSed(Request $request)
     {
         $sedes = SedSede::all();
-        return response()->json(["sedes" => $sedes, "status" => "ok"]);
+        return response()->json(["sedes" => $sedes, "status" => "ok"], 200);
     }
 
      /**
@@ -264,7 +287,7 @@ class HVSedesController extends Controller
 
         $servHab =  DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->get();
 
-        return response()->json(["servHab" => $servHab, "status" => "ok"]);
+        return response()->json(["servHab" => $servHab, "status" => "ok"], 200);
     }
 
      /**
@@ -275,7 +298,7 @@ class HVSedesController extends Controller
     public function getServHabs(Request $request)
     {
         $servHabs =  DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->get();
-        return response()->json(["servHabs" => $servHabs, "status" => "ok"]);
+        return response()->json(["servHabs" => $servHabs, "status" => "ok"], 200);
     }
 
     /* public function getData(Request $request)
@@ -287,7 +310,7 @@ class HVSedesController extends Controller
             ->groupBy('SV.SED_CODIGO_HABILITACION_SEDE', 'S.SED_NOMBRE_SEDE')
             ->orderBy('CantidadServ', 'DESC')
             ->get();
-        return response()->json(["item" => $item, "status" => "ok"]);
+        return response()->json(["item" => $item, "status" => "ok"], 200);
     } */
 
      /**
@@ -340,7 +363,7 @@ class HVSedesController extends Controller
     {
         $sedes = SedSede::all();
         $sedes->load('sucursal');
-        return response()->json(["sedes" => $sedes, "status" => "ok"]);
+        return response()->json(["sedes" => $sedes, "status" => "ok"], 200);
     }
 
     /**
@@ -351,7 +374,7 @@ class HVSedesController extends Controller
     public function estado(Request $request)
     {
         $estado = Estado::all();
-        return response()->json(["estado" => $estado, "status" => "ok"]);
+        return response()->json(["estado" => $estado, "status" => "ok"], 200);
     }
 
     /**
@@ -541,7 +564,7 @@ class HVSedesController extends Controller
         $grupos = ServicioHabilitado::selectRaw('GRU_CODIGO_GRUPO')->where('SED_CODIGO_HABILITACION_SEDE', $data["SED_CODIGO_HABILITACION_SEDE"])->groupBy('GRU_CODIGO_GRUPO')->pluck('GRU_CODIGO_GRUPO');
         $grup = Grupos::whereIn("GRU_CODIGO_GRUPO", $grupos)->get();
 
-        return response()->json(["grupos" => $grup, "status" => "ok"]);
+        return response()->json(["grupos" => $grup, "status" => "ok"], 200);
     }
 
     /**
@@ -560,7 +583,7 @@ class HVSedesController extends Controller
 
         return response()->json([
             "servHab" => $sha
-        ]);
+        ], 200);
 
 
     }
