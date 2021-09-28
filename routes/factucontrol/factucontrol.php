@@ -15,5 +15,9 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::middleware(['auth:api'])->group(function () {
+    Route::get('/getProveedor',    'Factucontrol\FactucontrolController@getProveedor');
+    Route::post('/insertProveedor', 'Factucontrol\FactucontrolController@insertProveedor');
+    Route::post('/editProveedor', 'Factucontrol\FactucontrolController@editProveedor');
 
+    Route::post('/import', 'Factucontrol\FactucontrolController@import');
 });
