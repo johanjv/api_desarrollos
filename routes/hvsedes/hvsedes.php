@@ -53,5 +53,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('saveDocumentos',       'Hvsedes\HVSedesController@saveDocumentos');
     Route::get('getFilesPerTipo',       'Hvsedes\HVSedesController@getFilesPerTipo');
     Route::get('getPDF',                'Hvsedes\HVSedesController@getPDF');
-    Route::post('deletePdf',             'Hvsedes\HVSedesController@deletePdf');
+    Route::post('deletePdf',            'Hvsedes\HVSedesController@deletePdf');
+    Route::post('saveColaborador',      'Hvsedes\HVSedesController@saveColaborador');
+    Route::get('getCargos',             'Hvsedes\HVSedesController@getCargos');
+    Route::get('getEps',                'Hvsedes\HVSedesController@getEps');
+    Route::get('getPlantaAdm',          'Hvsedes\HVSedesController@getPlantaAdm');
 });

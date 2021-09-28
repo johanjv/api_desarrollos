@@ -10,6 +10,7 @@ class Colaboradores extends Model
     use HasFactory;
 
     protected  $table = "HOJADEVIDASEDES.COLABORADORES";
+    public $timestamps = false;
 
     protected $fillable = [
         'DOC_COLABORADOR',

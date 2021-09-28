@@ -10,6 +10,7 @@ class CargosColab extends Model
     use HasFactory;
 
     protected  $table = "HOJADEVIDASEDES.CARGOS_COLABORADOR";
+    public $timestamps = false;
 
     protected $fillable = [
         'ID',

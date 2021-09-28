@@ -15,7 +15,10 @@ use App\Models\HvSedes\Sucursal\SedSede;
 use App\Models\HvSedes\ServHab\ServicioHabilitado;
 use App\Models\Hvsedes\Infraestructura\Area;
 use App\Models\Hvsedes\Infraestructura\ServInfra;
+use App\Models\Hvsedes\TalentoHumano\Cargo;
+use App\Models\Hvsedes\TalentoHumano\CargosColab;
 use App\Models\Hvsedes\TalentoHumano\Colaboradores;
+use App\Models\Hvsedes\TalentoHumano\Eps;
 use App\RolUserMod;
 use App\User;
 use DB;
@@ -173,13 +176,14 @@ class HVSedesController extends Controller
                     'cargos' => function($q){
                         return $q->with('cargoDetalle');
                     }
-                ])->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->get();
+                ])->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->where('ESTADO', 1)->get();
 
 
             $consolidado = Colaboradores::selectRaw('CCC.COD_CARGO,CCC.NOMBRE_CARGO,COUNT(CCC.COD_CARGO) as CANT_CARGO')
                 ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
                 ->join('dbo.CARGOS AS CCC', 'CCC.COD_CARGO', '=', 'CC.COD_CARGO')
                 ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+                ->where('ESTADO', 1)
                 ->groupBy('CCC.COD_CARGO', 'CCC.NOMBRE_CARGO')
                 ->get();
 
@@ -889,6 +893,123 @@ class HVSedesController extends Controller
         $pdfs = DB::table("HOJADEVIDASEDES.PDFs")->where('TIPO', $tipoDocumento)->where('SUCURSAL', $request['sucursal'])->where('SEDE', $request['sede'])->where('ESTADO', 1)->get();
         return response()->json(["filesperTipo" => $pdfs], 200);
     }
+
+    /**
+     * funcion encargada de retornar todos los cargos disponibles en Talento Humano
+     *
+     * @return "Todos los cargos de la BD" => $cargos
+     */
+    public function getCargos(Request $request)
+    {
+        $cargos = Cargo::all();
+        return response()->json(["cargos" => $cargos], 200);
+    }
+
+    /**
+     * funcion encargada de retornar todas las EPS disponibles en Talento Humano
+     *
+     * @return "todas las EPS de la BD" => $eps
+     */
+    public function getEps(Request $request)
+    {
+        $eps = Eps::all();
+        return response()->json(["eps" => $eps], 200);
+    }
+
+    /**
+     * funcion encargada de almacenar/crear nuevos colaboradores para Talento Humano
+     *
+     * @return "todas las EPS de la BD" => $eps
+     */
+    public function saveColaborador(Request $request)
+    {
+        $data = $request->all();
+        //return $data;
+        $newCol = Colaboradores::create([
+            "DOC_COLABORADOR"       => $data["documento"],
+            "NOMB_COLABORADOR"      => strtoupper($data["nombre_completo"]),
+            "GENERO_COLABORADOR"    => $data["sexo"]["id"],
+            "COD_EPS"               => $data["eps"]["COD_EPS"],
+            "ID_UNIDAD"             => substr($data["sede"]["SED_CODIGO_HABILITACION_SEDE"], -4),
+            "ID_HAB_SEDE"           => $data["sede"]["SED_CODIGO_HABILITACION_SEDE"],
+            "ESTADO"                => 1
+        ]);
+
+        foreach ($data["cargo"] as $cargo) {
+            $cargos = CargosColab::create([
+                'DOC_COLABORADOR' => $data["documento"],
+                'COD_CARGO' => $cargo["COD_CARGO"],
+                'HORAS_CONT' => $data["horas_cont"],
+                'HORAS_LAB' => $data["horas_lab"],
+                'HORAS_SEMANA' => $data["horas_semana"]
+            ]);
+        }
+
+        $planta = Colaboradores::with([
+            'eps',
+            'cargos' => function($q){
+                return $q->with('cargoDetalle');
+            }
+        ])->where('ID_HAB_SEDE', $data["sede"]["SED_CODIGO_HABILITACION_SEDE"])->where('ESTADO', 1)->get();
+
+        $plantaActiva = Colaboradores::with([
+            'eps',
+            'cargos' => function($q){
+                return $q->with('cargoDetalle');
+            }
+        ])->where('ID_HAB_SEDE', $data["sede"]["SED_CODIGO_HABILITACION_SEDE"])->where('ESTADO', 1)->count();
+
+        $plantaInactiva = Colaboradores::with([
+            'eps',
+            'cargos' => function($q){
+                return $q->with('cargoDetalle');
+            }
+        ])->where('ID_HAB_SEDE', $data["sede"]["SED_CODIGO_HABILITACION_SEDE"])->where('ESTADO', 0)->count();
+
+        return response()->json([
+            "activa" => $plantaActiva,
+            "inactiva" => $plantaInactiva,
+            "planta" => $planta,
+        ]);
+    }
+
+    /**
+     * funcion encargada de retornar la planta segun la sede en Talento Humano
+     *
+     * @return "Planta de la BD" => $planta
+     */
+    public function getPlantaAdm(Request $request)
+    {
+        $planta = Colaboradores::with([
+            'eps',
+            'cargos' => function($q){
+                return $q->with('cargoDetalle');
+            }
+        ])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 1)->get();
+
+        $plantaActiva = Colaboradores::with([
+            'eps',
+            'cargos' => function($q){
+                return $q->with('cargoDetalle');
+            }
+        ])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 1)->count();
+
+        $plantaInactiva = Colaboradores::with([
+            'eps',
+            'cargos' => function($q){
+                return $q->with('cargoDetalle');
+            }
+        ])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 0)->count();
+
+        return response()->json([
+            "activa" => $plantaActiva,
+            "inactiva" => $plantaInactiva,
+            "planta" => $planta,
+        ]);
+
+    }
+
+
 
 
 }
