@@ -58,4 +58,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('getCargos',             'Hvsedes\HVSedesController@getCargos');
     Route::get('getEps',                'Hvsedes\HVSedesController@getEps');
     Route::get('getPlantaAdm',          'Hvsedes\HVSedesController@getPlantaAdm');
+    Route::post('importPlanta',         'Hvsedes\HVSedesController@importPlanta');
+    Route::post('saveEditColaborador',  'Hvsedes\HVSedesController@saveEditColaborador');
+    Route::post('saveRetiroColaborador','Hvsedes\HVSedesController@saveRetiroColaborador');
+    Route::get('getRetiros',            'Hvsedes\HVSedesController@getRetiros');
 });
+

@@ -26,7 +26,11 @@ class Colaboradores extends Model
     }
 
     public function cargos() {
-        return $this->hasMany('App\Models\Hvsedes\TalentoHumano\CargosColab', 'DOC_COLABORADOR', 'DOC_COLABORADOR');
+        return $this->hasMany('App\Models\Hvsedes\TalentoHumano\CargosColab', 'DOC_COLABORADOR', 'DOC_COLABORADOR')->where("ESTADO", 1);
+    }
+
+    public function cargos2() {
+        return $this->hasMany('App\Models\Hvsedes\TalentoHumano\CargosColab', 'DOC_COLABORADOR', 'DOC_COLABORADOR')->where("ESTADO", 0);
     }
 
 
