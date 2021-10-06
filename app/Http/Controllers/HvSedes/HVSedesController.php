@@ -1114,7 +1114,7 @@ class HVSedesController extends Controller
         }
         foreach ($data["item"]["cargos"] as $cargo) {
             if ($cargo["cargo_detalle"]["retirar"] == true) {
-                $retiro = CargosColab::where("COD_CARGO", $cargo["cargo_detalle"]["COD_CARGO"])->update([
+                $retiro = CargosColab::where("DOC_COLABORADOR", $data["item"]["DOC_COLABORADOR"])->where("COD_CARGO", $cargo["cargo_detalle"]["COD_CARGO"])->update([
                     "ESTADO"       => 0,
                     "FECHA_RETIRO"  => date("Y-m-d"),
                     "MOTIVO_RETIRO" => $data["motivo"]
