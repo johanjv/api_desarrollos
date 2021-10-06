@@ -187,7 +187,7 @@ class GlobalsController extends Controller
     /* PERMISOS PARA EL SIDEBAR */
     public function getMenuDash(Request $request)
     {
-        $countSedes  = 60/* SedSede::count() */;
+        $countSedes  = SedSede::count();
         $countSuc    = Sucursal::count();
         $countServ   = Servicios::count();
         $countGrupos = Grupos::count();
