@@ -175,6 +175,7 @@ class LoginController extends Controller
         $request->user()->tokens()->delete();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        return response()->json(["message" => "Sesion Finalizada"]);
 
     }
 
