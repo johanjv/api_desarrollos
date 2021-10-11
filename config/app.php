@@ -156,6 +156,19 @@ return [
     'hvAdmInfra'    => env('APP_ADM_INFRA', 6),
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles Factucontrol
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'superAdmin'    => env('APP_SUPERADMIN', 1),
+    'administrador' => env('APP_ADMINISTRADOR', 2),
+
 
     /*
     |--------------------------------------------------------------------------
