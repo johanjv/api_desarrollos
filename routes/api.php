@@ -15,8 +15,8 @@ use App\User;
 */
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
-    //return $request->user();
-    return User::with('roles')->where('id', $request->user()->id)->first();
+    return $request->user();
+    /* return User::with('roles')->where('id', $request->user()->id)->first(); */
 });
 
 Route::post('/login',       'LoginController@login');
