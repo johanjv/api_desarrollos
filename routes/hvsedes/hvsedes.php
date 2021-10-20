@@ -62,5 +62,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('saveEditColaborador',  'HvSedes\HVSedesController@saveEditColaborador');
     Route::post('saveRetiroColaborador','HvSedes\HVSedesController@saveRetiroColaborador');
     Route::get('getRetiros',            'HvSedes\HVSedesController@getRetiros');
+    Route::post('saveCargo',            'HvSedes\HVSedesController@saveCargo');
+    Route::post('saveCargoEdit',        'HvSedes\HVSedesController@saveCargoEdit');
 });
-

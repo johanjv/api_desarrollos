@@ -21,6 +21,7 @@ use App\Models\Hvsedes\TalentoHumano\Cargo;
 use App\Models\Hvsedes\TalentoHumano\CargosColab;
 use App\Models\Hvsedes\TalentoHumano\Colaboradores;
 use App\Models\Hvsedes\TalentoHumano\Eps;
+use App\Models\Hvsedes\TalentoHumano\HorariosColab;
 use App\RolUserMod;
 use App\User;
 use DB;
@@ -33,6 +34,7 @@ use Symfony\Component\Console\Input\Input;
 use PhpOffice\PhpSpreadsheet\Calculation\LookupRef\ExcelMatch;
 use PhpParser\Node\Stmt\Return_;
 use Maatwebsite\Excel\Facades\Excel;
+use Common;
 
 
 class HVSedesController extends Controller
@@ -922,6 +924,25 @@ class HVSedesController extends Controller
         return response()->json(["eps" => $eps], 200);
     }
 
+    public function processBase64Once($source, $path, $name = 'image')
+    {
+        if($source !== null) {
+            $data_pieces = explode(",", $source);
+            $encoded_image = $data_pieces[1];
+            $decoded_image = base64_decode($encoded_image);
+            $file = strtoupper(md5($name)).'_'.time();
+            file_put_contents($path.$file."_original.png", $decoded_image);
+
+            return $file;
+        }else{
+
+            return null;
+        }
+    }
+
+
+
+
     /**
      * funcion encargada de almacenar/crear nuevos colaboradores para Talento Humano
      *
@@ -930,7 +951,16 @@ class HVSedesController extends Controller
     public function saveColaborador(Request $request)
     {
         $data = $request->all();
+        $path = public_path() . '/uploads/foto_colaboradores';
         //return $data;
+
+        if (isset($data['foto'])) {
+            $defineFoto = $this->processBase64Once($data['foto'], $path . '/', $data['documento']);
+        }else{
+            $defineFoto = null;
+        }
+
+        //return $defineFoto;
         $newCol = Colaboradores::create([
             "DOC_COLABORADOR"       => $data["documento"],
             "NOMB_COLABORADOR"      => strtoupper($data["nombre_completo"]),
@@ -938,31 +968,46 @@ class HVSedesController extends Controller
             "COD_EPS"               => $data["eps"]["COD_EPS"],
             "ID_UNIDAD"             => substr($data["sede"]["SED_CODIGO_HABILITACION_SEDE"], -4),
             "ID_HAB_SEDE"           => $data["sede"]["SED_CODIGO_HABILITACION_SEDE"],
+            "FOTO"                  => $defineFoto,
             "ESTADO"                => 1
         ]);
 
+
         foreach ($data["cargo"] as $cargo) {
             $cargos = CargosColab::create([
-                'DOC_COLABORADOR' => $data["documento"],
-                'COD_CARGO' => $cargo["COD_CARGO"],
-                'HORAS_CONT' => $cargo["horas_cont"],
-                'HORAS_LAB' => $cargo["horas_lab"],
-                'HORAS_SEMANA' => $cargo["horas_semana"]
+                'DOC_COLABORADOR'   => $data["documento"],
+                'COD_CARGO'         => $cargo["COD_CARGO"],
+                'HORAS_CONT'        => $cargo["horas_cont"],
+                'HORAS_LAB'         => $cargo["horas_lab"],
+                'HORAS_SEMANA'      => $cargo["horas_semana"]
             ]);
+
+            foreach ($cargo["jornada"] as $jor) {
+
+                $horarios = HorariosColab::create([
+                    'DIA'               => $jor["dia"],
+                    'COD_CARGO'         => $cargo["COD_CARGO"],
+                    'HORA_INI'          => $jor["horaIni"],
+                    'HORA_FIN'          => $jor["horaFin"],
+                    'DOC_COLABORADOR'   => $data["documento"]
+                ]);
+
+            }
+
         }
 
-        $planta = Colaboradores::with(['eps','cargos' => function($q){ return $q->with('cargoDetalle'); }])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 1)->get();
+        $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $data["sede"]["SED_CODIGO_HABILITACION_SEDE"])->where('ESTADO', 1)->get();
 
         $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
         ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
-        ->where('HOJADEVIDASEDES.COLABORADORES.ID_HAB_SEDE', $request['sed'])
+        ->where('HOJADEVIDASEDES.COLABORADORES.ID_HAB_SEDE', $data["sede"]["SED_CODIGO_HABILITACION_SEDE"])
         ->where('CC.ESTADO', 1)
         ->first();
 
 
         $plantaInactiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Inactivos')
         ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
-        ->where('HOJADEVIDASEDES.COLABORADORES.ID_HAB_SEDE', $request['sed'])
+        ->where('HOJADEVIDASEDES.COLABORADORES.ID_HAB_SEDE', $data["sede"]["SED_CODIGO_HABILITACION_SEDE"])
         ->where('CC.ESTADO', 0)
         ->first();
         return response()->json([
@@ -979,7 +1024,7 @@ class HVSedesController extends Controller
      */
     public function getPlantaAdm(Request $request)
     {
-        $planta = Colaboradores::with(['eps','cargos' => function($q){ return $q->with('cargoDetalle'); }])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 1)->get();
+        $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 1)->get();
 
         $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
         ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
@@ -1035,7 +1080,7 @@ class HVSedesController extends Controller
             ]);
         }
 
-        $planta = Colaboradores::with(['eps','cargos' => function($q){ return $q->with('cargoDetalle'); }])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 1)->get();
+        $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $request['sed'])->where('ESTADO', 1)->get();
 
         $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
         ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
@@ -1060,14 +1105,27 @@ class HVSedesController extends Controller
     public function saveEditColaborador(Request $request)
     {
         $data = $request->all();
+        $path = public_path() . '/uploads/foto_colaboradores';
         //return $data;
+        if (isset($data['item']['FOTO'])) {
+            if (strlen($data['item']['FOTO']) > 100) {
+               $defineFoto = $this->processBase64Once($data['item']['FOTO'], $path . '/', $data['item']['DOC_COLABORADOR']);
+            }else{
+                $defineFoto = $data['item']['FOTO'];
+            }
+        }else{
+            $defineFoto = null;
+        }
+
         $colEdit = Colaboradores::where('DOC_COLABORADOR', $data['item']['DOC_COLABORADOR'])->update([
             'GENERO_COLABORADOR'    => $data['item']['sexo']['id'],
             'NOMB_COLABORADOR'      => $data['item']['NOMB_COLABORADOR'],
             'COD_EPS'               => $data['item']['eps']['COD_EPS'],
+            'FOTO'                  => $defineFoto
         ]);
 
         $deleteCargos = CargosColab::where('DOC_COLABORADOR', $data['item']['DOC_COLABORADOR'])->delete();
+
         //return $deleteCargos;
         //return $data['item']['cargos'];
         foreach ($data['item']['cargos'] as $cargo) {
@@ -1079,9 +1137,23 @@ class HVSedesController extends Controller
                 'HORAS_LAB'         => $cargo['horas_lab'],
                 'HORAS_SEMANA'      => $cargo['horas_semana']
             ]);
+
+            if (isset($cargo['jornada'])) {
+            $deleteHorarios = HorariosColab::where('DOC_COLABORADOR', $data['item']['DOC_COLABORADOR'])->where('COD_CARGO', $cargo['COD_CARGO'])->delete();
+
+                foreach ($cargo['jornada'] as $jor) {
+                    $colCargEdit = HorariosColab::create([
+                        'COD_CARGO'       => $cargo['COD_CARGO'],
+                        'DIA'             => $jor['dia'],
+                        'DOC_COLABORADOR' => $data['item']['DOC_COLABORADOR'],
+                        'HORA_INI'        => $jor['horaIni'],
+                        'HORA_FIN'        => $jor['horaFin']
+                    ]);
+                }
+            }
         }
 
-        $planta = Colaboradores::with(['eps','cargos' => function($q){ return $q->with('cargoDetalle'); }])->where('ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])->where('ESTADO', 1)->get();
+        $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])->where('ESTADO', 1)->get();
 
         $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
         ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
@@ -1121,7 +1193,7 @@ class HVSedesController extends Controller
                 ]);
             }
         }
-        $planta = Colaboradores::with(['eps','cargos' => function($q){ return $q->with('cargoDetalle'); }])->where('ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])->where('ESTADO', 1)->get();
+        $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])->where('ESTADO', 1)->get();
 
         $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
         ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
@@ -1155,5 +1227,39 @@ class HVSedesController extends Controller
             "allRetiros" => $allRetiros
         ], 200);
     }
+
+
+    public function saveCargo(Request $request)
+    {
+        $data = $request->all();
+
+        $cargoNuevo = Cargo::create([
+            'COD_CARGO'     => strtoupper($data["cod_cargo"]),
+            'NOMBRE_CARGO'  => strtoupper($data["nomb_cargo"])
+        ]);
+
+        $cargos = Cargo::all();
+
+        return response()->json([
+            "cargos" => $cargos
+        ], 200);
+    }
+
+    public function saveCargoEdit(Request $request)
+    {
+        $data = $request->all();
+
+        $cargoNuevo = Cargo::where('COD_CARGO', $data["cargoEdit"]["COD_CARGO"])->update([
+            'NOMBRE_CARGO'  => strtoupper($data["cargoEdit"]["NOMBRE_CARGO"])
+        ]);
+
+        $cargos = Cargo::all();
+
+        return response()->json([
+            "cargos" => $cargos
+        ], 200);
+    }
+
+
 
 }
