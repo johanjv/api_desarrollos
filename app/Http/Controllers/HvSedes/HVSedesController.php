@@ -940,9 +940,6 @@ class HVSedesController extends Controller
         }
     }
 
-
-
-
     /**
      * funcion encargada de almacenar/crear nuevos colaboradores para Talento Humano
      *

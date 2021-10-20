@@ -154,6 +154,7 @@ return [
     'hvSupervisor'  => env('APP_SUPERVISOR', 3),
     'hvAdmServHab'  => env('APP_ADM_SERV_HAB', 5),
     'hvAdmInfra'    => env('APP_ADM_INFRA', 6),
+    'hvAdmTH'       => env('APP_ADM_TH', 7),
 
 
 

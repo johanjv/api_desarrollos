@@ -163,6 +163,10 @@ class LoginController extends Controller
                     array_push($rolUser, 5);
                 } elseif ($value == 'CN=HVAdmInfra') {
                     array_push($rolUser, 6);
+                } elseif ($value == 'CN=HVTalentoHumo') {
+                    array_push($rolUser, 7);
+                } elseif ($value == 'CN=HVAdmTH') {
+                    array_push($rolUser, 8);
                 }
             }
         }
