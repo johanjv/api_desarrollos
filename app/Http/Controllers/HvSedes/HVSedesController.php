@@ -1257,6 +1257,44 @@ class HVSedesController extends Controller
         ], 200);
     }
 
+    public function getDataGraficos(Request $request)
+    {
+        $cantCargos     = Cargo::count();
+        $cantPlanta     = Colaboradores::count();
+        $cantActivos    = Colaboradores::where('ESTADO', 1)->count();
+        $cantInactivos  = Colaboradores::where('ESTADO', 0)->count();
+
+        $planta = array(
+            'titulo'    => 'Colaboradores Registrados',
+            'total'     => $cantPlanta
+        );
+
+        $cargos = array(
+            'titulo'    => 'Cargos Existentes',
+            'total'     => $cantCargos
+        );
+
+        $activos = array(
+            'titulo'    => 'Colaboradores Activos',
+            'total'     => $cantActivos
+        );
+
+        $inactivos = array(
+            'titulo'    => 'Colaboradores Inactivos',
+            'total'     => $cantInactivos
+        );
+
+
+
+        $dataAll = [];
+        array_push($dataAll, $planta, $cargos, $activos, $inactivos);
+
+        return response()->json([
+            'grafico'    => $dataAll,
+        ], 200);
+
+    }
+
 
 
 }
