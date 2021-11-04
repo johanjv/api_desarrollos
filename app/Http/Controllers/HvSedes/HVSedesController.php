@@ -1051,28 +1051,43 @@ class HVSedesController extends Controller
      */
     public function importPlanta(Request $request)
     {
+        set_time_limit(800);
          $request->validate([
             'import_file' => 'required|file|mimes:xls,xlsx'
         ]);
 
         $path = $request->file('import_file');
         $excelFile = Excel::toCollection(new PlantaImport, $path);
+        $docExcel = [];
+        $docInsert = [];
 
         foreach ($excelFile[0] as $row) {
-            Colaboradores::create([
-                'DOC_COLABORADOR'       => $row['documento'],
-                'NOMB_COLABORADOR'      => $row['apellidos_y_nombres'],
-                'GENERO_COLABORADOR'    => $row['genero'],
-                'COD_EPS'               => $row['codigo_eps'],
-                'ID_UNIDAD'             => $row['unidad'],
-                'ID_HAB_SEDE'           => $row['sede']
-            ]);
+            array_push($docExcel, $row['documento']);
+        }
+
+        foreach ($excelFile[0] as $row) {
+            $eps = trim(substr($row['codigo_eps'],0,6));
+            $carg = trim(substr($row['codigo_cargo'],0,6));
+
+            if (!in_array($row['documento'], $docInsert)) {
+
+                Colaboradores::create([
+                    'DOC_COLABORADOR'       => $row['documento'],
+                    'NOMB_COLABORADOR'      => $row['apellidos_y_nombres'],
+                    'GENERO_COLABORADOR'    => $row['genero'],
+                    'COD_EPS'               => $eps,
+                    'ID_UNIDAD'             => $row['unidad'],
+                    'ID_HAB_SEDE'           => $row['sede']
+                ]);
+
+                array_push($docInsert, $row['documento']);
+            }
 
             CargosColab::create([
                 'DOC_COLABORADOR'       => $row['documento'],
-                'COD_CARGO'             => $row['codigo_cargo'],
-                'HORAS_CONT'            => $row['horas_contratadas'],
-                'HORAS_LAB'             => $row['horas_laboradas'],
+                'COD_CARGO'             => $carg,
+                /* 'HORAS_CONT'            => $row['horas_contratadas'],
+                'HORAS_LAB'             => $row['horas_laboradas'], */
                 'HORAS_SEMANA'          => $row['horas_semana']
             ]);
         }
