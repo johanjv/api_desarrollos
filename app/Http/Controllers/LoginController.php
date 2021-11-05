@@ -110,7 +110,7 @@ class LoginController extends Controller
                             ], 200);
                         }
                 }
-            else //SI NO LO ENCUENTRO EN EL DIRECTORIO ACTIVO
+            else if ($usuario == "0" || $usuario == '')//SI NO LO ENCUENTRO EN EL DIRECTORIO ACTIVO
                 {
                     $user = User::with('roles')->where('email', $request->username)->first(); //Lo busco en la tabla de user
                     if ($user) //si existe en la tabla user
@@ -140,6 +140,13 @@ class LoginController extends Controller
                         ], 200);
                     }
                 }
+            else{
+                return response()->json([
+                    "estado" => "3",
+                    "user" => null,
+                    "token" => null
+                ], 200);
+            }
     }
 
     public function rolesUser($usuario)
