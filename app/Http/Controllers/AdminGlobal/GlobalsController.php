@@ -188,12 +188,13 @@ class GlobalsController extends Controller
     public function getMenuDash(Request $request)
     {
         $countSedes  = SedSede::count();
-        $countSuc    = Sucursal::count();
+        $countSucU   = DB::table('HOJADEVIDASEDES.SUC_SUCURSAL') ->Join('HOJADEVIDASEDES.SED_SEDE','HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO','=','HOJADEVIDASEDES.SED_SEDE.SED_CODIGO_DEPARTAMENTO')
+        ->select('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO')->groupBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO')->get();
         $countServ   = Servicios::count();
         $countGrupos = Grupos::count();
         $countDes    = Desarrollos::count();
         $countUser   = User::count();
-
+        $countSuc   = sizeof($countSucU);
         $modulos = $this->getMenuPerGrupos($request['desarrollo_id']);
 
         return response()->json([
