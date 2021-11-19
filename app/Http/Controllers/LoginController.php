@@ -27,19 +27,33 @@ class LoginController extends Controller
 
             $usr = $request["username"];
             $usuario = mailboxpowerloginrd($usr, $request["password"]);
-            /* return $usuario; */
+            $usuario = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
 
-            if ($usuario != "0" || $usuario != '') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
+
+            /* if (gettype($usuario) == 'array'){
+                return "trae la data";
+            }else if (gettype($usuario) == 'string') {
+                return "no trae data";
+            }else {
+                return "otro error x";
+            }
+
+            return $usuario; */
+
+            if (gettype($usuario) == 'array') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
                 {
+                    /* return "1"; */
                     /* Extraigo la informacion basica del usuario que se loguea por primera vez para insertarlo en la tabla user */
                     $detalleUser = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
 
+
                     /* Se encuentra en el directorio activo */
                     $user = User::with('roles')->where('email', $request->username)->first(); //Lo busco en la tabla de user
-                        if ($user) //si existe en el directorio activo y en la tabla user
+                    //return $request->username;
+                    if ($user) //si existe en el directorio activo y en la tabla user
+                    {
+                        if (Hash::check($request['password'], $user->password)) //valido si la contraseña y el usuario son correctos
                         {
-                            if (Hash::check($request['password'], $user->password)) //valido si la contraseña y el usuario son correctos
-                            {
                                 //Actualizo los permisos en la tabla user
                                 $rolUser = $this->rolesUser($usuario);
                                 $updatePermisos = User::with('roles')->where('email', $request->username)->update([
@@ -112,8 +126,9 @@ class LoginController extends Controller
                             ], 200);
                         }
                 }
-            else if ($usuario == "0" || $usuario == '')//SI NO LO ENCUENTRO EN EL DIRECTORIO ACTIVO
+            else if (gettype($usuario) == 'string')//SI NO LO ENCUENTRO EN EL DIRECTORIO ACTIVO
                 {
+                    /* return "2"; */
                     $user = User::with('roles')->where('email', $request->username)->first(); //Lo busco en la tabla de user
                     if ($user) //si existe en la tabla user
                     {
@@ -143,6 +158,7 @@ class LoginController extends Controller
                     }
                 }
             else{
+                /* return "3"; */
                 return response()->json([
                     "estado" => "3",
                     "user" => null,
