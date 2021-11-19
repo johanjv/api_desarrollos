@@ -21,11 +21,13 @@ class LoginController extends Controller
                 'password' => ['required']
             ]);
 
+
             require("LDAPConfig/ldap.php");
             header("Content-Type: text/html; charset=utf-8");
 
             $usr = $request["username"];
             $usuario = mailboxpowerloginrd($usr, $request["password"]);
+            /* return $usuario; */
 
             if ($usuario != "0" || $usuario != '') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
                 {

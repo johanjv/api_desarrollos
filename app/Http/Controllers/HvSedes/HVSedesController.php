@@ -332,6 +332,7 @@ class HVSedesController extends Controller
      */
     public function insertSedes(Request $request)
     {
+        //return $request->all();
         //cuenta los cdigitos que vienen incluyendo el cero
         $cod_sede = strlen($request["cod_sede"]);
         $cod_hab = strlen($request["cod_hab"]);
@@ -345,6 +346,12 @@ class HVSedesController extends Controller
                 'EST_CODIGO_ESTADO'             => "A",
                 'SUC_CODIGO_DANE'               => $request["codsucursal"]["SUC_CODIGO_DANE"],
                 'SED_CODIGO_DEPARTAMENTO'       => $request["codsucursal"]["SUC_CODIGO_DEPARTAMENTO"],
+                'SED_DIRECCION_SEDE'            => $request["direccion"],
+                'SED_HORARIO_SEDE'              => $request["horario"],
+                'SED_POBLACION_SEDE'            => $request["poblacion"],
+                'SED_MTS2_SEDE'                 => $request["mts"],
+
+
             ]);
 
             $sedes = SedSede::all();
@@ -399,7 +406,11 @@ class HVSedesController extends Controller
         $data = $request->all();
         $update = SedSede::where("SED_ID", $data["id_edit"])->update([
             'EST_CODIGO_ESTADO'  => $data["estado_edit"]["EST_CODIGO_ESTADO"],
-            'SED_NOMBRE_SEDE'    => $data["nomb_sede_edit"],
+            'SED_DIRECCION_SEDE'  => $data['item']['SED_DIRECCION_SEDE'],
+            'SED_HORARIO_SEDE'   => $data['item']['SED_HORARIO_SEDE'],
+            'SED_MTS2_SEDE'       => $data['item']['SED_MTS2_SEDE'],
+            'SED_NOMBRE_SEDE'     => $data['item']['SED_NOMBRE_SEDE'],
+            'SED_POBLACION_SEDE'  => $data['item']['SED_POBLACION_SEDE']
         ]);
 
         $update = SedSede::all();
@@ -979,7 +990,7 @@ class HVSedesController extends Controller
                 'HORAS_SEMANA'      => $cargo["horas_semana"]
             ]);
 
-            foreach ($cargo["jornada"] as $jor) {
+            foreach ($cargo["horarios"] as $jor) {
 
                 $horarios = HorariosColab::create([
                     'DIA'               => $jor["dia"],
@@ -1136,30 +1147,30 @@ class HVSedesController extends Controller
             'FOTO'                  => $defineFoto
         ]);
 
+        //return $data['item']['cargos'];
         $deleteCargos = CargosColab::where('DOC_COLABORADOR', $data['item']['DOC_COLABORADOR'])->delete();
 
         //return $deleteCargos;
-        //return $data['item']['cargos'];
         foreach ($data['item']['cargos'] as $cargo) {
             //return $cargo;
             $colCargEdit = CargosColab::create([
                 'DOC_COLABORADOR'   => $data['item']['DOC_COLABORADOR'],
                 'COD_CARGO'         => $cargo['COD_CARGO'],
-                'HORAS_CONT'        => $cargo['horas_cont'],
-                'HORAS_LAB'         => $cargo['horas_lab'],
-                'HORAS_SEMANA'      => $cargo['horas_semana']
+                'HORAS_CONT'        => $cargo['HORAS_CONT'],
+                'HORAS_LAB'         => $cargo['HORAS_LAB'],
+                'HORAS_SEMANA'      => $cargo['HORAS_SEMANA']
             ]);
 
-            if (isset($cargo['jornada'])) {
+            if (isset($cargo['horarios'])) {
             $deleteHorarios = HorariosColab::where('DOC_COLABORADOR', $data['item']['DOC_COLABORADOR'])->where('COD_CARGO', $cargo['COD_CARGO'])->delete();
 
-                foreach ($cargo['jornada'] as $jor) {
+                foreach ($cargo['horarios'] as $jor) {
                     $colCargEdit = HorariosColab::create([
                         'COD_CARGO'       => $cargo['COD_CARGO'],
-                        'DIA'             => $jor['dia'],
+                        'DIA'             => $jor['DIA'],
                         'DOC_COLABORADOR' => $data['item']['DOC_COLABORADOR'],
-                        'HORA_INI'        => $jor['horaIni'],
-                        'HORA_FIN'        => $jor['horaFin']
+                        'HORA_INI'        => $jor['HORA_INI'],
+                        'HORA_FIN'        => $jor['HORA_FIN']
                     ]);
                 }
             }
@@ -1280,7 +1291,7 @@ class HVSedesController extends Controller
         $cantInactivos  = Colaboradores::where('ESTADO', 0)->count();
 
         $planta = array(
-            'titulo'    => 'Colaboradores Registrados',
+            'titulo'    => 'Colaboradores Registrados (Activos e Inactivos)',
             'total'     => $cantPlanta
         );
 
@@ -1308,6 +1319,53 @@ class HVSedesController extends Controller
             'grafico'    => $dataAll,
         ], 200);
 
+    }
+
+    public function refreshTablasCol(Request $request){
+        $data = $request->all();
+        $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])->where('ESTADO', 1)->get();
+
+        $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
+        ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
+        ->where('HOJADEVIDASEDES.COLABORADORES.ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])
+        ->where('CC.ESTADO', 1)
+        ->first();
+
+
+        $plantaInactiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Inactivos')
+        ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
+        ->where('HOJADEVIDASEDES.COLABORADORES.ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])
+        ->where('CC.ESTADO', 0)
+        ->first();
+
+        return response()->json([
+            "activa" => $plantaActiva,
+            "inactiva" => $plantaInactiva,
+            "planta" => $planta,
+        ], 200);
+    }
+
+    /**
+     * funcion encargada de retornar los grupos excluyendo los deshbilitados para visualizarlos en Servicios Habilitados
+     *
+     * @return "Todos los grupos de la BD" => $grupos
+     */
+    public function getGruposSinDesh(Request $request)
+    {
+        $grupos = Grupos::where('ESTADO', 1)->get();
+        return response()->json(["grupos" => $grupos, "status" => "ok"], 200);
+    }
+
+
+     /**
+     * funcion encargada de retornar los Servicios excluyendo los deshbilitados para visualizarlos en Servicios Habilitados
+     *
+     * @return "Todos los Servicios de la BD" => $servicios
+     */
+    public function getServiciosSinDesh(Request $request)
+    {
+        $servicios = Servicios::where('ESTADO', 1)->get();
+        return response()->json(["servicios" => $servicios, "status" => "ok"], 200);
     }
 
 

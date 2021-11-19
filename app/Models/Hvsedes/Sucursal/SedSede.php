@@ -23,6 +23,10 @@ class SedSede extends Model
         'SUC_CODIGO_DANE',
         'SED_FECHA_MODIFICACION',
         'SED_CODIGO_DEPARTAMENTO',
+        'SED_DIRECCION_SEDE',
+        'SED_HORARIO_SEDE',
+        'SED_POBLACION_SEDE',
+        'SED_MTS2_SEDE'
     ];
 
     public function sucursal()
