@@ -187,22 +187,46 @@ class HVSedesController extends Controller
                 ])->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->where('ESTADO', 1)->get();
 
 
-            $consolidado = Colaboradores::selectRaw('CCC.COD_CARGO,CCC.NOMBRE_CARGO,COUNT(CCC.COD_CARGO) as CANT_CARGO')
-                ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
-                ->join('dbo.CARGOS AS CCC', 'CCC.COD_CARGO', '=', 'CC.COD_CARGO')
+                $consolidado = Colaboradores::selectRaw('CCC.COD_CARGO,CCC.NOMBRE_CARGO,COUNT(CCC.COD_CARGO) as CANT_CARGO')
+                    ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS CC', 'CC.DOC_COLABORADOR', '=', 'HOJADEVIDASEDES.COLABORADORES.DOC_COLABORADOR')
+                    ->join('dbo.CARGOS AS CCC', 'CCC.COD_CARGO', '=', 'CC.COD_CARGO')
+                    ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+                    ->where('HOJADEVIDASEDES.COLABORADORES.ESTADO', 1)
+                    ->groupBy('CCC.COD_CARGO', 'CCC.NOMBRE_CARGO')
+                    ->get();
+
+                    return response()->json([
+                        "list" => $planta,
+                        "list2" => $consolidado,
+                    ]);
+                }
+            }
+            if ($data['opc'] == "Dotacion") {
+                $sede = SedSede::where('SED_NOMBRE_SEDE', $request['nombUnidad'])->first();
+                $equipos = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+                ->selectRaw('NOMBRE_EQUIPO, SUM(CANTIDAD_EQUIPOS) as CANTIDAD_EQUIPOS, ESTADO')
                 ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
-                ->where('HOJADEVIDASEDES.COLABORADORES.ESTADO', 1)
-                ->groupBy('CCC.COD_CARGO', 'CCC.NOMBRE_CARGO')
+                ->where('ESTADO', 1)
+                ->groupBy('NOMBRE_EQUIPO', 'ESTADO')
                 ->get();
 
+                $equiposPerUnidad = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+                ->selectRaw('distinct UNIDAD')
+                ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+                ->where('ESTADO', 1)
+                ->get();
+                foreach ($equiposPerUnidad as $unidad) {
+                    $unidad->items = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->where('UNIDAD', $unidad->UNIDAD)->where('ESTADO', 1)->get();
+                }
+
                 return response()->json([
-                    "list" => $planta,
-                    "list2" => $consolidado,
+                    "list" => $equipos,
+                    "list2" => $equiposPerUnidad,
                 ]);
             }
-        } else {
-            $list = null;
-        }
+            else {
+                $list = null;
+            }
 
         return response()->json(["list" => $list, "status" => "ok"], 200);
     }
@@ -1367,6 +1391,130 @@ class HVSedesController extends Controller
         $servicios = Servicios::where('ESTADO', 1)->get();
         return response()->json(["servicios" => $servicios, "status" => "ok"], 200);
     }
+
+    public function getEquipos(Request $request)
+    {
+        $sede = SedSede::where('SED_CODIGO_HABILITACION_SEDE', $request['sed'])->first();
+
+
+        $equipos = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+            ->selectRaw('NOMBRE_EQUIPO, SUM(CANTIDAD_EQUIPOS) as CANTIDAD_EQUIPOS, ESTADO')
+            ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+            ->where('ESTADO', 1)
+            ->groupBy('NOMBRE_EQUIPO', 'ESTADO')
+        ->get();
+
+        $equiposPerUnidad = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+            ->selectRaw('distinct UNIDAD')
+            ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+            /* ->where('ESTADO', 1) */
+        ->get();
+
+        foreach ($equiposPerUnidad as $unidad) {
+            $unidad->items = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->where('UNIDAD', $unidad->UNIDAD)->get();
+        }
+
+        $UnidadDisp = DB::table('HOJADEVIDASEDES.UNI_UNIDAD')
+            ->selectRaw('distinct TXU_CODIGO_UNIDAD')
+            ->where('SED_CODIGO_HABILITACION_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+            ->where('EST_CODIGO_ESTADO', 'A')
+        ->get();
+
+        return response()->json([
+            "equipos" => $equipos,
+            "equiposPerUnidad" => $equiposPerUnidad,
+            "UnidadDisp" => $UnidadDisp
+        ], 200);
+    }
+
+    public function saveEquipoDot(Request $request)
+    {
+        $data = $request->all();
+
+        foreach ($data["servDet"] as $uni) {
+            $saveE = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->insert([
+                'NOMBRE_EQUIPO'     => $data['equipo'],
+                'CANTIDAD_EQUIPOS'  => $uni['cant_equipo'],
+                'ID_HAB_SEDE'       => $data['sed']['SED_CODIGO_HABILITACION_SEDE'],
+                'UNIDAD'            => $uni['TXU_CODIGO_UNIDAD'],
+                'ESTADO'            => $uni["ESTADO"] == "Activo" ? '1' : '2',
+            ]);
+        }
+
+        $sede = SedSede::where('SED_CODIGO_HABILITACION_SEDE', $data['sed']['SED_CODIGO_HABILITACION_SEDE'])->first();
+
+        $equipos = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+            ->selectRaw('NOMBRE_EQUIPO, SUM(CANTIDAD_EQUIPOS) as CANTIDAD_EQUIPOS, ESTADO')
+            ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+            ->where('ESTADO', 1)
+            ->groupBy('NOMBRE_EQUIPO', 'ESTADO')
+            ->orderBy('CANTIDAD_EQUIPOS', 'DESC')
+        ->get();
+
+        $equiposPerUnidad = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+            ->selectRaw('distinct UNIDAD')
+            ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+        ->get();
+
+        foreach ($equiposPerUnidad as $unidad) {
+            $unidad->items = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->where('UNIDAD', $unidad->UNIDAD)->get();
+        }
+
+        $UnidadDisp = DB::table('HOJADEVIDASEDES.UNI_UNIDAD')
+            ->selectRaw('distinct TXU_CODIGO_UNIDAD')
+            ->where('SED_CODIGO_HABILITACION_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+            ->where('EST_CODIGO_ESTADO', 'A')
+        ->get();
+
+        return response()->json([
+            "equipos" => $equipos,
+            "equiposPerUnidad" => $equiposPerUnidad,
+            "UnidadDisp" => $UnidadDisp
+        ], 200);
+    }
+
+    public function saveEdicionEquipo(Request $request)
+    {
+        $data = $request->all();
+
+        $itemEdit = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->where('ID', $data['item']['ID'])->update([
+            'CANTIDAD_EQUIPOS'  => $data['item']['CANTIDAD_EQUIPOS'],
+            'ESTADO'            => $data['item']["ESTADO"] == "Activo" ? '1' : '2',
+        ]);
+
+        $sede = SedSede::where('SED_CODIGO_HABILITACION_SEDE', $data['sed']['SED_CODIGO_HABILITACION_SEDE'])->first();
+
+        $equipos = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+            ->selectRaw('NOMBRE_EQUIPO, SUM(CANTIDAD_EQUIPOS) as CANTIDAD_EQUIPOS, ESTADO')
+            ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+            ->where('ESTADO', 1)
+            ->groupBy('NOMBRE_EQUIPO', 'ESTADO')
+            ->orderBy('CANTIDAD_EQUIPOS', 'DESC')
+        ->get();
+
+        $equiposPerUnidad = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+            ->selectRaw('distinct UNIDAD')
+            ->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+        ->get();
+
+        foreach ($equiposPerUnidad as $unidad) {
+            $unidad->items = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->where('ID_HAB_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)->where('UNIDAD', $unidad->UNIDAD)->get();
+        }
+
+        $UnidadDisp = DB::table('HOJADEVIDASEDES.UNI_UNIDAD')
+            ->selectRaw('distinct TXU_CODIGO_UNIDAD')
+            ->where('SED_CODIGO_HABILITACION_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
+            ->where('EST_CODIGO_ESTADO', 'A')
+        ->get();
+
+        return response()->json([
+            "equipos" => $equipos,
+            "equiposPerUnidad" => $equiposPerUnidad,
+            "UnidadDisp" => $UnidadDisp
+        ], 200);
+    }
+
+
 
 
 
