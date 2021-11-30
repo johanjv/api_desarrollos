@@ -25,5 +25,9 @@ class CargosColab extends Model
         return $this->hasOne('App\Models\Hvsedes\TalentoHumano\Cargo', 'COD_CARGO', 'COD_CARGO');
     }
 
+    public function horarios() {
+        return $this->hasMany('App\Models\Hvsedes\TalentoHumano\HorariosColab', 'DOC_COLABORADOR', 'DOC_COLABORADOR');
+    }
+
 
 }

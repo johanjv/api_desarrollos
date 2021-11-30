@@ -23,6 +23,7 @@ class Proveedores extends Model
         'active',
         'descuento',
         'pronto_pago',
+        'codigoVerificacion',
     ];
 
     /* public function sedes()

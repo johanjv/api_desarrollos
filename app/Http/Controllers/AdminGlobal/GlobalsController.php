@@ -166,10 +166,10 @@ class GlobalsController extends Controller
         $subs = Submodulos::all();
 
         return response()->json(["subs" => $subs, "status" => "ok"]);
-
     }
 
-    function slugify ($string) {
+    function slugify($string)
+    {
         $string = utf8_encode($string);
         $string = iconv('UTF-8', 'ASCII//TRANSLIT', $string);
         $string = preg_replace('/[^a-z0-9- ]/i', '', $string);
@@ -188,12 +188,13 @@ class GlobalsController extends Controller
     public function getMenuDash(Request $request)
     {
         $countSedes  = SedSede::count();
-        $countSuc    = Sucursal::count();
+        $countSucU   = DB::table('HOJADEVIDASEDES.SUC_SUCURSAL')->Join('HOJADEVIDASEDES.SED_SEDE', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'HOJADEVIDASEDES.SED_SEDE.SED_CODIGO_DEPARTAMENTO')
+            ->select('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO')->groupBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO')->get();
         $countServ   = Servicios::count();
         $countGrupos = Grupos::count();
         $countDes    = Desarrollos::count();
         $countUser   = User::count();
-
+        $countSuc   = sizeof($countSucU);
         $modulos = $this->getMenuPerGrupos($request['desarrollo_id']);
 
         return response()->json([
@@ -223,10 +224,10 @@ class GlobalsController extends Controller
                     }
                 ];
                 $modulos->load($loads);
-            }else if (in_array(config('app.hvConsultor'), $permisos)) {
+            } else if (in_array(config('app.hvConsultor'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '!=', '10027')->orderBy('orden', 'ASC')->get();
                 $modulos->load("submodulos");
-            }else if (in_array(config('app.hvAdmServHab'), $permisos)) {
+            } else if (in_array(config('app.hvAdmServHab'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '21')->orWhere('id', '=', '10027')->orderBy('orden', 'ASC')->get();
                 $loads = [
                     'submodulos' => function ($q) {
@@ -234,7 +235,7 @@ class GlobalsController extends Controller
                     }
                 ];
                 $modulos->load($loads);
-            }else if (in_array(config('app.hvAdmInfra'), $permisos)) {
+            } else if (in_array(config('app.hvAdmInfra'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '22')->orWhere('id', '=', '10027')->orderBy('orden', 'ASC')->get();
 
                 $loads = [
@@ -244,22 +245,34 @@ class GlobalsController extends Controller
                 ];
 
                 $modulos->load($loads);
+            } else if (in_array(config('app.hvAdmTH'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10030')->orWhere('id', '=', '10027')->orderBy('orden', 'ASC')->get();
 
+                $loads = [
+                    'submodulos' => function ($q) {
+                        $q->where('id', '=', '10');
+                    }
+                ];
+
+                $modulos->load($loads);
             }
-        }
-        else if($idDesarrollo == config('app.factuControl')) {
+        } else if ($idDesarrollo == config('app.factuControl')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
+            } else if (in_array(config('app.RadicadorFactu'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10031')->orWhere('id', '=', '10039')->get();
+            } else if (in_array(config('app.CoordinadorFactu'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
+            } else if (in_array(config('app.TesoreriaFactu'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
+            } else if (in_array(config('app.Atencion'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
             }
-        }
-        else{
+        } else {
             $modulos = null;
         }
         return $modulos;
-
     }
-
-
 }

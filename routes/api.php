@@ -15,15 +15,15 @@ use App\User;
 */
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
-    //return $request->user();
-    return User::with('roles')->where('id', $request->user()->id)->first();
+    return $request->user();
+    /* return User::with('roles')->where('id', $request->user()->id)->first(); */
 });
 
-Route::post('/login',       'LoginController@login');
-Route::post('/register',    'RegisterController@register');
+Route::post('/login',     'LoginController@login');
+Route::post('/register',  'RegisterController@register');
 
 
-Route::post('/check',                   'LoginController@check');
+Route::post('/check', 'LoginController@check');
 
 /* Globals Routes */
 Route::middleware('auth:api')->group(function () {

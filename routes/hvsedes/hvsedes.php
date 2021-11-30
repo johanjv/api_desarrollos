@@ -62,5 +62,10 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('saveEditColaborador',  'HvSedes\HVSedesController@saveEditColaborador');
     Route::post('saveRetiroColaborador','HvSedes\HVSedesController@saveRetiroColaborador');
     Route::get('getRetiros',            'HvSedes\HVSedesController@getRetiros');
+    Route::post('saveCargo',            'HvSedes\HVSedesController@saveCargo');
+    Route::post('saveCargoEdit',        'HvSedes\HVSedesController@saveCargoEdit');
+    Route::get('getDataGraficos',       'HvSedes\HVSedesController@getDataGraficos');
+    Route::post('refreshTablasCol',     'HvSedes\HVSedesController@refreshTablasCol');
+    Route::get('getGruposSinDesh',      'HvSedes\HVSedesController@getGruposSinDesh');
+    Route::get('getServiciosSinDesh',   'HvSedes\HVSedesController@getServiciosSinDesh');
 });
-

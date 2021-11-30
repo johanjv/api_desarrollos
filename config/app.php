@@ -135,7 +135,7 @@ return [
 
     'admGlobal' => env('APP_ADMINGLOBAL', 1),
     'hvSedes' => env('APP_HVSEDES', 25),
-    'factuControl' => env('APP_FACTUCONTROL', 3),
+    'factuControl' => env('APP_FACTUCONTROL', 10024),
 
 
     /*
@@ -154,6 +154,7 @@ return [
     'hvSupervisor'  => env('APP_SUPERVISOR', 3),
     'hvAdmServHab'  => env('APP_ADM_SERV_HAB', 5),
     'hvAdmInfra'    => env('APP_ADM_INFRA', 6),
+    'hvAdmTH'       => env('APP_ADM_TH', 7),
 
 
     /*
@@ -166,9 +167,12 @@ return [
     |
     */
 
-    'superAdmin'    => env('APP_SUPERADMIN', 1),
-    'administrador' => env('APP_ADMINISTRADOR', 2),
-
+    'superAdmin'       => env('APP_SUPERADMIN', 1),
+    'administrador'    => env('APP_ADMINISTRADOR', 2),
+    'RadicadorFactu'   => env('APP_RADICADORFACTU', 9),
+    'CoordinadorFactu' => env('APP_COORDINADORFACTU', 10),
+    'TesoreriaFactu'   => env('APP_TESORERIAFACTU', 11),
+    'Atencion'         => env('APP_ATENCION', 12),
 
     /*
     |--------------------------------------------------------------------------
