@@ -246,6 +246,9 @@ class GlobalsController extends Controller
 
                 $modulos->load($loads);
 
+            } else if (in_array(config('app.HvTalentoHumo'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10030')->orderBy('orden', 'ASC')->get();
+
             } else if (in_array(config('app.hvAdmTH'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10030')->orWhere('id', '=', '10027')->orderBy('orden', 'ASC')->get();
 
