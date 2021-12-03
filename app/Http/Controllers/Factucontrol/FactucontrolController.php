@@ -895,12 +895,30 @@ class FactucontrolController extends Controller
 
     public function getProveedoresDash()
     {
+        $datosGrafico = [];
+        $getCasosDash = DB::table('FACTUCONTROL.caso as caso')
+            ->where('caso.id_estado', 3)
+            ->count();
+        $getCasosDashTramite = DB::table('FACTUCONTROL.caso as caso')
+            ->where('caso.id_estado', 2)
+            ->count();
+        $getCasosDashAnulados = DB::table('FACTUCONTROL.caso as caso')
+            ->where('caso.id_estado', 4)
+            ->count();
+        $getCasosDashDevolucion = DB::table('FACTUCONTROL.caso as caso')
+            ->where('caso.id_estado', 5)
+            ->count();
         $getProveedoresDash = DB::table('FACTUCONTROL.proveedor')
-            ->selectRaw('count(nit) as proveedores')
-            ->get();
+            ->count();
+
+        array_push($datosGrafico, $getCasosDash);
+        array_push($datosGrafico, $getCasosDashTramite);
+        array_push($datosGrafico, $getCasosDashAnulados);
+        array_push($datosGrafico, $getCasosDashDevolucion);
+        array_push($datosGrafico, $getProveedoresDash);
 
         return response()->json([
-            "getProveedoresDash" =>  $getProveedoresDash
+            "datosGrafico" =>  $datosGrafico
         ], 200);
     }
 }
