@@ -31,7 +31,7 @@ class AuthServiceProvider extends ServiceProvider
         Passport::tokensExpireIn(now()->addMinutes(60));
         Passport::personalAccessTokensExpireIn(now()->addMinutes(60));
 
-
+        Passport::cookie('HVSEDES_FRONT');
         /* Passport::tokensExpireIn(now()->addDays(1));
         Passport::refreshTokensExpireIn(now()->addDays(6));
         Passport::personalAccessTokensExpireIn(now()->addMonths(1)); */

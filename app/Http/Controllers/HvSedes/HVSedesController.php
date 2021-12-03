@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Imports\PlantaImport;
+use App\Imports\DotacionImport;
 use App\Models\AdminGlobal\Modulos;
 use App\Models\Hvsedes\Grupos;
 use App\Models\Hvsedes\Servicios;
@@ -1086,7 +1087,7 @@ class HVSedesController extends Controller
      */
     public function importPlanta(Request $request)
     {
-        set_time_limit(800);
+        set_time_limit(8000);
          $request->validate([
             'import_file' => 'required|file|mimes:xls,xlsx'
         ]);
@@ -1513,6 +1514,69 @@ class HVSedesController extends Controller
             "UnidadDisp" => $UnidadDisp
         ], 200);
     }
+
+    public function importDot(Request $request){
+
+        set_time_limit(8000);
+        $request->validate([
+            'import_file' => 'required|file|mimes:xls,xlsx'
+        ]);
+
+        $path = $request->file('import_file');
+        $excelFile = Excel::toCollection(new DotacionImport, $path);
+
+
+        foreach ($excelFile[0] as $row) {
+            $count  = 1;
+            $nomb   = trim($row['nombre_del_equipo']);
+            $cant   = trim($row['cantidad']);
+            $sede   = trim($row['codigo_habilitacion_sede']);
+            $unid   = trim($row['id_unidad']);
+            $riesgo = trim($row['nivel_de_riesgo']);
+
+                DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->insert([
+                    'NOMBRE_EQUIPO'     => $nomb,
+                    'CANTIDAD_EQUIPOS'  => $cant,
+                    'ID_HAB_SEDE'       => $sede,
+                    'UNIDAD'            => $unid,
+                    'NIVEL_DE_RIESGO'   => $riesgo,
+                    'ESTADO'            => 1,
+                ]);
+
+              $count++;
+            }
+
+            $equipos = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+                ->selectRaw('NOMBRE_EQUIPO, SUM(CANTIDAD_EQUIPOS) as CANTIDAD_EQUIPOS, ESTADO')
+                ->where('ID_HAB_SEDE', $request['sed'])
+                ->where('ESTADO', 1)
+                ->groupBy('NOMBRE_EQUIPO', 'ESTADO')
+                ->orderBy('CANTIDAD_EQUIPOS', 'DESC')
+            ->get();
+
+            $equiposPerUnidad = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
+                ->selectRaw('distinct UNIDAD')
+                ->where('ID_HAB_SEDE', $request['sed'])
+            ->get();
+
+            foreach ($equiposPerUnidad as $unidad) {
+                $unidad->items = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->where('ID_HAB_SEDE', $request['sed'])->where('UNIDAD', $unidad->UNIDAD)->get();
+            }
+
+            $UnidadDisp = DB::table('HOJADEVIDASEDES.UNI_UNIDAD')
+                ->selectRaw('distinct TXU_CODIGO_UNIDAD')
+                ->where('SED_CODIGO_HABILITACION_SEDE', $request['sed'])
+                ->where('EST_CODIGO_ESTADO', 'A')
+            ->get();
+
+            return response()->json([
+                "cantidadRegistrada"    => $count,
+                "equipos"               => $equipos,
+                "equiposPerUnidad"      => $equiposPerUnidad,
+                "UnidadDisp"            => $UnidadDisp
+            ], 200);
+        }
+
 
 
 
