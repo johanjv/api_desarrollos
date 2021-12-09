@@ -136,6 +136,7 @@ return [
     'admGlobal' => env('APP_ADMINGLOBAL', 1),
     'hvSedes' => env('APP_HVSEDES', 25),
     'factuControl' => env('APP_FACTUCONTROL', 10024),
+    'citologias' => env('APP_CITOLOGIAS', 10025),
 
 
     /*

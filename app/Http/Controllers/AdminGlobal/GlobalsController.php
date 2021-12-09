@@ -274,6 +274,14 @@ class GlobalsController extends Controller
             } else if (in_array(config('app.Atencion'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
             }
+
+
+        } else if ($idDesarrollo == config('app.citologias')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $loads = ['submodulos'];
+                $modulos->load($loads);
+            }
         } else {
             $modulos = null;
         }

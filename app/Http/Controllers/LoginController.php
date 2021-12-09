@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\AdminGlobal\Modulos;
 use App\Models\AdminGlobal\Submodulos;
 use App\User;
+use DB;
 
 class LoginController extends Controller
 {
@@ -261,5 +262,11 @@ class LoginController extends Controller
         }
 
         return response()->json(["users" => $users], 200);
+    }
+
+    public function getSedesLogin(Request $request)
+    {
+        $sedes = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', 1001)->get();
+        return response()->json(["sedes" => $sedes], 200);
     }
 }

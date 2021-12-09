@@ -22,12 +22,16 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 Route::post('/login',     'LoginController@login');
 Route::post('/register',  'RegisterController@register');
 
+/* Citologias get unidades para el login */
+Route::get('getSedesLogin',  'LoginController@getSedesLogin');
+
+
 
 Route::post('/check', 'LoginController@check');
 
 /* Globals Routes */
 Route::middleware('auth:api')->group(function () {
-    Route::get('/checkSession',    'LoginController@check');
+    Route::get('/checkSession',             'LoginController@check');
     Route::post('/checkAutorizacion',       'LoginController@checkAutorizacion');
     Route::post('/logout',                  'LoginController@logout');
     Route::post('saveNewUser',              'LoginController@saveNewUser');
@@ -47,4 +51,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('consultaRoles',             'AdminGlobal\GlobalsController@consultaRoles');
     Route::post('saveSubmodulo',             'AdminGlobal\GlobalsController@saveSubmodulo');
     Route::get('consultaRoles',             'AdminGlobal\GlobalsController@consultaRoles');
+
+    /* API AFILIADOS */
+    Route::get('getAfiliado',               'Api_Afiliados_Interna\Api_Afiliados_InternaController@getAfiliado');
 });
