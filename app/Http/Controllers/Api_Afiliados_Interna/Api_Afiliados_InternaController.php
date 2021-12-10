@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api_Afiliados_Interna;
 
+
 use App\Http\Controllers\Controller;
-use App\Models\Api_Afiliados_Interna\afiliados;
+use App\Models\Api_Afiliados_Interna\Afiliados;
 use Illuminate\Http\Request;
 use DB;
 
