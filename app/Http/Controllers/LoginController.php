@@ -190,7 +190,8 @@ class LoginController extends Controller
                 } elseif ($value == 'CN=HVAdmTH') {
                     array_push($rolUser, 8);
                 }
-                /* ROLES DE FACTUCONTROL */ elseif ($value == 'CN=RadicadorFactu') {
+                /* ROLES DE FACTUCONTROL */
+                elseif ($value == 'CN=RadicadorFactu') {
                     array_push($rolUser, 9);
                 } elseif ($value == 'CN=CoordinadorFactu') {
                     array_push($rolUser, 10);
@@ -198,6 +199,11 @@ class LoginController extends Controller
                     array_push($rolUser, 11);
                 } elseif ($value == 'CN=Atencion') {
                     array_push($rolUser, 12);
+                }
+
+                /* ROLES DE CITOLOGÍAS */
+                elseif ($value == 'CN=ProfCitologias') {
+                    array_push($rolUser, 13);
                 }
             }
         }

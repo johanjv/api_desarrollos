@@ -281,6 +281,10 @@ class GlobalsController extends Controller
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
+            }else if (in_array(config('app.ProfCitologias'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $loads = ['submodulos'];
+                $modulos->load($loads);
             }
         } else {
             $modulos = null;

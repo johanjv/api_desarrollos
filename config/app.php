@@ -176,6 +176,24 @@ return [
     'TesoreriaFactu'   => env('APP_TESORERIAFACTU', 11),
     'Atencion'         => env('APP_ATENCION', 12),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles Citologías
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+
+    'ProfCitologias' => env('APP_PROF_CITOLOGIAS', 13),
+
+
+
+
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
