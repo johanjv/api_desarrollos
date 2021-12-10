@@ -68,9 +68,9 @@ class CitologiasController extends Controller
         Citologia::where('ID', $request['item']['id'])->update([
             'NRO_DOC'           => $request['item']['nro_doc'],
             'NAP'               => $request['item']['nap'],
-            'NOMBRES'           => $request['item']['nombres'],
-            'PRIMER_APELLIDO'   => $request['item']['primer_apellido'],
-            'SEGUNDO_APELLIDO'  => $request['item']['segundo_apellido'],
+            'NOMBRES'           => strtoupper($request['item']['nombres']),
+            'PRIMER_APELLIDO'   => strtoupper($request['item']['primer_apellido']),
+            'SEGUNDO_APELLIDO'  => strtoupper($request['item']['segundo_apellido']),
             'EDAD'              => $request['item']['edad'],
             'ESQUEMA'           => $request['item']['esquema']
         ]);
