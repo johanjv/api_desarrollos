@@ -272,7 +272,7 @@ class LoginController extends Controller
 
     public function getSedesLogin(Request $request)
     {
-        $sedes = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', 1001)->get();
+        $sedes = DB::table('UNIDADES_ESTANDAR')->whereIn('ID_UNIDAD', [505, 1001, 31585, 32300, 31586, 1354, 2040, 32531 , 31622, 31623, 1027 , 1032, 5133, 1128 , 1026])->get();
         return response()->json(["sedes" => $sedes], 200);
     }
 }

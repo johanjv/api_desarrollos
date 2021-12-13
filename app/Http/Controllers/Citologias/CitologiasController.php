@@ -14,9 +14,9 @@ class CitologiasController extends Controller
     {
 
         $prof = Auth()->user()->nro_doc;
-        $citologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->get();
+        $citologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->where('SEDE', $request['item']['sede'])->get();
 
-        $CountCitologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->count();
+        $CountCitologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->where('SEDE', $request['item']['sede'])->count();
         $CountHistoricoCito = Citologia::where('NRO_DOC_PROF', $prof)->count();
 
 
@@ -31,12 +31,12 @@ class CitologiasController extends Controller
     {
 
         $prof = Auth()->user()->nro_doc;
-        //return $request->all();
 
         Citologia::create([
             'NRO_DOC'           => $request['item']['nro_doc'],
             'NAP'               => $request['item']['nap'],
-            'NOMBRES'           => strtoupper($request['item']['nombres']),
+            'PRIMER_NOMBRE'     => strtoupper($request['item']['primer_nombre']),
+            'SEGUNDO_NOMBRE'    => strtoupper($request['item']['segundo_nombre']),
             'PRIMER_APELLIDO'   => strtoupper($request['item']['primer_apellido']),
             'SEGUNDO_APELLIDO'  => strtoupper($request['item']['segundo_apellido']),
             'EDAD'              => $request['item']['edad'],
@@ -47,9 +47,9 @@ class CitologiasController extends Controller
         ]);
 
 
-        $citologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->get();
+        $citologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->where('SEDE', $request['item']['sede'])->get();
 
-        $CountCitologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->count();
+        $CountCitologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->where('SEDE', $request['item']['sede'])->count();
         $CountHistoricoCito = Citologia::where('NRO_DOC_PROF', $prof)->count();
 
 
@@ -68,7 +68,8 @@ class CitologiasController extends Controller
         Citologia::where('ID', $request['item']['id'])->update([
             'NRO_DOC'           => $request['item']['nro_doc'],
             'NAP'               => $request['item']['nap'],
-            'NOMBRES'           => strtoupper($request['item']['nombres']),
+            'PRIMER_NOMBRE'     => strtoupper($request['item']['primer_nombre']),
+            'SEGUNDO_NOMBRE'    => strtoupper($request['item']['segundo_nombre']),
             'PRIMER_APELLIDO'   => strtoupper($request['item']['primer_apellido']),
             'SEGUNDO_APELLIDO'  => strtoupper($request['item']['segundo_apellido']),
             'EDAD'              => $request['item']['edad'],
@@ -76,9 +77,9 @@ class CitologiasController extends Controller
         ]);
 
 
-        $citologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->get();
+        $citologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->where('SEDE', $request['item']['sede'])->get();
 
-        $CountCitologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->count();
+        $CountCitologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->where('SEDE', $request['item']['sede'])->count();
         $CountHistoricoCito = Citologia::where('NRO_DOC_PROF', $prof)->count();
 
 
