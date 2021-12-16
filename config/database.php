@@ -103,6 +103,19 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
         ],
+
+        'sqlsrv_3' => [
+            'driver' => 'sqlsrv',
+            'url' => env('DATABASE_URL'),
+            'host' => env('DB_HOST_3', 'localhost'),
+            'port' => env('DB_PORT_3', '1433'),
+            'database' => env('DB_DATABASE_3', 'forge'),
+            'username' => env('DB_USERNAME_3', 'forge'),
+            'password' => env('DB_PASSWORD_3', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+        ],
     ],
 
     /*

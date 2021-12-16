@@ -16,17 +16,10 @@ use App\User;
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
-    /* return User::with('roles')->where('id', $request->user()->id)->first(); */
 });
 
 Route::post('/login',     'LoginController@login');
 Route::post('/register',  'RegisterController@register');
-
-/* Citologias get unidades para el login */
-Route::get('getSedesLogin',  'LoginController@getSedesLogin');
-
-
-
 Route::post('/check', 'LoginController@check');
 
 /* Globals Routes */
@@ -55,3 +48,10 @@ Route::middleware('auth:api')->group(function () {
     /* API AFILIADOS */
     Route::get('getAfiliado',               'Api_Afiliados_Interna\Api_Afiliados_InternaController@getAfiliado');
 });
+
+
+/* Citologias get unidades para el login */
+Route::get('getSedesLogin',  'LoginController@getSedesLogin');
+
+/* Certificados Escolares generar PDF */
+Route::post('generarPdf',  'CertificadosEscolares\CertificadosEscolaresController@generarPdf');
