@@ -15,9 +15,25 @@ return [
     |
     */
 
-    'paths' => ['api/*'],
+    'paths' => [
+        "https://certificadoescolar.virreysolisips.com.co:1463/api/*",
+        "https://citologias.virreysolisips.com.co:1462/api/*",
+        "https://factucontrol.virreysolisips.com.co:1461/api/*",
+        "https://hvsedes.virreysolisips.com.co:1460/api/*",
 
-    'allowed_methods' => ['*'],
+        /* LOCALES */
+
+        "http://localhost:8000/api/*",
+        "http://10.10.6.220:8000/api/*",
+        "http://10.10.6.228:8000/api/*",
+
+        /* 'api/*' */
+    ],
+
+    'allowed_methods' => [
+        'GET',
+        'POST'
+    ],
 
     'allowed_origins' => ['*'],
 
