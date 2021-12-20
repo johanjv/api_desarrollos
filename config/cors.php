@@ -16,10 +16,7 @@ return [
     */
 
     'paths' => [
-        /* "https://certificadoescolar.virreysolisips.com.co:1463/api/*",
-        "https://citologias.virreysolisips.com.co:1462/api/*",
-        "https://factucontrol.virreysolisips.com.co:1461/api/*",
-        "https://hvsedes.virreysolisips.com.co:1460/api/*", */
+        /* EN RED Y LA NUVE */
         'https://apidesarrollos.virreysolisips.com.co:1801/api/*',
 
         /* LOCALES */
