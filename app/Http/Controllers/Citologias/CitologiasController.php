@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Citologias;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bitacora\Bitacora;
 use App\Models\Citologias\Citologia;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -53,6 +54,9 @@ class CitologiasController extends Controller
         $CountHistoricoCito = Citologia::where('NRO_DOC_PROF', $prof)->count();
 
 
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request['item']["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'CREAR - NUEVA CITOLOGIA PARA EL DOCUMENTO ' . $request['item']['nro_doc'],'FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+
         return response()->json([
             "citologiasHoy"         => $citologiasHoy,
             "CountCitologiasHoy"    => $CountCitologiasHoy,
@@ -82,6 +86,8 @@ class CitologiasController extends Controller
         $CountCitologiasHoy = Citologia::where('NRO_DOC_PROF', $prof)->whereDate('FECHA_ATENCION', Carbon::today())->where('SEDE', $request['item']['sede'])->count();
         $CountHistoricoCito = Citologia::where('NRO_DOC_PROF', $prof)->count();
 
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request['item']["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'EDITAR - CITOLOGIA CON ID ' . $request['item']['id'],'FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
 
         return response()->json([
             "citologiasHoy"         => $citologiasHoy,
