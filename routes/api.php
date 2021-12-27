@@ -47,6 +47,9 @@ Route::middleware('auth:api')->group(function () {
 
     /* API AFILIADOS */
     Route::get('getAfiliado',               'Api_Afiliados_Interna\Api_Afiliados_InternaController@getAfiliado');
+
+    /* GET BITACORA */
+    Route::get('getHistorial',               'Bitacora\BitacoraController@getHistorial');
 });
 
 

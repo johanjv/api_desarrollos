@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AdminGlobal\Modulos;
 use App\Models\AdminGlobal\Submodulos;
+use App\Models\Bitacora\Bitacora;
 use App\User;
 use DB;
 
@@ -29,17 +30,6 @@ class LoginController extends Controller
         $usr = $request["username"];
         $usuario = mailboxpowerloginrd($usr, $request["password"]);
         $usuario = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
-
-
-        /* if (gettype($usuario) == 'array'){
-                return "trae la data";
-            }else if (gettype($usuario) == 'string') {
-                return "no trae data";
-            }else {
-                return "otro error x";
-            }
-
-            return $usuario; */
 
         if (gettype($usuario) == 'array') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
         {
@@ -67,6 +57,9 @@ class LoginController extends Controller
                     $tokenUser = $user->createToken('Auth Token')->accessToken;
                     $request->session()->regenerate();
 
+                    /* REGISTRO EN BITACORA */
+                    Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
+
                     return response()->json([
                         "estado" => "1",
                         "user" => $user,
@@ -85,6 +78,8 @@ class LoginController extends Controller
                     //Asigno el token al usuario
                     $tokenUser = $user->createToken('Auth Token')->accessToken;
                     $request->session()->regenerate();
+                    /* REGISTRO EN BITACORA */
+                    Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
 
                     return response()->json([
                         "estado" => "1",
@@ -117,6 +112,8 @@ class LoginController extends Controller
                 //Asigno el token al usuario
                 $tokenUser = $user->createToken('Auth Token')->accessToken;
                 $request->session()->regenerate();
+                /* REGISTRO EN BITACORA */
+                Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
 
                 return response()->json([
                     "estado" => "4",
@@ -134,6 +131,8 @@ class LoginController extends Controller
                 {
                     $tokenUser = $user->createToken('Auth Token')->accessToken;
                     $request->session()->regenerate();
+                    /* REGISTRO EN BITACORA */
+                    Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
 
                     return response()->json([
                         "estado" => "1",
@@ -215,6 +214,11 @@ class LoginController extends Controller
         $request->user()->tokens()->delete();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'LOGOUT SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+
+
         return response()->json(["message" => "Sesion Finalizada"]);
     }
 
@@ -272,7 +276,7 @@ class LoginController extends Controller
 
     public function getSedesLogin(Request $request)
     {
-        $sedes = DB::table('UNIDADES_ESTANDAR')->whereIn('ID_UNIDAD', [505, 1001, 31585, 32300, 31586, 1354, 2040, 32531 , 31622, 31623, 1027 , 1032, 5133, 1128 , 1026])->get();
+        $sedes = DB::table('UNIDADES_ESTANDAR')->whereIn('ID_UNIDAD', [505, 1001, 31585, 32300, 31586, 1354, 2040, 32531 , 31622, 1027 , 1032, 5133, 1128 , 1026])->get();
         return response()->json(["sedes" => $sedes], 200);
     }
 }
