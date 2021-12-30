@@ -50,6 +50,7 @@ Route::middleware('auth:api')->group(function () {
 
     /* GET BITACORA */
     Route::get('getHistorial',               'Bitacora\BitacoraController@getHistorial');
+    Route::get('getConteoBit',               'Bitacora\BitacoraController@getConteoBit');
 });
 
 

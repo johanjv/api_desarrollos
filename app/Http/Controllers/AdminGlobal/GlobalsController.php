@@ -217,7 +217,7 @@ class GlobalsController extends Controller
 
         if ($idDesarrollo == config('app.hvSedes')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
-                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->orderBy('orden', 'ASC')->get();
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->orWhere('id', '10049')->orderBy('orden', 'ASC')->get();
                 $loads = [
                     'submodulos' => function ($q) {
                         $q->where('id', '!=', '5');
@@ -248,18 +248,21 @@ class GlobalsController extends Controller
 
             } else if (in_array(config('app.HvTalentoHumo'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10030')->orderBy('orden', 'ASC')->get();
+
             } else if (in_array(config('app.hvAdmTH'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10030')->orWhere('id', '=', '10027')->orderBy('orden', 'ASC')->get();
+
                 $loads = [
                     'submodulos' => function ($q) {
                         $q->where('id', '=', '10');
                     }
                 ];
+
                 $modulos->load($loads);
             }
         } else if ($idDesarrollo == config('app.factuControl')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
-                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->orWhere('id', '10049')->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
             } else if (in_array(config('app.RadicadorFactu'), $permisos)) {
@@ -271,8 +274,10 @@ class GlobalsController extends Controller
             } else if (in_array(config('app.Atencion'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
             }else if (in_array(config('app.AdminFac'), $permisos)) {
-                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10029')->orWhere('id', '=', '10046')->get();
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10029')->orWhere('id', '=', '10046')->orWhere('id', '10049')->get();
             }
+
+
         } else if ($idDesarrollo == config('app.citologias')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
