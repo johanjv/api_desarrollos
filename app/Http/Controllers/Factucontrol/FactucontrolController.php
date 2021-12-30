@@ -252,7 +252,7 @@ class FactucontrolController extends Controller
 
             if ($request["fechaRadicado"] <= $fecha) {
                 $files[0] = $request->file("files");
-                $radicado = DB::table("FACTUCONTROL.caso")->InsertGetId([
+                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->InsertGetId([
                     'id_tema_user'          => $request["reportar"],
                     'descripcion_tema'      => $request["notas"],
                     'fecha_creacion'        => $fechaActual,
@@ -312,7 +312,7 @@ class FactucontrolController extends Controller
 
             if ($request["fechaRadicado"] <= $fecha) {
                 $files = $request->file("files");
-                $radicado = DB::table("FACTUCONTROL.caso")->InsertGetId([
+                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->InsertGetId([
                     'id_tema_user'          => $request["reportar"],
                     'descripcion_tema'      => $request["notas"],
                     'fecha_creacion'        => $fechaActual,
@@ -513,7 +513,7 @@ class FactucontrolController extends Controller
         $fechaActual = date('Y-m-d H:i:s');
 
         foreach ($data["casos"] as $value) {
-            $insertupdate = DB::table("FACTUCONTROL.historial_caso")->insert([
+            $insertupdate = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
                 'id_caso'          => $value["id_caso"],
                 'fecha_movimiento' => $fechaActual,
                 'observaciones'    => $observaciones,
@@ -651,7 +651,7 @@ class FactucontrolController extends Controller
         $documento = Auth::user()->nro_doc;
         $fechaActual = date('Y-m-d H:i:s');
 
-        $insertCaso = DB::table("FACTUCONTROL.historial_caso")->insert([
+        $insertCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
             'id_caso'          => $idCaso,
             'fecha_movimiento' => $fechaActual,
             'observaciones'    => $observaciones,
@@ -771,7 +771,7 @@ class FactucontrolController extends Controller
                 array_push($ultimoMovimiento, $ultimoMovimientoCasos);
                 array_push($ultimoMovimientoOld, $ultimoMovimientoCasosOdl);
 
-                $insertupdate = DB::table("FACTUCONTROL.historial_caso")->insert([
+                $insertupdate = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
                     'id_caso'          => $value["id_caso"],
                     'fecha_movimiento' => $fechaActual,
                     'observaciones'    => $obserCasosEnProceso,
@@ -815,7 +815,7 @@ class FactucontrolController extends Controller
             ], 200);
         } else if ($data["casosEnProceso"][0]["prioridad"] == 1) {
             foreach ($data["casosEnProceso"] as $value) {
-                $insertupdate = DB::table("FACTUCONTROL.historial_caso")->insert([
+                $insertupdate = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
                     'id_caso'          => $value["id_caso"],
                     'fecha_movimiento' => $fechaActual,
                     'observaciones'    => $obserCasosEnProceso,
@@ -844,7 +844,7 @@ class FactucontrolController extends Controller
             ], 200);
         } else {
             foreach ($data["casosEnProceso"] as $value) {
-                $insertupdate = DB::table("FACTUCONTROL.historial_caso")->insert([
+                $insertupdate = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
                     'id_caso'          => $value["id_caso"],
                     'fecha_movimiento' => $fechaActual,
                     'observaciones'    => $obserCasosEnProceso,
@@ -887,7 +887,7 @@ class FactucontrolController extends Controller
                             $misArchivosASQL = $uno->getClientOriginalName();
                         }
                         copy($uno, $rt);
-                        $adjuntoPorCaso = DB::table("FACTUCONTROL.attachment")->insert([
+                        $adjuntoPorCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
                             'file_name'    => $uno->getClientOriginalName(),
                             'encrypt_name' => $uno->getClientOriginalName(),
                             'id_caso'      => $request["idCaso"],
@@ -940,7 +940,7 @@ class FactucontrolController extends Controller
         $documento = Auth::user()->nro_doc;
         $fechaActual = date('Y-m-d H:i:s');
 
-        $insertCaso = DB::table("FACTUCONTROL.historial_caso")->insert([
+        $insertCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
             'id_caso'          => $idCaso,
             'fecha_movimiento' => $fechaActual,
             'observaciones'    => $observaciones,
