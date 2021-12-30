@@ -42,4 +42,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/gethistorialTime',       'Factucontrol\FactucontrolController@gethistorialTime');
     Route::get('/getcasosMasivos',        'Factucontrol\FactucontrolController@getcasosMasivos');
     Route::get('/getProveedoresDash',     'Factucontrol\FactucontrolController@getProveedoresDash');
+    Route::get('/getConcDevo',            'Factucontrol\FactucontrolController@getConcDevo');
+    Route::get('/getConcPago',            'Factucontrol\FactucontrolController@getConcPago');
+    Route::get('/getOtros',               'Factucontrol\FactucontrolController@getOtros');
 });
