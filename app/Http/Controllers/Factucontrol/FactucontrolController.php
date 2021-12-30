@@ -39,7 +39,7 @@ class FactucontrolController extends Controller
 
     public function insertProveedor(Request $request)
     {
-        $nit = DB::table('FACTUCONTROL.proveedor')->where('nit', $request["nit"])->count();
+        $nit = DB::connection('sqlsrv')->table('FACTUCONTROL.proveedor')->where('nit', $request["nit"])->count();
 
         if ($nit == 0) {
             $insert = Proveedores::create([
@@ -170,7 +170,7 @@ class FactucontrolController extends Controller
 
     public function getTemas(Request $request)
     {
-        $Temas = DB::table('FACTUCONTROL.temas')
+        $Temas = DB::connection('sqlsrv')->table('FACTUCONTROL.temas')
             ->orderBy('descripcion_temar', 'ASC')
             ->get();
         return response()->json(["temas" => $Temas, "status" => "ok"]);
@@ -178,7 +178,7 @@ class FactucontrolController extends Controller
 
     public function getCategorias(Request $request)
     {
-        $categorias = DB::table('FACTUCONTROL.categoria')
+        $categorias = DB::connection('sqlsrv')->table('FACTUCONTROL.categoria')
             ->where('estado', 1)
             ->orderBy('Descripcion', 'ASC')
             ->get();
@@ -187,7 +187,7 @@ class FactucontrolController extends Controller
 
     public function temasRol(Request $request)
     {
-        $temasRol_users = DB::table('FACTUCONTROL.users as users')->where('users.active', 1)->where('temas_user.id_tema', $request["id_tema"])
+        $temasRol_users = DB::connection('sqlsrv')->table('FACTUCONTROL.users as users')->where('users.active', 1)->where('temas_user.id_tema', $request["id_tema"])
             ->selectRaw('cargo.id_cargo,
 			    users.id_user,
 			    cargo.nombre_cargo,
@@ -205,7 +205,7 @@ class FactucontrolController extends Controller
 
     public function proveedores(Request $request)
     {
-        $proveedores = DB::table('FACTUCONTROL.proveedor')
+        $proveedores = DB::connection('sqlsrv')->table('FACTUCONTROL.proveedor')
             ->orderBy('razon_social', 'ASC')
             ->get();
         return response()->json(["proveedores" => $proveedores, "status" => "ok"]);
@@ -213,9 +213,9 @@ class FactucontrolController extends Controller
 
     public function sucursales(Request $request)
     {
-        /* $sucursales = DB::table('FACTUCONTROL.sucursal')->get();
+        /* $sucursales = DB::connection('sqlsrv')->table('FACTUCONTROL.sucursal')->get();
         return response()->json(["sucursales" => $sucursales, "status" => "ok"]); */
-        $sucursales = DB::table('HOJADEVIDASEDES.SED_SEDE AS SED')
+        $sucursales = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.SED_SEDE AS SED')
             ->selectRaw('SUC.SUC_DEPARTAMENTO, COUNT(SED.SED_NOMBRE_SEDE) as CantidadSedes, SUC.SUC_CODIGO_DEPARTAMENTO')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DANE', '=', 'SED.SUC_CODIGO_DANE')
             ->groupBy('SUC.SUC_DEPARTAMENTO', 'SUC.SUC_CODIGO_DEPARTAMENTO')
@@ -409,7 +409,7 @@ class FactucontrolController extends Controller
     {
         $documento = Auth::user()->nro_doc;
 
-        $casosRegistradoOld = DB::table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)
+        $casosRegistradoOld = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -436,7 +436,7 @@ class FactucontrolController extends Controller
             ->orderBy('dias_restantes', 'ASC')
             ->get();
 
-        $casosRegistradoNew = DB::table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)
+        $casosRegistradoNew = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -491,7 +491,7 @@ class FactucontrolController extends Controller
 
     public function conceptos(Request $request)
     {
-        $conceptos = DB::table('FACTUCONTROL.conceptos')
+        $conceptos = DB::connection('sqlsrv')->table('FACTUCONTROL.conceptos')
             ->orderBy('nameConceptos', 'ASC')
             ->get();
         return response()->json(["conceptos" => $conceptos, "status" => "ok"]);
@@ -499,7 +499,7 @@ class FactucontrolController extends Controller
 
     public function tipodoc(Request $request)
     {
-        $tipodoc = DB::table('FACTUCONTROL.tipoDoc')
+        $tipodoc = DB::connection('sqlsrv')->table('FACTUCONTROL.tipoDoc')
             ->orderBy('nameTipoDoc', 'ASC')
             ->get();
         return response()->json(["tipodoc" => $tipodoc, "status" => "ok"]);
@@ -522,7 +522,7 @@ class FactucontrolController extends Controller
                 'fecha_pasa_caso'  => $fechaActual,
                 'primerMovimiento' => 1,
             ]); //
-            $insertupdate = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
+            $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
                 'id_estado'     => 2,
             ]);
         }
@@ -536,7 +536,7 @@ class FactucontrolController extends Controller
     {
         $documento = Auth::user()->nro_doc;
 
-        $casosRegistradoOldPro = DB::table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('users.documento', $documento)
+        $casosRegistradoOldPro = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('users.documento', $documento)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -563,7 +563,7 @@ class FactucontrolController extends Controller
         $casosRegistradoOldProCount = $casosRegistradoOldPro->count();
 
 
-        $casosRegistradoNewPro = DB::table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)
+        $casosRegistradoNewPro = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -620,25 +620,25 @@ class FactucontrolController extends Controller
 
     public function getEstado(Request $request)
     {
-        $Estado = DB::table('FACTUCONTROL.estado')->get();
+        $Estado = DB::connection('sqlsrv')->table('FACTUCONTROL.estado')->get();
         return response()->json(["estados" => $Estado, "status" => "ok"]);
     }
 
     public function getConcDevo(Request $request)
     {
-        $ConcDevo = DB::table('FACTUCONTROL.conceptosDevo')->get();
+        $ConcDevo = DB::connection('sqlsrv')->table('FACTUCONTROL.conceptosDevo')->get();
         return response()->json(["ConcDevo" => $ConcDevo, "status" => "ok"]);
     }
 
     public function getConcPago(Request $request)
     {
-        $ConcPago = DB::table('FACTUCONTROL.conceptosPago')->get();
+        $ConcPago = DB::connection('sqlsrv')->table('FACTUCONTROL.conceptosPago')->get();
         return response()->json(["ConcPago" => $ConcPago, "status" => "ok"]);
     }
 
     public function getOtros(Request $request)
     {
-        $Otros = DB::table('FACTUCONTROL.anulado')->get();
+        $Otros = DB::connection('sqlsrv')->table('FACTUCONTROL.anulado')->get();
         return response()->json(["Otros" => $Otros, "status" => "ok"]);
     }
 
@@ -660,7 +660,7 @@ class FactucontrolController extends Controller
             'fecha_pasa_caso'  => $fechaActual,
             'primerMovimiento' => 1,
         ]); ///
-        $insertCaso = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $idCaso)->update([
+        $insertCaso = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $idCaso)->update([
             'id_estado'     => $idEstado,
         ]);
 
@@ -672,7 +672,7 @@ class FactucontrolController extends Controller
     public function gethistorial(Request $request)
     {
         $dataHistorial = [];
-        $casosHistorialOld = DB::table('FACTUCONTROL.historial_caso AS historial_caso')
+        $casosHistorialOld = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
             caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
 
@@ -689,7 +689,7 @@ class FactucontrolController extends Controller
             ->where('caso.id_caso', $request["idCaso"])
             ->orderBy('id_hcaso', 'ASC')
             ->get();
-        $casosHistorialNew = DB::table('FACTUCONTROL.historial_caso AS historial_caso')
+        $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
                 caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra, historial_caso.fecha_pasa_caso, historial_caso.primerMovimiento
                 , historial_caso.devolucion, historial_caso.docDevo, historial_caso.nomDevo,
@@ -753,14 +753,14 @@ class FactucontrolController extends Controller
         if ($data["casosEnProceso"][0]["prioridad"] == 0) {
             foreach ($data["casosEnProceso"] as $value) {
 
-                $ultimoMovimientoCasos = DB::table('FACTUCONTROL.historial_caso')
+                $ultimoMovimientoCasos = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso')
                     ->selectRaw('id_hcaso, id_caso, fecha_movimiento, fecha_asignacion')
                     ->where('id_caso', $value["id_caso"])
                     ->where('id_user', $documento)
                     ->orderBy('fecha_asignacion', 'DESC')
                     ->first();
 
-                $ultimoMovimientoCasosOdl = DB::table('FACTUCONTROL.historial_caso')
+                $ultimoMovimientoCasosOdl = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso')
                     ->selectRaw('id_hcaso, id_caso, fecha_movimiento, fecha_asignacion, users.id_user')
                     ->join('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
                     ->where('id_caso', $value["id_caso"])
@@ -780,7 +780,7 @@ class FactucontrolController extends Controller
                     'fecha_pasa_caso'  => $fechaActual,
                     'primerMovimiento' => 2,
                 ]);
-                $insertupdate = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
+                $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
                     'id_tema_user'  => $docNuevaAsignacion,
                     'id_estado'     => 1,
                 ]);
@@ -791,14 +791,14 @@ class FactucontrolController extends Controller
             /// validar con casos antiguoss/////////////////////////////////////////////////////////////////////////////////////////////
             foreach ($ultimoMovimiento as $value) {
                 if (!empty($value)) {
-                    $insertupdate = DB::table('FACTUCONTROL.historial_caso')->where('id_hcaso', $value->id_hcaso)->update([
+                    $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso')->where('id_hcaso', $value->id_hcaso)->update([
                         'fecha_pasa_caso'  => $fechaActual,
                     ]);
                 }
             }
             foreach ($ultimoMovimientoOld as $value) {
                 if (!empty($value)) {
-                    $insertupdate = DB::table('FACTUCONTROL.historial_caso')->where('id_hcaso', $value->id_hcaso)->update([
+                    $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso')->where('id_hcaso', $value->id_hcaso)->update([
                         'fecha_pasa_caso'  => $fechaActual,
                     ]);
                 }
@@ -824,17 +824,17 @@ class FactucontrolController extends Controller
                     'fecha_pasa_caso'  => $fechaActual,
                     'primerMovimiento' => 2,
                 ]);
-                $cambiarPrioridad = DB::table('FACTUCONTROL.caso')
+                $cambiarPrioridad = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')
                     ->selectRaw("flag_prontopago")
                     ->where('caso.id_caso', $value["id_caso"])
                     ->get();
 
                 if ($cambiarPrioridad[0]->flag_prontopago == 0) {
-                    $insertupdate = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
+                    $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
                         'flag_prontopago' => 1,
                     ]);
                 } else {
-                    $insertupdate = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
+                    $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
                         'flag_prontopago' => 0,
                     ]);
                 }
@@ -857,7 +857,7 @@ class FactucontrolController extends Controller
                     'nomDevo'          => $nomDevo,
                 ]);
 
-                $insertupdate = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
+                $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
                     'id_tema_user'  => $docNuevaAsignacion,
                     'id_estado'     => 1,
                 ]);
@@ -877,7 +877,7 @@ class FactucontrolController extends Controller
         if ($request->hasFile("files")) {
             $files = $request->file("files");
             foreach ($files as $uno) {
-                $adjuntosRepetidos = DB::table('FACTUCONTROL.attachment as attachment')->where("attachment.file_name", $uno->getClientOriginalName())->selectRaw('attachment.*')->get();
+                $adjuntosRepetidos = DB::connection('sqlsrv')->table('FACTUCONTROL.attachment as attachment')->where("attachment.file_name", $uno->getClientOriginalName())->selectRaw('attachment.*')->get();
                 if (sizeOf($adjuntosRepetidos) == 0) {
                     if ($uno->guessExtension() == "pdf") {
                         $rt = public_path("uploads/factucontrol/" . $uno->getClientOriginalName());
@@ -913,7 +913,7 @@ class FactucontrolController extends Controller
 
     public function adjuntarArchivo(Request $request)
     {
-        $adjuntosPorCaso = DB::table('FACTUCONTROL.attachment as attachment')->where('attachment.id_caso', $request["id_caso"])->get();
+        $adjuntosPorCaso = DB::connection('sqlsrv')->table('FACTUCONTROL.attachment as attachment')->where('attachment.id_caso', $request["id_caso"])->get();
         return response()->json(["adjuntosPorCaso" => $adjuntosPorCaso, "status" => "ok"]);
     }
 
@@ -955,7 +955,7 @@ class FactucontrolController extends Controller
             'idAnulado'        => $data["idOtros"]    == null ? null : $idAnulado,
             'nomAnulado'       => $data["idOtros"]    == null ? null : $nomAnulado,
         ]);
-        $insertCaso = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $idCaso)->update([
+        $insertCaso = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $idCaso)->update([
             'id_estado'     => $idEstado,
         ]);
 
@@ -968,7 +968,7 @@ class FactucontrolController extends Controller
     {
         $documento = Auth::user()->nro_doc;
 
-        $ultimaFecha = DB::table('FACTUCONTROL.historial_caso')
+        $ultimaFecha = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso')
             ->where('id_caso', $request["idCaso"])
             ->orderBy('fecha_movimiento', 'desc')
             ->limit(1)
@@ -976,7 +976,7 @@ class FactucontrolController extends Controller
 
         $fecha_movimiento = $ultimaFecha[0]->fecha_movimiento;
 
-        $tiempoAbiertoCaso = DB::table('FACTUCONTROL.caso')->where('caso.id_caso', $request["idCaso"])
+        $tiempoAbiertoCaso = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $request["idCaso"])
             ->selectRaw("
                 id_caso, 
                 datediff(DAY, fecha_creacion, GETDATE()) AS dias, 
@@ -984,7 +984,7 @@ class FactucontrolController extends Controller
                 datediff(MINUTE, fecha_creacion, GETDATE()) %60 AS minutos")
             ->first();
 
-        $pagoCierre = DB::table('FACTUCONTROL.caso AS c')
+        $pagoCierre = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS c')
             ->selectRaw("datediff(day,GETDATE(), DATEADD(day, p.dias_pago, c.fecha_creacion)) as dias_restantes,
                         c.fecha_creacion + p.dias_pago as fecha_estimada_cierre,
                         c.fecha_creacion,
@@ -1015,7 +1015,7 @@ class FactucontrolController extends Controller
     {
         $documento = Auth::user()->nro_doc;
 
-        $validaCierre = DB::table('FACTUCONTROL.historial_caso AS historial_caso')
+        $validaCierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1047,7 +1047,7 @@ class FactucontrolController extends Controller
             ->limit('1')
             ->get();
 
-        $casosRegistradoOldHis = DB::table('FACTUCONTROL.caso AS caso')->where('users.documento', $documento)
+        $casosRegistradoOldHis = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('users.documento', $documento)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1076,7 +1076,7 @@ class FactucontrolController extends Controller
             ->orderBy('caso.id_caso', 'ASC')
             ->get();
 
-        $casosRegistradoNewHis = DB::table('FACTUCONTROL.caso AS caso')->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)->where('caso.id_estado', '!=', 3)
+        $casosRegistradoNewHis = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)->where('caso.id_estado', '!=', 3)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1110,7 +1110,7 @@ class FactucontrolController extends Controller
 
     public function getcasosMasivosAdmin(Request $request)
     {
-        $validaCierre = DB::table('FACTUCONTROL.historial_caso AS historial_caso')
+        $validaCierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1141,7 +1141,7 @@ class FactucontrolController extends Controller
             ->limit('1')
             ->get();
 
-        $casosRegistradoOldHis = DB::table('FACTUCONTROL.caso AS caso')
+        $casosRegistradoOldHis = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1170,7 +1170,7 @@ class FactucontrolController extends Controller
             ->orderBy('caso.id_caso', 'ASC')
             ->get();
 
-        $casosRegistradoNewHis = DB::table('FACTUCONTROL.caso AS caso')->where('caso.nuevo', 1)->where('caso.id_estado', '!=', 3)
+        $casosRegistradoNewHis = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.nuevo', 1)->where('caso.id_estado', '!=', 3)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1206,23 +1206,23 @@ class FactucontrolController extends Controller
     {
         $documento = Auth::user()->nro_doc;
         $datosGrafico = [];
-        $getCasosDash = DB::table('FACTUCONTROL.caso as caso')
+        $getCasosDash = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
             ->where('caso.id_estado', 3)
             ->where('caso.id_tema_user', $documento)
             ->count();
-        $getCasosDashTramite = DB::table('FACTUCONTROL.caso as caso')
+        $getCasosDashTramite = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
             ->where('caso.id_estado', 2)
             ->where('caso.id_tema_user', $documento)
             ->count();
-        $getCasosDashAnulados = DB::table('FACTUCONTROL.caso as caso')
+        $getCasosDashAnulados = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
             ->where('caso.id_estado', 4)
             ->where('caso.id_tema_user', $documento)
             ->count();
-        $getCasosDashDevolucion = DB::table('FACTUCONTROL.caso as caso')
+        $getCasosDashDevolucion = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
             ->where('caso.id_estado', 5)
             ->where('caso.id_tema_user', $documento)
             ->count();
-        $getProveedoresDash = DB::table('FACTUCONTROL.proveedor')
+        $getProveedoresDash = DB::connection('sqlsrv')->table('FACTUCONTROL.proveedor')
             ->count();
 
         array_push($datosGrafico, $getCasosDash);
