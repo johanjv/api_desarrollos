@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Imports\PlantaImport;
 use App\Imports\DotacionImport;
 use App\Models\AdminGlobal\Modulos;
+use App\Models\Bitacora\Bitacora;
 use App\Models\Hvsedes\Grupos;
 use App\Models\Hvsedes\Servicios;
 use App\Models\Hvsedes\Sucursal\Estado;
@@ -254,6 +255,9 @@ class HVSedesController extends Controller
             "GRU_NOMBRE_GRUPO_SERVICIO" => strtoupper($request['nomb_grupo']),
         ]);
 
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'CREAR - GRUPO - ' . strtoupper($request['nomb_grupo']) . ' - SH','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+
         $grupos = Grupos::all();
 
         return response()->json(["grupos" => $grupos, "status" => "ok"], 200);
@@ -281,6 +285,9 @@ class HVSedesController extends Controller
             "SER_CODIGO_SERVICIO" => $request['cod_serv'],
             "SER_NOMBRE_SERVICIO" => strtoupper($request['nomb_serv']),
         ]);
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'CREAR - SERVICIO - ' . strtoupper($request['nomb_serv']) . ' - SH','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
 
         $servicios = Servicios::all();
 
@@ -317,10 +324,19 @@ class HVSedesController extends Controller
                     'GRU_CODIGO_GRUPO'              => $dt["GRU_CODIGO_GRUPO"],
                     'EST_CODIGO_ESTADO'             => "A",
                     'SER_CODIGO_SERVICIO' => $serv["SER_CODIGO_SERVICIO"],
-                    'SHA_FECHA_MODIFICACION'        => "2022-07-06 00:00:00.000"
+                    'SHA_FECHA_MODIFICACION'        => date('Y-m-d h:i:s')
                 ]);
             }
         }
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $data["formData"]["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'ASOCIAR GRUPOS Y SERVICIOS - SH',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
 
         $servHab =  DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->get();
 
@@ -382,6 +398,16 @@ class HVSedesController extends Controller
             $sedes = SedSede::all();
             $sedes->load('sucursal');
 
+             /* REGISTRO EN BITACORA */
+            Bitacora::create([
+                'ID_APP' => $request["idApp"],
+                'USER_ACT' => $request->user()->nro_doc,
+                'ACCION' => 'CREAR - SEDE - ' . strtoupper($request["nomb_sede"]) . ' - S',
+                'FECHA' => date('Y-m-d h:i:s'),
+                'USER_EMPRESA' => $request->user()->empresa
+            ]);
+
+
             return response()->json([
                 "sedes" =>  $sedes
             ], 200);
@@ -440,6 +466,16 @@ class HVSedesController extends Controller
 
         $update = SedSede::all();
 
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $request["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'EDITAR - SEDE - ' . $data["id_edit"] . ' - S',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
+
         return response()->json([
             "update" =>  $update
         ], 200);
@@ -495,60 +531,6 @@ class HVSedesController extends Controller
         ], 200);
     }
 
-    /* public function getUserFilter(Request $request)
-    {
-        $data = $request->all();
-        $userAct     = Auth::user();
-        if ($data['item'] != null) {
-            $users = User::with('roles')->where('name', 'LIKE', '%'.$data['item'].'%')->where('email', "!=", $userAct['email'])->get();
-        }else{
-            $users = User::with('roles')->where('email', "!=", $userAct['email'])->get();
-        }
-
-        foreach ($users as $user) {
-            $user['newFecha'] = date_format($user['created_at'], "d/m/Y");
-            $user['isDirec'] = $user['is_directory'] == 1 ? 'SI' : 'NO';
-        }
-
-        return response()->json(["users" => $users], 200);
-
-    } */
-
-    /* public function getPermisosUser(Request $request)
-    {
-        $data = $request->all();
-        $modulos = Modulos::where('desarrollo_id', $data['idDesarrollo'])->get();
-        $userPermisos = RolUserMod::where('user_id', $data['user'])->get();
-
-        return response()->json([
-            'modulos' => $modulos,
-            'permisos' => $userPermisos
-        ], 200);
-    } */
-
-    /* public function savePermisosUser(Request $request)
-    {
-        $data = $request->all();
-        $userPermisos = RolUserMod::where('user_id', $data['user'])->delete();
-        $permisosNuevos = [];
-
-        foreach ($data['permisos'] as $perm) {
-            array_push($permisosNuevos, $perm);
-        }
-
-        foreach ($permisosNuevos as $pnew) {
-            RolUserMod::create([
-                'rol_id' => 1,
-                'user_id' => $data['user'],
-                'modulo_id' => $pnew
-            ]);
-        }
-
-        $userPermisosNew = RolUserMod::where('user_id', $data['user'])->get();
-
-        return $userPermisosNew;
-    } */
-
     /**
      * funcion encargada de almacenar la edicion de los grupos de los servicios habilitados
      *
@@ -567,6 +549,9 @@ class HVSedesController extends Controller
                 'GRU_NOMBRE_GRUPO_SERVICIO' => $data['item']['GRU_NOMBRE_GRUPO_SERVICIO']
             ]);
         }
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'EDITAR - GRUPO - ' . $data['item']['GRU_CODIGO_GRUPO'] . ' - SH','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
 
         $grupos = Grupos::all();
 
@@ -593,6 +578,9 @@ class HVSedesController extends Controller
                 'SER_NOMBRE_SERVICIO' => $data['item']['SER_NOMBRE_SERVICIO']
             ]);
         }
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'EDITAR - SERVICIO - ' . $data['item']['SER_CODIGO_SERVICIO'] . ' - SH','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
 
         $servicios = Servicios::all();
 
@@ -622,12 +610,15 @@ class HVSedesController extends Controller
      */
     public function cambiarEstadoSH(Request $request)
     {
-        $change = $request['EST_CODIGO_ESTADO']  == 'A' ? 'I' : 'A';
-        $shEdit = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->where('SHA_ID', $request['SHA_ID'])->update([
+        $change = $request["item"]['EST_CODIGO_ESTADO']  == 'A' ? 'I' : 'A';
+        $shEdit = DB::table('HOJADEVIDASEDES.SHA_SERVICIOS_HABILITADOS')->where('SHA_ID', $request["item"]['SHA_ID'])->update([
             'EST_CODIGO_ESTADO' => $change
         ]);
 
-        $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $request['NOMBRE_SEDE'] . '"');
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'CAMBIAR ESTADO SH - ' . $request["item"]['SHA_ID'] . ' - ' . $change,'FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+
+        $sha = DB::select('exec HOJADEVIDASEDES.SP_SERVICOS_HABILITADOS_X_SEDE "' . $request["item"]['NOMBRE_SEDE'] . '"');
 
         return response()->json([
             "servHab" => $sha
@@ -647,6 +638,15 @@ class HVSedesController extends Controller
 
         $area = Area::create([
             'AXU_NOMBRE_AREA' => strtoupper($data['nomb_area'])
+        ]);
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $request["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'CREAR - AREA - ' . strtoupper($data['nomb_area']) . ' - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
         ]);
 
         $areas = Area::all();
@@ -682,6 +682,15 @@ class HVSedesController extends Controller
             'AXU_NOMBRE_AREA' => $data['item']['AXU_NOMBRE_AREA']
         ]);
 
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $data["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'EDITAR - AREA - ' . $data['item']['AXU_CODIGO_AREA'] . ' - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
         $areas = Area::all();
 
         return response()->json([
@@ -698,6 +707,15 @@ class HVSedesController extends Controller
     {
         $insert = ServInfra::create([
             "SXA_NOMBRE_SERVICIO" => strtoupper($request['nomb_serv']),
+        ]);
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $request["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'CREAR - SERVICIO - ' . strtoupper($request['nomb_serv']) . ' - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
         ]);
 
         $servicios = ServInfra::all();
@@ -729,6 +747,15 @@ class HVSedesController extends Controller
             'SXA_NOMBRE_SERVICIO' => $data['item']['SXA_NOMBRE_SERVICIO']
         ]);
 
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $request["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'EDITAR - SERVICIO - ' . $data['item']['SXA_CODIGO_SERVICIO'] . ' - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
         $servicios = ServInfra::all();
 
         return response()->json(["servicios" => $servicios], 200);
@@ -753,6 +780,15 @@ class HVSedesController extends Controller
             'UNI_NOMBRE_UNIDAD' => strtoupper($data['nomb_unidad']),
             'SED_CODIGO_HABILITACION_SEDE' => $data['sede'],
             'TXU_CODIGO_UNIDAD' => strtoupper($data['tipo'])
+        ]);
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $request["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'CREAR - UNIDAD - ' . strtoupper($data['nomb_unidad']) . ' - TIPO - ' . strtoupper($data['tipo']) . ' - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
         ]);
 
         $unidades = UniUnidad::all();
@@ -795,6 +831,15 @@ class HVSedesController extends Controller
             'UNI_NOMBRE_UNIDAD' => $data['item']['UNI_NOMBRE_UNIDAD']
         ]);
 
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $request["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'EDITAR - UNIDAD - ' . $data['item']['UNI_CODIGO'] . ' - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
         $unidades = UniUnidad::all();
         return response()->json(["unidades" => $unidades], 200);
 
@@ -828,6 +873,15 @@ class HVSedesController extends Controller
                 ]);
             }
         }
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' =>$data["formData"]["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'ASOCIAR - GRUPOS Y SERVICIOS - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
 
         return response()->json(["unidades" => $data], 200);
 
@@ -894,6 +948,16 @@ class HVSedesController extends Controller
                             "SEDE"=> $data['sede'],
                             "ESTADO" => 1
                             ]);
+
+                            /* REGISTRO EN BITACORA */
+                            Bitacora::create([
+                                'ID_APP' => $data["idApp"],
+                                'USER_ACT' => $request->user()->nro_doc,
+                                'ACCION' => 'SUBIR PDF - ' . $file->getClientOriginalName() . ' - INF',
+                                'FECHA' => date('Y-m-d h:i:s'),
+                                'USER_EMPRESA' => $request->user()->empresa
+                            ]);
+
                         copy($file, $rt);
                     }
                 }
@@ -934,6 +998,16 @@ class HVSedesController extends Controller
         $pdf = DB::table("HOJADEVIDASEDES.PDFs")->where('ID', $request['file']['ID'])->update([
             'ESTADO' => 0
         ]);
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $request["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'ELIMINAR PDF - ' . $request['file']['ID'] . ' - INF',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
         $pdfs = DB::table("HOJADEVIDASEDES.PDFs")->where('TIPO', $tipoDocumento)->where('SUCURSAL', $request['sucursal'])->where('SEDE', $request['sede'])->where('ESTADO', 1)->get();
         return response()->json(["filesperTipo" => $pdfs], 200);
     }
@@ -1027,7 +1101,17 @@ class HVSedesController extends Controller
 
             }
 
+
         }
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create([
+            'ID_APP' => $data["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'CREAR - COLABORADOR - ' . strtoupper($data["nombre_completo"]) . ' - CON DOCUMENTO - ' . $data["documento"],
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
 
         $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $data["sede"]["SED_CODIGO_HABILITACION_SEDE"])->where('ESTADO', 1)->get();
 
@@ -1201,6 +1285,14 @@ class HVSedesController extends Controller
             }
         }
 
+        Bitacora::create([
+            'ID_APP' => $data["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'EDITAR - COLABORADOR - ' .  $data['item']['DOC_COLABORADOR'],
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
         $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])->where('ESTADO', 1)->get();
 
         $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
@@ -1241,6 +1333,15 @@ class HVSedesController extends Controller
                 ]);
             }
         }
+
+        Bitacora::create([
+            'ID_APP' => $data["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'RETIRAR - COLABORADOR - ' .  $data['item']['DOC_COLABORADOR'],
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
         $planta = Colaboradores::with(['eps', 'cargos' => function($q){ return $q->with('cargoDetalle', 'horarios'); }])->where('ID_HAB_SEDE', $data['sede']['SED_CODIGO_HABILITACION_SEDE'])->where('ESTADO', 1)->get();
 
         $plantaActiva = Colaboradores::selectRaw('COUNT(CC.COD_CARGO) as Activos')
@@ -1434,10 +1535,10 @@ class HVSedesController extends Controller
 
         foreach ($data["servDet"] as $uni) {
             $saveE = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')->insert([
-                'NOMBRE_EQUIPO'     => $data['equipo'],
+                'NOMBRE_EQUIPO'     => strtoupper($data['equipo']),
                 'CANTIDAD_EQUIPOS'  => $uni['cant_equipo'],
                 'ID_HAB_SEDE'       => $data['sed']['SED_CODIGO_HABILITACION_SEDE'],
-                'UNIDAD'            => $uni['TXU_CODIGO_UNIDAD'],
+                'UNIDAD'            => strtoupper($uni['TXU_CODIGO_UNIDAD']),
                 'ESTADO'            => $uni["ESTADO"] == "Activo" ? '1' : '2',
             ]);
         }
@@ -1466,6 +1567,14 @@ class HVSedesController extends Controller
             ->where('SED_CODIGO_HABILITACION_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
             ->where('EST_CODIGO_ESTADO', 'A')
         ->get();
+
+        Bitacora::create([
+            'ID_APP' => $data["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'CREAR - EQUIPO - ' .  strtoupper($data['equipo']) . ' - DT',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
 
         return response()->json([
             "equipos" => $equipos,
@@ -1507,6 +1616,15 @@ class HVSedesController extends Controller
             ->where('SED_CODIGO_HABILITACION_SEDE', $sede->SED_CODIGO_HABILITACION_SEDE)
             ->where('EST_CODIGO_ESTADO', 'A')
         ->get();
+
+        Bitacora::create([
+            'ID_APP' => $data["idApp"],
+            'USER_ACT' => $request->user()->nro_doc,
+            'ACCION' => 'EDITAR - EQUIPO - ' . $data['item']['ID'] . ' - DT',
+            'FECHA' => date('Y-m-d h:i:s'),
+            'USER_EMPRESA' => $request->user()->empresa
+        ]);
+
 
         return response()->json([
             "equipos" => $equipos,
