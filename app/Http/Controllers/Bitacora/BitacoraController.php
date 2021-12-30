@@ -16,7 +16,7 @@ class BitacoraController extends Controller
     {
 
         /* return $request->all(); */
-        $bit = DB::table('BITACORA.REGISTRO_BITACORA AS B')
+        $bit = DB::connection('sqlsrv')->table('BITACORA.REGISTRO_BITACORA AS B')
             ->join('MASTER.desarrollos AS D', 'D.id', '=', 'B.ID_APP')
             ->join('users AS u', 'u.nro_doc', '=', 'B.USER_ACT');
 
