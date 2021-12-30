@@ -1096,6 +1096,100 @@ class FactucontrolController extends Controller
         ]);
     }
 
+    public function getcasosMasivosAdmin(Request $request)
+    {
+        $validaCierre = DB::table('FACTUCONTROL.historial_caso AS historial_caso')
+            ->selectRaw('caso.fecha_creacion,
+            caso.id_caso,
+            caso.descripcion_tema,
+            caso.flag_prontopago,
+            caso.id_tipo_factura,
+            temas.descripcion_temar,
+            users.name,
+            estado.descripcion_estado AS estado,
+            categoria.descripcion AS categoria_descripcion,
+            p.razon_social,
+            sucursal.SUC_DEPARTAMENTO AS nombre_sucursal,
+            p.dias_pago as diasProveedor,
+                datediff(DAY, caso.fecha_creacion, historial_caso.fecha_pasa_caso) AS dias, 
+                datediff(HOUR, caso.fecha_creacion, historial_caso.fecha_pasa_caso) %24 AS horas, 
+                datediff(MINUTE, caso.fecha_creacion, historial_caso.fecha_pasa_caso) %60 AS minutos
+            ')
+            ->join('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
+            ->join('FACTUCONTROL.temas AS temas', 'caso.idTema', '=', 'temas.id_tema')
+            ->join('users', 'caso.documento', '=', 'users.nro_doc')
+            ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
+            ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
+            ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
+            /* ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') */
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
+            ->orderBy('caso.id_caso', 'ASC')
+            ->where('caso.id_estado', 3)
+            ->orderBy('historial_caso.fecha_pasa_caso', 'DESC')
+            ->limit('1')
+            ->get();
+
+        $casosRegistradoOldHis = DB::table('FACTUCONTROL.caso AS caso')
+            ->selectRaw('caso.fecha_creacion,
+            caso.id_caso,
+            caso.descripcion_tema,
+            caso.flag_prontopago,
+            caso.id_tipo_factura,
+            temas.descripcion_temar,
+            users.id_user,
+            users.name,
+            users.documento,
+            estado.descripcion_estado AS estado,
+            categoria.descripcion AS categoria_descripcion,
+            p.razon_social,
+            sucursal.nombre AS nombre_sucursal,
+            p.dias_pago as diasProveedor,
+            datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias, 
+            datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas, 
+            datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
+            ')
+            ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
+            ->join('FACTUCONTROL.temas AS temas', 'temas_user.id_tema', '=', 'temas.id_tema')
+            ->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.id_user')
+            ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
+            ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
+            ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
+            ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
+            ->orderBy('caso.id_caso', 'ASC')
+            ->get();
+
+        $casosRegistradoNewHis = DB::table('FACTUCONTROL.caso AS caso')->where('caso.nuevo', 1)->where('caso.id_estado', '!=', 3)
+            ->selectRaw('caso.fecha_creacion,
+            caso.id_caso,
+            caso.descripcion_tema,
+            caso.flag_prontopago,
+            caso.id_tipo_factura,
+            temas.descripcion_temar,
+            users.name,
+            estado.descripcion_estado AS estado,
+            categoria.descripcion AS categoria_descripcion,
+            p.razon_social,
+            sucursal.SUC_DEPARTAMENTO AS nombre_sucursal,
+            p.dias_pago as diasProveedor,
+            datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias, 
+            datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas, 
+            datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
+            ')
+            ->join('FACTUCONTROL.temas AS temas', 'caso.idTema', '=', 'temas.id_tema')
+            ->join('users', 'caso.documento', '=', 'users.nro_doc')
+            ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
+            ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
+            ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
+            /* ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') */
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
+            ->orderBy('caso.id_caso', 'ASC')
+            ->get();
+
+        return response()->json([
+            "casosRegistradoOldHis" => $casosRegistradoOldHis, "casosRegistradoNewHis" => $casosRegistradoNewHis, "validaCierre" => $validaCierre, "status" => "ok"
+        ]);
+    }
+
     public function getProveedoresDash()
     {
         $documento = Auth::user()->nro_doc;
