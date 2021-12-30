@@ -252,7 +252,7 @@ class FactucontrolController extends Controller
 
             if ($request["fechaRadicado"] <= $fecha) {
                 $files[0] = $request->file("files");
-                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->InsertGetId([
+                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->Insert([
                     'id_tema_user'          => $request["reportar"],
                     'descripcion_tema'      => $request["notas"],
                     'fecha_creacion'        => $fechaActual,
@@ -312,7 +312,7 @@ class FactucontrolController extends Controller
 
             if ($request["fechaRadicado"] <= $fecha) {
                 $files = $request->file("files");
-                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->InsertGetId([
+                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->Insert([
                     'id_tema_user'          => $request["reportar"],
                     'descripcion_tema'      => $request["notas"],
                     'fecha_creacion'        => $fechaActual,
