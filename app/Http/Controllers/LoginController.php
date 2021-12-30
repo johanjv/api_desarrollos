@@ -198,6 +198,8 @@ class LoginController extends Controller
                     array_push($rolUser, 11);
                 } elseif ($value == 'CN=Atencion') {
                     array_push($rolUser, 12);
+                }elseif ($value == 'CN=AdminFac') {
+                    array_push($rolUser, 14);
                 }
 
                 /* ROLES DE CITOLOGÍAS */

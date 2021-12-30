@@ -176,6 +176,7 @@ return [
     'CoordinadorFactu' => env('APP_COORDINADORFACTU', 10),
     'TesoreriaFactu'   => env('APP_TESORERIAFACTU', 11),
     'Atencion'         => env('APP_ATENCION', 12),
+    'AdminFac'         => env('APP_ADMINFAC', 14),
 
 
     /*

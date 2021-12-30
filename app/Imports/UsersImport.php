@@ -17,13 +17,14 @@ class UsersImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
         return new Proveedores([
-            'nit'           => $row["nit"],
-            'razon_social'  => $row["razon_social"],
-            'descripcion'   => $row["descripcion"],
-            'dias_pago'     => $row["dias_pago"],
-            'descuento'     => $row["descuento"],
-            'active'        => $row["active"],
-            'pronto_pago'   => $row["pronto_pago"],
+            'nit'                => $row["nit"],
+            'razon_social'       => $row["razon_social"],
+            'descripcion'        => $row["descripcion"],
+            'dias_pago'          => $row["dias_pago"],
+            'active'             => $row["active"],
+            'descuento'          => $row["descuento"],
+            'pronto_pago'        => $row["pronto_pago"],
+            'codigoVerificacion' => $row["codigoverificacion"],
         ]);
     }
 }
