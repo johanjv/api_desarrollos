@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Factucontrol;
 use App\Http\Controllers\Controller;
 use App\Imports\UsersImport;
 use App\Models\Bitacora\Bitacora;
+use App\Models\Factucontrol\Casos\Caso;
 use App\Models\Factucontrol\Casos\HistorialCasos;
 use App\Models\Factucontrol\Proveedores\Proveedores;
 use DateTime;
@@ -252,7 +253,7 @@ class FactucontrolController extends Controller
 
             if ($request["fechaRadicado"] <= $fecha) {
                 $files[0] = $request->file("files");
-                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->InsertGetId([
+                $radicado = Caso::create([
                     'id_tema_user'          => $request["reportar"],
                     'descripcion_tema'      => $request["notas"],
                     'fecha_creacion'        => $fechaActual,
@@ -276,10 +277,11 @@ class FactucontrolController extends Controller
                     'nuevo'                 => 1,
                 ]);
                 /* REGISTRO EN BITACORA */
-                Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($radicado), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
+                $data = Caso::latest('id_caso')->first();
+                Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($data->id_caso), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
 
                 return response()->json([
-                    "radicado" =>  $radicado
+                    "radicado" =>  $data->id_caso
                 ], 200);
             } else {
                 return response()->json([
@@ -312,7 +314,7 @@ class FactucontrolController extends Controller
 
             if ($request["fechaRadicado"] <= $fecha) {
                 $files = $request->file("files");
-                $radicado = DB::connection('sqlsrv')->table("FACTUCONTROL.caso")->InsertGetId([
+                $radicado = Caso::create([
                     'id_tema_user'          => $request["reportar"],
                     'descripcion_tema'      => $request["notas"],
                     'fecha_creacion'        => $fechaActual,
@@ -336,10 +338,11 @@ class FactucontrolController extends Controller
                     'nuevo'                 => 1,
                 ]);
 
-                Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($radicado), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
+                $data = Caso::latest('id_caso')->first();
+                Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($data->id_caso), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
 
                 return response()->json([
-                    "radicado" =>  $radicado
+                    "radicado" =>  $data->id_caso
                 ], 200);
             } else {
                 return response()->json([
@@ -1015,7 +1018,7 @@ class FactucontrolController extends Controller
     {
         $documento = Auth::user()->nro_doc;
 
-        $validaCierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
+        $Cierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1038,14 +1041,28 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
-            /* ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') */
+            // ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') 
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
             ->orderBy('caso.id_caso', 'ASC')
             ->where('caso.id_tema_user', $documento)
+            //$data["idConcDevo"] == null ? null : $idConcepDevo,
             ->where('caso.id_estado', 3)
             ->orderBy('historial_caso.fecha_pasa_caso', 'DESC')
-            ->limit('1')
             ->get();
+
+        $datos = $Cierre;
+        $idCaso = [];
+        $validaCierre = [];
+
+        foreach ($datos as $val) {
+            array_push($idCaso, $val->id_caso);
+        }
+        $idCasosUnicos = array_unique($idCaso);
+
+        foreach ($idCasosUnicos as $val) {
+            $a = $this->getValoresUnicos($val);
+            array_push($validaCierre, $a);
+        }
 
         $casosRegistradoOldHis = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('users.documento', $documento)
             ->selectRaw('caso.fecha_creacion,
@@ -1110,7 +1127,7 @@ class FactucontrolController extends Controller
 
     public function getcasosMasivosAdmin(Request $request)
     {
-        $validaCierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
+        $Cierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1133,15 +1150,28 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
-            /* ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') */
+            // ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') 
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
             ->orderBy('caso.id_caso', 'ASC')
             ->where('caso.id_estado', 3)
             ->orderBy('historial_caso.fecha_pasa_caso', 'DESC')
-            ->limit('1')
             ->get();
 
-        $casosRegistradoOldHis = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')
+        $datos = $Cierre;
+        $idCaso = [];
+        $validaCierre = [];
+
+        foreach ($datos as $val) {
+            array_push($idCaso, $val->id_caso);
+        }
+        $idCasosUnicos = array_unique($idCaso);
+
+        foreach ($idCasosUnicos as $val) {
+            $a = $this->getValoresUnicos($val);
+            array_push($validaCierre, $a);
+        }
+
+        $casosRegistradoOldHis = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', '!=', 3)
             ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -1192,13 +1222,56 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
-            /* ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') */
+            //->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
             ->orderBy('caso.id_caso', 'ASC')
             ->get();
 
         return response()->json([
-            "casosRegistradoOldHis" => $casosRegistradoOldHis, "casosRegistradoNewHis" => $casosRegistradoNewHis, "validaCierre" => $validaCierre, "status" => "ok"
+            "casosRegistradoOldHis" => $casosRegistradoOldHis,
+            "casosRegistradoNewHis" => $casosRegistradoNewHis,
+            "validaCierre" => $validaCierre,
+            /* "CierreOld" => $CierreOld, */
+            "status" => "ok"
+        ]);
+    }
+
+    public function getValoresUnicos($val)
+    {
+        $validaCierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
+            ->selectRaw('caso.fecha_creacion,
+            caso.id_caso,
+            caso.descripcion_tema,
+            caso.flag_prontopago,
+            caso.id_tipo_factura,
+            temas.descripcion_temar,
+            users.name,
+            estado.descripcion_estado AS estado,
+            categoria.descripcion AS categoria_descripcion,
+            p.razon_social,
+            sucursal.SUC_DEPARTAMENTO AS nombre_sucursal,
+            p.dias_pago as diasProveedor,
+                datediff(DAY, caso.fecha_creacion, historial_caso.fecha_pasa_caso) AS dias, 
+                datediff(HOUR, caso.fecha_creacion, historial_caso.fecha_pasa_caso) %24 AS horas, 
+                datediff(MINUTE, caso.fecha_creacion, historial_caso.fecha_pasa_caso) %60 AS minutos
+            ')
+            ->join('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
+            ->join('FACTUCONTROL.temas AS temas', 'caso.idTema', '=', 'temas.id_tema')
+            ->join('users', 'caso.documento', '=', 'users.nro_doc')
+            ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
+            ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
+            ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
+            /* ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal') */
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
+            ->orderBy('caso.id_caso', 'ASC')
+            ->where('caso.id_estado', 3)
+            ->where('caso.id_caso', $val)
+            ->orderBy('historial_caso.fecha_pasa_caso', 'DESC')
+            ->limit('1')
+            ->get();
+
+        return response()->json([
+            "validaCierre" => $validaCierre, "status" => "ok"
         ]);
     }
 
