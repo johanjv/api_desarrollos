@@ -291,4 +291,23 @@ class GlobalsController extends Controller
         }
         return $modulos;
     }
+
+    public function getMunicipios(Request $request)
+    {
+        $municipios = DB::table('MUNICIPIO')->get();
+        return response()->json([
+            "municipios" => $municipios,
+        ], 200);
+
+    }
+
+    public function getLocalidades(Request $request)
+    {
+        $localidades = DB::table('LOCALIDAD')->where('MUNICIPIO_ID', $request["idMun"])->get();
+        return response()->json([
+            "localidades" => $localidades,
+        ], 200);
+
+    }
+
 }

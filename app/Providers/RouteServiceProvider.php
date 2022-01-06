@@ -80,6 +80,7 @@ class RouteServiceProvider extends ServiceProvider
                 require base_path('routes/hvsedes/hvsedes.php');
                 require base_path('routes/factucontrol/factucontrol.php');
                 require base_path('routes/citologias/citologias.php');
+                require base_path('routes/mamitas/mamitas.php');
             });
     }
 }
