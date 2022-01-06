@@ -262,7 +262,7 @@ class GlobalsController extends Controller
             }
         } else if ($idDesarrollo == config('app.factuControl')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
-                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->orWhere('id', '10049')->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
             } else if (in_array(config('app.RadicadorFactu'), $permisos)) {
@@ -273,6 +273,8 @@ class GlobalsController extends Controller
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
             } else if (in_array(config('app.Atencion'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
+            }else if (in_array(config('app.AdminFac'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10029')->orWhere('id', '=', '10046')->orWhere('id', '10049')->get();
             }
 
 

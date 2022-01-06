@@ -45,4 +45,6 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/getConcDevo',            'Factucontrol\FactucontrolController@getConcDevo');
     Route::get('/getConcPago',            'Factucontrol\FactucontrolController@getConcPago');
     Route::get('/getOtros',               'Factucontrol\FactucontrolController@getOtros');
+    Route::get('/getcasosMasivosAdmin',   'Factucontrol\FactucontrolController@getcasosMasivosAdmin');
+
 });
