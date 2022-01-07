@@ -22,7 +22,8 @@ class HistorialCasos extends Model
       'id_user',
       'fecha_asignacion',
       'fecha_pasa_caso',
-      'primerMovimiento'
+      'primerMovimiento',
+      'seguimiento'
     ];
 
 }
