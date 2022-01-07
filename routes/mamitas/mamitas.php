@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth:api'])->group(function () {
-    Route::post('getRegistrosdelDia',   'MamitasSeguras\MamitasController@getRegistrosdelDia');
+    Route::post('getRegistrosdelDiaMamitas',   'MamitasSeguras\MamitasController@getRegistrosdelDia');
     Route::post('saveGestante',         'MamitasSeguras\MamitasController@saveGestante');
-    Route::post('getRegistros',         'MamitasSeguras\MamitasController@getRegistros');
+    Route::post('getRegistrosMamitas',         'MamitasSeguras\MamitasController@getRegistros');
     Route::post('saveEditGestante',      'MamitasSeguras\MamitasController@saveEditGestante');
 
 });

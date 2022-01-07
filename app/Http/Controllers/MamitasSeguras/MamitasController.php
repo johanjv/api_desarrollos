@@ -11,7 +11,7 @@ use Carbon\Carbon;
 
 class MamitasController extends Controller
 {
-    public function getRegistrosdelDia(Request $request)
+    public function getRegistrosdelDiaMamitas(Request $request)
     {
 
         $prof = Auth()->user()->nro_doc;
@@ -61,7 +61,7 @@ class MamitasController extends Controller
         ], 200);
     }
 
-    public function getRegistros(Request $request)
+    public function getRegistrosMamitas(Request $request)
     {
         $prof = Auth()->user()->nro_doc;
         $registros = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->where('SEDE', $request['item']['sede'])
