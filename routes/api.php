@@ -28,7 +28,6 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/checkAutorizacion',       'LoginController@checkAutorizacion');
     Route::post('/logout',                  'LoginController@logout');
     Route::post('saveNewUser',              'LoginController@saveNewUser');
-
     Route::post('getMenuDash',              'AdminGlobal\GlobalsController@getMenuDash'); /* Carga el menu */
     Route::get('getCountDash',              'AdminGlobal\GlobalsController@getCountDash');
     Route::post('insertDesarrollo',         'AdminGlobal\GlobalsController@insertDesarrollo');
@@ -42,8 +41,14 @@ Route::middleware('auth:api')->group(function () {
     Route::get('consultaModulos',           'AdminGlobal\GlobalsController@consultaModulos');
     Route::post('insertRol',                'AdminGlobal\GlobalsController@insertRol');
     Route::get('consultaRoles',             'AdminGlobal\GlobalsController@consultaRoles');
-    Route::post('saveSubmodulo',             'AdminGlobal\GlobalsController@saveSubmodulo');
+    Route::post('saveSubmodulo',            'AdminGlobal\GlobalsController@saveSubmodulo');
     Route::get('consultaRoles',             'AdminGlobal\GlobalsController@consultaRoles');
+
+    /* GET MUNICIPIOS */
+    Route::get('getMunicipios',             'AdminGlobal\GlobalsController@getMunicipios');
+
+    /* GET LOCALIDADES */
+    Route::get('getLocalidades',             'AdminGlobal\GlobalsController@getLocalidades');
 
     /* API AFILIADOS */
     Route::get('getAfiliado',               'Api_Afiliados_Interna\Api_Afiliados_InternaController@getAfiliado');
@@ -53,9 +58,10 @@ Route::middleware('auth:api')->group(function () {
     Route::get('getConteoBit',               'Bitacora\BitacoraController@getConteoBit');
 });
 
-
 /* Citologias get unidades para el login */
 Route::get('getSedesLogin',  'LoginController@getSedesLogin');
 
 /* Certificados Escolares generar PDF */
 Route::post('generarPdf',  'CertificadosEscolares\CertificadosEscolaresController@generarPdf');
+
+

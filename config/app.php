@@ -134,10 +134,11 @@ return [
     |
     */
 
-    'admGlobal' => env('APP_ADMINGLOBAL', 1),
-    'hvSedes' => env('APP_HVSEDES', 25),
-    'factuControl' => env('APP_FACTUCONTROL', 10024),
-    'citologias' => env('APP_CITOLOGIAS', 10025),
+    'admGlobal'     => env('APP_ADMINGLOBAL', 1),
+    'hvSedes'       => env('APP_HVSEDES', 25),
+    'factuControl'  => env('APP_FACTUCONTROL', 10024),
+    'citologias'    => env('APP_CITOLOGIAS', 10025),
+    'mamitas'       => env('APP_MAMITAS', 10031),
 
 
     /*
@@ -158,7 +159,6 @@ return [
     'hvAdmInfra'    => env('APP_ADM_INFRA', 6),
     'HvTalentoHumo' => env('APP_CONS_TH', 7),
     'hvAdmTH'       => env('APP_ADM_TH', 8),
-
 
     /*
     |--------------------------------------------------------------------------
@@ -191,6 +191,18 @@ return [
 
 
     'ProfCitologias' => env('APP_PROF_CITOLOGIAS', 13),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles Mamitas Seguras
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+    'mamitasUsers' => env('APP_MAMITAS_USERS', 15),
 
 
 
