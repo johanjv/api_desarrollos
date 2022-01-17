@@ -13,7 +13,6 @@ class MamitasController extends Controller
 {
     public function getRegistrosdelDiaMamitas(Request $request)
     {
-
         $prof = Auth()->user()->nro_doc;
         $registrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::today())->where('SEDE', $request['item']['sede'])->get();
 
