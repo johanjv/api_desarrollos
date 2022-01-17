@@ -376,6 +376,7 @@ class FactucontrolController extends Controller
         $pass = 'D3s4rr0ll02021.*$';
         /////////////////////////////////////////////////////////
         $usuario = usuarioda($user, $pass, $request["nombre"]);
+
         if (gettype($usuario) == 'array') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
         {
             $detalleUser = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
