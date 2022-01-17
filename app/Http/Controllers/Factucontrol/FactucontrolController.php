@@ -384,12 +384,17 @@ class FactucontrolController extends Controller
                 for ($i = 0; $i < count((array)$detalleUser); $i++) {
                     $x = explode(',', $detalleUser[0]['distinguishedname'][0]);
                     if (!in_array("OU=Depuracion de usuarios", $x)) {
-                        $cadaUno = array(
-                            'documento' => $detalleUser[0]['wwwhomepage'][0],
-                            'nombres'   => $detalleUser[0]['displayname'][0]
-                        );
-                        array_push($datos, $cadaUno);
-                        return $datos;
+                        foreach ($detalleUser[0]['memberof'] as $key => $value) {
+                            $p = explode(',', $detalleUser[0]['memberof'][$key]);
+                            if (in_array("CN=Ap_Factucontrol", $p) || in_array("CN=AGSuperAdmin", $p)) {
+                                $cadaUno = array(
+                                    'documento' => $detalleUser[0]['wwwhomepage'][0],
+                                    'nombres'   => $detalleUser[0]['displayname'][0]
+                                );
+                                array_push($datos, $cadaUno);
+                                return $datos;
+                            }
+                        }
                     }
                 }
             }
@@ -397,11 +402,18 @@ class FactucontrolController extends Controller
                 for ($i = 0; $i < count((array)$detalleUser); $i++) {
                     $x = explode(',', $detalleUser[$i]['distinguishedname'][0]);
                     if (!in_array("OU=Depuracion de usuarios", $x)) {
-                        $cadaUno = array(
-                            'documento' => $detalleUser[$i]['wwwhomepage'][0],
-                            'nombres'   => $detalleUser[$i]['displayname'][0]
-                        );
-                        array_push($datos, $cadaUno);
+                        if (isset($detalleUser[$i]["memberof"])) {                            
+                            foreach ($detalleUser[$i]['memberof'] as $key => $value) {
+                                $p = explode(',', $detalleUser[$i]['memberof'][$key]);
+                                if (in_array("CN=Ap_Factucontrol", $p) || in_array("CN=AGSuperAdmin", $p)) {
+                                    $cadaUno = array(
+                                        'documento' => $detalleUser[$i]['wwwhomepage'][0],
+                                        'nombres'   => $detalleUser[$i]['displayname'][0]
+                                    );
+                                    array_push($datos, $cadaUno);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -693,7 +705,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
             ->where('caso.id_caso', $request["idCaso"])
             ->orderBy('id_hcaso', 'ASC')
-        ->get();
+            ->get();
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
@@ -711,7 +723,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
             ->where('caso.id_caso', $request["idCaso"])
             ->orderBy('id_hcaso', 'ASC')
-        ->get();
+            ->get();
 
         foreach ($casosHistorialOld as $value) {
             $a = explode('\\n', $casosHistorialOld[0]->descripcion_tema);

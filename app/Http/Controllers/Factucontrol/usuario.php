@@ -12,11 +12,9 @@ function usuarioda($user,$pass, $nombre){
        $ldapbind = @ldap_bind($ldapconn, $ldaprdn, $ldappass);  
        if ($ldapbind){ 
          $filter="(|(displayname=*".trim($nombre)."))";
-         $serch = ldap_search($ldapconn, $dn, "displayname=*".$nombre."*");
+         $serch = ldap_search($ldapconn, $dn, "givenname=*".$nombre."*");
          $info = @ldap_get_entries($ldapconn, $serch);  
          $array = $info; 
-       
-        
        }else{  
              $array=0; 
        }  
