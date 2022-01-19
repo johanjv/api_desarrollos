@@ -278,8 +278,16 @@ class FactucontrolController extends Controller
                     'tipDoc'                => $request["tipDoc"],
                     'nuevo'                 => 1,
                 ]);
+
                 /* REGISTRO EN BITACORA */
                 $data = Caso::latest('id_caso')->first();
+                $insertAdjunto = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
+                    'file_name'    => $misArchivosASQL,
+                    'encrypt_name' => $misArchivosASQL,
+                    'id_caso'      => $data->id_caso,
+                    'date_upload'  => $fechaActual,
+                    'title'        => $misArchivosASQL,
+                ]);
                 Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($data->id_caso), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
 
                 return response()->json([
@@ -341,6 +349,15 @@ class FactucontrolController extends Controller
                 ]);
 
                 $data = Caso::latest('id_caso')->first();
+                foreach ($files as $uno) {
+                    $insertAdjunto = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
+                        'file_name'    => $uno->getClientOriginalName(),
+                        'encrypt_name' => $uno->getClientOriginalName(),
+                        'id_caso'      => $data->id_caso,
+                        'date_upload'  => $fechaActual,
+                        'title'        => $uno->getClientOriginalName(),
+                    ]);
+                }
                 Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($data->id_caso), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
 
                 return response()->json([
@@ -428,7 +445,7 @@ class FactucontrolController extends Controller
         $documento = Auth::user()->nro_doc;
 
         $casosRegistradoOld = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)
-            ->selectRaw('caso.fecha_creacion,
+            ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
             caso.flag_prontopago,
@@ -455,7 +472,7 @@ class FactucontrolController extends Controller
             ->get();
 
         $casosRegistradoNew = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)
-            ->selectRaw('caso.fecha_creacion,
+            ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
             caso.flag_prontopago,
@@ -556,7 +573,7 @@ class FactucontrolController extends Controller
         $documento = Auth::user()->nro_doc;
 
         $casosRegistradoOldPro = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('users.documento', $documento)
-            ->selectRaw('caso.fecha_creacion,
+            ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
             caso.flag_prontopago,
@@ -583,7 +600,7 @@ class FactucontrolController extends Controller
 
 
         $casosRegistradoNewPro = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)
-            ->selectRaw('caso.fecha_creacion,
+            ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
             caso.flag_prontopago,
