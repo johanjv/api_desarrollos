@@ -11,9 +11,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware(['auth:api'])->group(function () {
-    Route::post('getRegistrosdelDiaMamitas',    'MamitasSeguras\MamitasController@getRegistrosdelDiaMamitas');
-    Route::post('saveGestante',                 'MamitasSeguras\MamitasController@saveGestante');
-    Route::post('getRegistrosMamitas',          'MamitasSeguras\MamitasController@getRegistrosMamitas');
-    Route::post('saveEditGestante',             'MamitasSeguras\MamitasController@saveEditGestante');
-
+    Route::prefix("mamitas")->group(function(){
+        Route::post('getRegistrosdelDiaMamitas',    'MamitasSeguras\MamitasController@getRegistrosdelDiaMamitas');
+        Route::post('saveGestante',                 'MamitasSeguras\MamitasController@saveGestante');
+        Route::post('getRegistrosMamitas',          'MamitasSeguras\MamitasController@getRegistrosMamitas');
+        Route::post('saveEditGestante',             'MamitasSeguras\MamitasController@saveEditGestante');
+    });
 });
