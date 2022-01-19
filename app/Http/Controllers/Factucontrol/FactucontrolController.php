@@ -73,12 +73,13 @@ class FactucontrolController extends Controller
         $data = $request->all();
         $update = Proveedores::where("id_proveedor", $data["id_proveedor"])->update([
             /* 'nit'           => $request["nit"], */
-            'razon_social'  => $request["razon_social"],
-            'descripcion'   => $request["descripcion"],
-            'dias_pago'     => $request["dias_pago"],
-            'descuento'     => $request["descuento"],
-            'active'        => $request["proveedor_activo"],
-            'pronto_pago'   => $request["pronto_pago"],
+            'razon_social'       => $request["razon_social"],
+            'descripcion'        => $request["descripcion"],
+            'dias_pago'          => $request["dias_pago"],
+            'descuento'          => $request["descuento"],
+            'active'             => $request["proveedor_activo"],
+            'pronto_pago'        => $request["pronto_pago"],
+            'codigoVerificacion' => $request["codigoVerificacion"],
         ]);
 
         Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'EDITO EL PROVEEDOR ' . strtoupper($request["razon_social"]) . ' NIT ' .  strtoupper($request["nit"]), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
@@ -375,6 +376,7 @@ class FactucontrolController extends Controller
         $pass = 'D3s4rr0ll02021.*$';
         /////////////////////////////////////////////////////////
         $usuario = usuarioda($user, $pass, $request["nombre"]);
+
         if (gettype($usuario) == 'array') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
         {
             $detalleUser = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
@@ -384,12 +386,17 @@ class FactucontrolController extends Controller
                 for ($i = 0; $i < count((array)$detalleUser); $i++) {
                     $x = explode(',', $detalleUser[0]['distinguishedname'][0]);
                     if (!in_array("OU=Depuracion de usuarios", $x)) {
-                        $cadaUno = array(
-                            'documento' => $detalleUser[0]['wwwhomepage'][0],
-                            'nombres'   => $detalleUser[0]['displayname'][0]
-                        );
-                        array_push($datos, $cadaUno);
-                        return $datos;
+                        foreach ($detalleUser[0]['memberof'] as $key => $value) {
+                            $p = explode(',', $detalleUser[0]['memberof'][$key]);
+                            if (in_array("CN=Ap_Factucontrol", $p) || in_array("CN=AGSuperAdmin", $p)) {
+                                $cadaUno = array(
+                                    'documento' => $detalleUser[0]['wwwhomepage'][0],
+                                    'nombres'   => $detalleUser[0]['displayname'][0]
+                                );
+                                array_push($datos, $cadaUno);
+                                return $datos;
+                            }
+                        }
                     }
                 }
             }
@@ -397,11 +404,18 @@ class FactucontrolController extends Controller
                 for ($i = 0; $i < count((array)$detalleUser); $i++) {
                     $x = explode(',', $detalleUser[$i]['distinguishedname'][0]);
                     if (!in_array("OU=Depuracion de usuarios", $x)) {
-                        $cadaUno = array(
-                            'documento' => $detalleUser[$i]['wwwhomepage'][0],
-                            'nombres'   => $detalleUser[$i]['displayname'][0]
-                        );
-                        array_push($datos, $cadaUno);
+                        if (isset($detalleUser[$i]["memberof"])) {
+                            foreach ($detalleUser[$i]['memberof'] as $key => $value) {
+                                $p = explode(',', $detalleUser[$i]['memberof'][$key]);
+                                if (in_array("CN=Ap_Factucontrol", $p) || in_array("CN=AGSuperAdmin", $p)) {
+                                    $cadaUno = array(
+                                        'documento' => $detalleUser[$i]['wwwhomepage'][0],
+                                        'nombres'   => $detalleUser[$i]['displayname'][0]
+                                    );
+                                    array_push($datos, $cadaUno);
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -693,7 +707,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
             ->where('caso.id_caso', $request["idCaso"])
             ->orderBy('id_hcaso', 'ASC')
-        ->get();
+            ->get();
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
@@ -711,7 +725,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
             ->where('caso.id_caso', $request["idCaso"])
             ->orderBy('id_hcaso', 'ASC')
-        ->get();
+            ->get();
 
         foreach ($casosHistorialOld as $value) {
             $a = explode('\\n', $casosHistorialOld[0]->descripcion_tema);
@@ -888,29 +902,38 @@ class FactucontrolController extends Controller
         }
 
         $obserCasosEnProcesoCierra = $data["obserCasosEnProcesoCierra"];
+        $fechaCierreMasivo = $data["fechaCierreMasivo"] . "T" . date('H:i:s');
         $documento = Auth::user()->nro_doc;
         $fechaActual = date('Y-m-d H:i:s');
+        $fecha = date('Y-m-d');
 
-        foreach ($data["casosEnProceso"] as $value) {
+        if ($data["fechaCierreMasivo"] <= $fecha) {
+            foreach ($data["casosEnProceso"] as $value) {
 
-            $insertupdate = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
-                'id_caso'          => $value["id_caso"],
-                'fecha_movimiento' => $fechaActual,
-                'observaciones'    => $obserCasosEnProcesoCierra,
-                'id_user'          => $documento,
-                'fecha_asignacion' => $fechaActual,
-                'fecha_pasa_caso'  => $fechaActual,
-                'idPago'           => $data["idConcPagoCierre"] == null ? null : $idPago,
-                'nomConcePago'     => $data["idConcPagoCierre"] == null ? null : $nomConcePago,
-            ]);
-            $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
-                'id_estado'     => 3,
-            ]);
+                $insertupdate = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
+                    'id_caso'          => $value["id_caso"],
+                    'fecha_movimiento' => $fechaActual,
+                    'observaciones'    => $obserCasosEnProcesoCierra,
+                    'id_user'          => $documento,
+                    'fecha_asignacion' => $fechaActual,
+                    'fecha_pasa_caso'  => $fechaActual,
+                    'idPago'           => $data["idConcPagoCierre"] == null ? null : $idPago,
+                    'nomConcePago'     => $data["idConcPagoCierre"] == null ? null : $nomConcePago,
+                    'fechaCierre'      => $fechaCierreMasivo,
+                ]);
+                $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
+                    'id_estado'     => 3,
+                ]);
+            }
+            return response()->json([
+                "insertupdate" =>  $insertupdate,
+                "fechaMayor"   =>  false
+            ], 200);
+        } else {
+            return response()->json([
+                "fechaMayor" =>  true
+            ], 200);
         }
-
-        return response()->json([
-            "insertupdate" =>  $insertupdate
-        ], 200);
     }
 
     public function insertAdjuntoFac(Request $request)
@@ -984,29 +1007,39 @@ class FactucontrolController extends Controller
         $idEstado = $data["estado"]["id_estado"];
         $documento = Auth::user()->nro_doc;
         $fechaActual = date('Y-m-d H:i:s');
+        $fecha = date('Y-m-d');
+        $fechaCierreMasivoIndividual = $data["fechaCierreMasivoIndividual"] . "T" . date('H:i:s');
 
-        $insertCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
-            'id_caso'          => $idCaso,
-            'fecha_movimiento' => $fechaActual,
-            'observaciones'    => $observaciones,
-            'id_user'          => $documento,
-            'fecha_asignacion' => $fechaActual,
-            'fecha_pasa_caso'  => $fechaActual,
-            'primerMovimiento' => 2,
-            'idConcepDevo'     => $data["idConcDevo"] == null ? null : $idConcepDevo,
-            'nomConceDevo'     => $data["idConcDevo"] == null ? null : $nomConceDevo,
-            'idPago'           => $data["idConcPago"] == null ? null : $idPago,
-            'nomConcePago'     => $data["idConcPago"] == null ? null : $nomConcePago,
-            'idAnulado'        => $data["idOtros"]    == null ? null : $idAnulado,
-            'nomAnulado'       => $data["idOtros"]    == null ? null : $nomAnulado,
-        ]);
-        $insertCaso = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $idCaso)->update([
-            'id_estado'     => $idEstado,
-        ]);
+        if ($data["fechaCierreMasivoIndividual"] <= $fecha) {
+            $insertCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
+                'id_caso'          => $idCaso,
+                'fecha_movimiento' => $fechaActual,
+                'observaciones'    => $observaciones,
+                'id_user'          => $documento,
+                'fecha_asignacion' => $fechaActual,
+                'fecha_pasa_caso'  => $fechaActual,
+                'primerMovimiento' => 2,
+                'idConcepDevo'     => $data["idConcDevo"] == null ? null : $idConcepDevo,
+                'nomConceDevo'     => $data["idConcDevo"] == null ? null : $nomConceDevo,
+                'idPago'           => $data["idConcPago"] == null ? null : $idPago,
+                'nomConcePago'     => $data["idConcPago"] == null ? null : $nomConcePago,
+                'idAnulado'        => $data["idOtros"]    == null ? null : $idAnulado,
+                'nomAnulado'       => $data["idOtros"]    == null ? null : $nomAnulado,
+                'fechaCierre'      => $fechaCierreMasivoIndividual,
+            ]);
+            $insertCaso = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $idCaso)->update([
+                'id_estado'     => $idEstado,
+            ]);
 
-        return response()->json([
-            "insertCaso" =>  $insertCaso
-        ], 200);
+            return response()->json([
+                "insertCaso" =>  $insertCaso,
+                "fechaMayor" =>  false
+            ], 200);
+        } else {
+            return response()->json([
+                "fechaMayor" =>  true
+            ], 200);
+        }
     }
 
     public function gethistorialTime(Request $request)
