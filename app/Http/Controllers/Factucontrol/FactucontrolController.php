@@ -242,8 +242,8 @@ class FactucontrolController extends Controller
                         $rt = public_path("uploads/factucontrol/" . $files[0]->getClientOriginalName());
 
                         $misArchivosASQL = $files[0]->getClientOriginalName();
-                        Storage::disk('ftp')->put($files[0]->getClientOriginalName(), $files[0]);
-                        /* copy($files[0], $rt); */
+                        /* Storage::disk('ftp')->put($files[0]->getClientOriginalName(), $files[0]); */
+                        copy($files[0], $rt);
                     } else {
                         return response()->json([
                             "radicado" =>  "formatoErrado"
