@@ -47,5 +47,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/getOtros',               'Factucontrol\FactucontrolController@getOtros');
     Route::get('/getcasosMasivosAdmin',   'Factucontrol\FactucontrolController@getcasosMasivosAdmin');
     Route::post('/cierraCasosProceso',    'Factucontrol\FactucontrolController@cierraCasosProceso');
+    Route::post('/permisosFac',           'Factucontrol\FactucontrolController@permisosFac');
+    Route::post('/usuariodaPermisos',     'Factucontrol\FactucontrolController@usuariodaPermisos');
 
 });

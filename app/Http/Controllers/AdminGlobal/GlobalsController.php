@@ -274,7 +274,7 @@ class GlobalsController extends Controller
             } else if (in_array(config('app.Atencion'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
             }else if (in_array(config('app.AdminFac'), $permisos)) {
-                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10029')->orWhere('id', '=', '10046')->orWhere('id', '10049')->get();
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10029')->orWhere('id', '=', '10046')->orWhere('id', '10049')->orWhere('id', '10053')->get();
             }
 
 

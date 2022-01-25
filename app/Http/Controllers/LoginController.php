@@ -47,7 +47,7 @@ class LoginController extends Controller
                 {
                     //Actualizo los permisos en la tabla user
                     $rolUser = $this->rolesUser($usuario);
-                    $updatePermisos = User::with('roles')->where('email', $request->username)->update([
+                    $updatePermisos = User::with('roles')->where('email', $request->username)->where('is_directory', 1)->update([
                         'rol' => json_encode($rolUser),
                     ]);
 
@@ -68,10 +68,16 @@ class LoginController extends Controller
                 } else { //Si son incorrectas las credenciales de la tabla user
                     //Actualizo los permisos en la tabla user y la contraseña ya que puede que este actualizada en el directorio activo pero no en la tabla user
                     $rolUser = $this->rolesUser($usuario);
-                    $updatePermisos = User::with('roles')->where('email', $request->username)->update([
-                        'rol' => json_encode($rolUser),
-                        'password' => bcrypt($request['password'])
-                    ]);
+                    if ($user->is_directory == 1) {
+                        $updatePermisos = User::with('roles')->where('email', $request->username)->update([
+                            'rol' => json_encode($rolUser),
+                            'password' => bcrypt($request['password'])
+                        ]);
+                    } else {
+                        $updatePermisos = User::with('roles')->where('email', $request->username)->update([
+                            'password' => bcrypt($request['password'])
+                        ]);
+                    }
 
                     //Capturo el usuarios nuevamente
                     $user = User::with('roles')->where('email', $request->username)->first();

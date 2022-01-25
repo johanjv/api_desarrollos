@@ -8,6 +8,7 @@ use App\Models\Bitacora\Bitacora;
 use App\Models\Factucontrol\Casos\Caso;
 use App\Models\Factucontrol\Casos\HistorialCasos;
 use App\Models\Factucontrol\Proveedores\Proveedores;
+use App\User;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -397,6 +398,7 @@ class FactucontrolController extends Controller
         if (gettype($usuario) == 'array') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
         {
             $detalleUser = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
+
             $datos = [];
             array_shift($detalleUser);
             if (count((array)$detalleUser) == 1) {
@@ -406,9 +408,14 @@ class FactucontrolController extends Controller
                         foreach ($detalleUser[0]['memberof'] as $key => $value) {
                             $p = explode(',', $detalleUser[0]['memberof'][$key]);
                             if (in_array("CN=Ap_Factucontrol", $p) || in_array("CN=AGSuperAdmin", $p)) {
+                                /* consulta para obtener lor roles de los usuarios*/
+                                /* $rol = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $detalleUser[0]['wwwhomepage'][0])
+                                    ->pluck("rol");
+                                $e = $rol[0]; */
                                 $cadaUno = array(
                                     'documento' => $detalleUser[0]['wwwhomepage'][0],
-                                    'nombres'   => $detalleUser[0]['displayname'][0]
+                                    'nombres'   => $detalleUser[0]['displayname'][0]/* ,
+                                    'perfiles'  => json_decode($e) */
                                 );
                                 array_push($datos, $cadaUno);
                                 return $datos;
@@ -434,6 +441,125 @@ class FactucontrolController extends Controller
                             }
                         }
                     }
+                }
+            }
+        }
+        return $datos;
+    }
+
+    public function permisosFac(Request $request)
+    {
+        $permisos  = json_encode($request["permisosFinales"]);
+        $documento = $request["documento"];
+        $insert    = $request["insert"];
+
+        if (COUNT($request["permisosFinales"]) == 0) {
+            $rol = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')->where('id_tema_user', $documento)
+                ->get();
+            if (COUNT($rol) == 0) {
+                $updatePermisos = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)->update([
+                    'rol'     => $permisos,
+                ]);
+                Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
+                return response()->json(["permisos" => 1, "status" => "ok"]);
+            } else {
+                return response()->json(["casos" => true, "status" => "ok"]);
+            }
+        } else {
+            if ($insert == false) {
+                $valInsert = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)
+                    ->get();
+
+                if (COUNT($valInsert) == 0) {
+                    $updatePermisos = User::create([
+                        'nro_doc'       => $documento,
+                        'name'          => $request["info"]['nombres2'],
+                        'last_name'     => $request["info"]['last_name'],
+                        'email'         => $request["info"]['email'],
+                        'correo'        => $request["info"]['correo'],
+                        'cargo'         => $request["info"]['cargo'],
+                        'empresa'       => $request["info"]['empresa'],
+                        'password'      => bcrypt('contraseñapordefecto'),
+                        'is_director'   => 2,
+                        'estado'        => 1,
+                        'rol'           => $permisos,
+                    ]);
+                    Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
+                    return response()->json(["permisos" => 1, "status" => "ok"]);
+                } else {
+                    $updatePermisos = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)->update([
+                        'rol'     => $permisos,
+                    ]);
+                    Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
+
+                    return response()->json(["permisos" => 1, "status" => "ok"]);
+                }
+
+                return $valInsert;
+            } else {
+                $updatePermisos = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)->update([
+                    'rol'     => $permisos,
+                ]);
+                Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
+                return response()->json(["permisos" => 1, "status" => "ok"]);
+            }
+        }
+    }
+
+    public function usuariodaPermisos(Request $request)
+    {
+        require("usuario.php");
+        header("Content-Type: text/html; charset=utf-8");
+        ////// Este usuario es generico y no cambia la contraseña
+        $user = 'Desarrollo.VS';
+        $pass = 'D3s4rr0ll02021.*$';
+        /////////////////////////////////////////////////////////
+        $usuario = usuarioda($user, $pass, $request["nombre"]);
+
+        if (gettype($usuario) == 'array') //LO ENCUENTRO EN EL DIRECTORIO ACTIVO
+        {
+            $detalleUser = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
+
+            $datos = [];
+            /* $r = array_shift($detalleUser); */
+            $x = explode(',', $detalleUser[0]['distinguishedname'][0]);
+            if (!in_array("OU=Depuracion de usuarios", $x)) {
+                /* consulta para obtener lor roles de los usuarios*/
+
+                $rol = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $detalleUser[0]['wwwhomepage'][0])
+                    ->pluck("rol");
+
+                if (COUNT($rol) > 0) {
+                    $e = $rol[0];
+                    $cadaUno = array(
+                        'documento'     => $detalleUser[0]['wwwhomepage'][0],
+                        'nombres'       => $detalleUser[0]['displayname'][0],
+                        'nombres2'      => $detalleUser[0]['givenname'][0],
+                        'last_name'     => $detalleUser[0]['sn'][0],
+                        'email'         => $detalleUser[0]['samaccountname'][0],
+                        'correo'        => $detalleUser[0]['mail'][0],
+                        'cargo'         => $detalleUser[0]['description'][0],
+                        'empresa'       => $detalleUser[0]['physicaldeliveryofficename'][0],
+                        'is_director'   => 2,
+                        'estado'        => 1,
+                        'perfiles'      => json_decode($e),
+                    );
+                    array_push($datos, $cadaUno);
+                } else {
+                    $cadaUno = array(
+                        'documento'     => $detalleUser[0]['wwwhomepage'][0],
+                        'nombres'       => $detalleUser[0]['displayname'][0],
+                        'nombres2'      => $detalleUser[0]['givenname'][0],
+                        'last_name'     => $detalleUser[0]['sn'][0],
+                        'email'         => $detalleUser[0]['samaccountname'][0],
+                        'correo'        => $detalleUser[0]['mail'][0],
+                        'cargo'         => $detalleUser[0]['description'][0],
+                        'empresa'       => $detalleUser[0]['physicaldeliveryofficename'][0],
+                        'is_director'   => 2,
+                        'estado'        => 1,
+                        'perfiles'      => false
+                    );
+                    array_push($datos, $cadaUno);
                 }
             }
         }
