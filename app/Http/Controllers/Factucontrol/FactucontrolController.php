@@ -461,7 +461,8 @@ class FactucontrolController extends Controller
                 ->get();
             if (COUNT($rol) == 0) {
                 $updatePermisos = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)->update([
-                    'rol'     => $permisos,
+                    'rol'           => $permisos,
+                    'is_directory'  => 2,
                 ]);
                 Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
                 return response()->json(["permisos" => 1, "status" => "ok"]);
@@ -483,7 +484,7 @@ class FactucontrolController extends Controller
                         'cargo'         => $request["info"]['cargo'],
                         'empresa'       => $request["info"]['empresa'],
                         'password'      => bcrypt('contraseñapordefecto'),
-                        'is_director'   => 2,
+                        'is_directory'  => 2,
                         'estado'        => 1,
                         'rol'           => $permisos,
                     ]);
@@ -491,17 +492,18 @@ class FactucontrolController extends Controller
                     return response()->json(["permisos" => 1, "status" => "ok"]);
                 } else {
                     $updatePermisos = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)->update([
-                        'rol'     => $permisos,
+                        'rol'           => $permisos,
+                        'is_directory'  => 2,
                     ]);
                     Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
-
                     return response()->json(["permisos" => 1, "status" => "ok"]);
                 }
 
                 return $valInsert;
             } else {
                 $updatePermisos = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)->update([
-                    'rol'     => $permisos,
+                    'rol'           => $permisos,
+                    'is_directory'  => 2,
                 ]);
                 Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
                 return response()->json(["permisos" => 1, "status" => "ok"]);
@@ -543,7 +545,7 @@ class FactucontrolController extends Controller
                         'correo'        => $detalleUser[0]['mail'][0],
                         'cargo'         => $detalleUser[0]['description'][0],
                         'empresa'       => $detalleUser[0]['physicaldeliveryofficename'][0],
-                        'is_director'   => 2,
+                        'is_directory'   => 2,
                         'estado'        => 1,
                         'perfiles'      => json_decode($e),
                     );
@@ -558,7 +560,7 @@ class FactucontrolController extends Controller
                         'correo'        => $detalleUser[0]['mail'][0],
                         'cargo'         => $detalleUser[0]['description'][0],
                         'empresa'       => $detalleUser[0]['physicaldeliveryofficename'][0],
-                        'is_director'   => 2,
+                        'is_directory'   => 2,
                         'estado'        => 1,
                         'perfiles'      => false
                     );
