@@ -457,8 +457,14 @@ class FactucontrolController extends Controller
         $insert    = $request["insert"];
 
         if (COUNT($request["permisosFinales"]) == 0) {
-            $rol = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')->where('id_tema_user', $documento)->where('id_estado', 1)->orWhere('id_estado', 2)
+            $rol = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
+                ->where('id_tema_user', $documento)
+                ->where(function ($query) {
+                    $query->where('id_estado', '=', 1)
+                        ->orWhere('id_estado', '=', 2);
+                })
                 ->get();
+
             if (COUNT($rol) == 0) {
                 $updatePermisos = DB::connection('sqlsrv')->table('dbo.users')->where('nro_doc', $documento)->update([
                     'rol'           => $permisos,
