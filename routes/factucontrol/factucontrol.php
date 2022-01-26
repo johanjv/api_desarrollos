@@ -36,7 +36,7 @@ Route::middleware(['auth:api'])->group(function () {
     Route::get('/gethistorial',           'Factucontrol\FactucontrolController@gethistorial');
     Route::post('/asignaCasoEnProceso',   'Factucontrol\FactucontrolController@asignaCasoEnProceso');
     Route::post('/editCasoProcesoEstado', 'Factucontrol\FactucontrolController@editCasoProcesoEstado');
-    Route::post('/insertAdjuntoFac',       'Factucontrol\FactucontrolController@insertAdjuntoFac');
+    Route::post('/insertAdjuntoFac',      'Factucontrol\FactucontrolController@insertAdjuntoFac');
     Route::post('/adjuntarArchivo',       'Factucontrol\FactucontrolController@adjuntarArchivo');
     Route::post('/insertCasoProceso',     'Factucontrol\FactucontrolController@insertCasoProceso');
     Route::get('/gethistorialTime',       'Factucontrol\FactucontrolController@gethistorialTime');
@@ -49,5 +49,5 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/cierraCasosProceso',    'Factucontrol\FactucontrolController@cierraCasosProceso');
     Route::post('/permisosFac',           'Factucontrol\FactucontrolController@permisosFac');
     Route::post('/usuariodaPermisos',     'Factucontrol\FactucontrolController@usuariodaPermisos');
-
+    Route::post('/insertTransfiere',      'Factucontrol\FactucontrolController@insertTransfiere');
 });

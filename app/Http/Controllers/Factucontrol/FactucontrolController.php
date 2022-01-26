@@ -285,13 +285,15 @@ class FactucontrolController extends Controller
 
                 /* REGISTRO EN BITACORA */
                 $data = Caso::latest('id_caso')->first();
-                $insertAdjunto = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
-                    'file_name'    => $misArchivosASQL,
-                    'encrypt_name' => $misArchivosASQL,
-                    'id_caso'      => $data->id_caso,
-                    'date_upload'  => $fechaActual,
-                    'title'        => $misArchivosASQL,
-                ]);
+                if (count($misArchivosASQL) > 0) {
+                    $insertAdjunto = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
+                        'file_name'    => $misArchivosASQL,
+                        'encrypt_name' => $misArchivosASQL,
+                        'id_caso'      => $data->id_caso,
+                        'date_upload'  => $fechaActual,
+                        'title'        => $misArchivosASQL,
+                    ]);
+                }
                 Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($data->id_caso), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
 
                 return response()->json([
@@ -343,7 +345,6 @@ class FactucontrolController extends Controller
                     'ordenCompra'           => $request["ordenCompra"],
                     'valor'                 => $request["valor"],
                     'concepto'              => $request["concepto"],
-                    'cantidadFactutras'     => $request["cantidadFactutras"],
                     'Nfactura'              => $request["nFactura"],
                     'archivosPDF'           => json_encode($misArchivosASQL),
                     'idTema'                => $request["tema"],
@@ -353,14 +354,16 @@ class FactucontrolController extends Controller
                 ]);
 
                 $data = Caso::latest('id_caso')->first();
-                foreach ($files as $uno) {
-                    $insertAdjunto = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
-                        'file_name'    => $uno->getClientOriginalName(),
-                        'encrypt_name' => $uno->getClientOriginalName(),
-                        'id_caso'      => $data->id_caso,
-                        'date_upload'  => $fechaActual,
-                        'title'        => $uno->getClientOriginalName(),
-                    ]);
+                if (!empty($files)) {
+                    foreach ($files as $uno) {
+                        $insertAdjunto = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
+                            'file_name'    => $uno->getClientOriginalName(),
+                            'encrypt_name' => $uno->getClientOriginalName(),
+                            'id_caso'      => $data->id_caso,
+                            'date_upload'  => $fechaActual,
+                            'title'        => $uno->getClientOriginalName(),
+                        ]);
+                    }
                 }
                 Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'RADICAR - FACTURA ' . strtoupper($request["nFactura"]) . ' CASO ' . strtoupper($data->id_caso), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
 
@@ -473,7 +476,7 @@ class FactucontrolController extends Controller
                 Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'ASIGNA PERMISOS A: ' . strtoupper($documento) . ' NOMBRES ' . strtoupper($request["info"]['nombres2']) . ' ' . strtoupper($request["info"]['last_name']), 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
                 return response()->json(["permisos" => 1, "status" => "ok"]);
             } else {
-                return response()->json(["casos" => true, "status" => "ok"]);
+                return response()->json(["casos" => true, "infoCasos" => $rol, "status" => "ok"]);
             }
         } else {
             if ($insert == false) {
@@ -1044,6 +1047,37 @@ class FactucontrolController extends Controller
                 "insertupdate" =>  $insertupdate
             ], 200);
         }
+    }
+
+    public function insertTransfiere(Request $request)
+    {
+        $data = $request->all();
+
+        $obserCasosTransfiere = $data["obserCasosTransfiere"];
+        $docNuevaAsignacion = $data["documento"];
+        $documento = Auth::user()->nro_doc;
+        $fechaActual = date('Y-m-d H:i:s');
+
+        foreach ($data["casosAtransferir"] as $value) {
+            $insertupdate = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
+                'id_caso'          => $value["id_caso"],
+                'fecha_movimiento' => $fechaActual,
+                'observaciones'    => $obserCasosTransfiere,
+                'id_user'          => $documento,
+                'fecha_asignacion' => $fechaActual,
+                'fecha_pasa_caso'  => $fechaActual,
+                'primerMovimiento' => 2,
+                'seguimiento'      => $docNuevaAsignacion,
+
+            ]);
+            $insertupdate = DB::connection('sqlsrv')->table('FACTUCONTROL.caso')->where('caso.id_caso', $value["id_caso"])->update([
+                'id_tema_user'  => $docNuevaAsignacion,
+                'id_estado'     => 1,
+            ]);
+        }
+        return response()->json([
+            "insertupdate" =>  $insertupdate
+        ], 200);
     }
 
     public function cierraCasosProceso(Request $request)
