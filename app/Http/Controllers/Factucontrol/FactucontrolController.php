@@ -285,7 +285,7 @@ class FactucontrolController extends Controller
 
                 /* REGISTRO EN BITACORA */
                 $data = Caso::latest('id_caso')->first();
-                if (count($misArchivosASQL) > 0) {
+                if (!empty($misArchivosASQL)) {
                     $insertAdjunto = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
                         'file_name'    => $misArchivosASQL,
                         'encrypt_name' => $misArchivosASQL,
