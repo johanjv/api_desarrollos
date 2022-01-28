@@ -56,6 +56,9 @@ Route::middleware('auth:api')->group(function () {
     /* GET BITACORA */
     Route::get('getHistorial',               'Bitacora\BitacoraController@getHistorial');
     Route::get('getConteoBit',               'Bitacora\BitacoraController@getConteoBit');
+
+    Route::post('getFileFTP',                 'AdminGlobal\GlobalsController@getFileFTP');
+
 });
 
 /* Citologias get unidades para el login */

@@ -18,7 +18,6 @@ return [
     'paths' => [
         /* EN RED Y LA NUVE */
         'https://apidesarrollos.virreysolisips.com.co:1801/api/*',
-
         /* LOCALES */
 
         "http://localhost:8000/api/*",

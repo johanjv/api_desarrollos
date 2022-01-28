@@ -243,8 +243,8 @@ class FactucontrolController extends Controller
                         $rt = public_path("uploads/factucontrol/" . $files[0]->getClientOriginalName());
 
                         $misArchivosASQL = $files[0]->getClientOriginalName();
-                        /* Storage::disk('ftp')->put($files[0]->getClientOriginalName(), $files[0]); */
-                        copy($files[0], $rt);
+                        Storage::disk('ftp')->put($files[0]->getClientOriginalName(), $files[0]);
+                        //copy($files[0], $rt);
                     } else {
                         return response()->json([
                             "radicado" =>  "formatoErrado"
@@ -319,7 +319,8 @@ class FactucontrolController extends Controller
                         } else {
                             $misArchivosASQL = $uno->getClientOriginalName();
                         }
-                        copy($uno, $rt);
+                        Storage::disk('ftp')->put($uno->getClientOriginalName(), $uno);
+                        /* copy($uno, $rt); */
                     } else {
                         return response()->json([
                             "radicado" =>  "formatoErrado"
@@ -1142,7 +1143,8 @@ class FactucontrolController extends Controller
                         } else {
                             $misArchivosASQL = $uno->getClientOriginalName();
                         }
-                        copy($uno, $rt);
+                        Storage::disk('ftp')->put($uno->getClientOriginalName(), $uno);
+                        /* copy($uno, $rt); */
                         $adjuntoPorCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
                             'file_name'    => $uno->getClientOriginalName(),
                             'encrypt_name' => $uno->getClientOriginalName(),

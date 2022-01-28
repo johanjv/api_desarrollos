@@ -70,12 +70,18 @@ return [
             'root'   => public_path() . '/uploads/hvsedes',
         ],
 
+        'fact_up' => [
+            'driver' => 'local',
+            'root'   => public_path() . '/uploads/factucontrol/',
+        ],
+
         'ftp' => [
             'driver' => 'ftp',
             'host' => env('FTP_HOST'),
             'port' => env('FTP_PORT'),
             'username' => env('FTP_USERNAME'),
             'password' => env('FTP_PASSWORD'),
+            'root' => '/PruebasDesarrollo/',
 
             // Optional FTP Settings...
             // 'port' => env('FTP_PORT', 21),

@@ -16,6 +16,8 @@ use App\RolUserMod;
 use App\Models\AdminGlobal\Modulos;
 use App\Models\AdminGlobal\Submodulos;
 use App\User;
+use Illuminate\Support\Facades\Storage;
+use PDF;
 use DB;
 
 class GlobalsController extends Controller
@@ -319,6 +321,28 @@ class GlobalsController extends Controller
         return response()->json([
             "localidades" => $localidades,
         ], 200);
+
+    }
+
+    /* CASO: 51962 51966 */
+
+    public function getFileFTP(Request $request)
+    {
+        //return $request->all();
+        if (Storage::disk('ftp')->exists($request["item"])) {
+            $directorios = Storage::disk('ftp')->directories();
+            foreach ($directorios as $directorio) {
+                if ($request["item"] == $directorio) {
+                    $ruta = Storage::disk('ftp')->files($directorio);
+                    $archivo = Storage::disk('ftp')->get($ruta[0]);
+                    $ruta = explode("/", $ruta[0]);
+
+                    Storage::disk('fact_up')->put($ruta[0], $archivo);
+                    return $ruta[0];
+                }
+            }
+        }
+        return "ERROR";
 
     }
 
