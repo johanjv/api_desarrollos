@@ -735,7 +735,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.id_user')
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
-            ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
+            ->leftJoin('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')->orderBy('dias_restantes', 'ASC')->get();
         $casosRegistradoOldProCount = $casosRegistradoOldPro->count();
 
@@ -1582,20 +1582,34 @@ class FactucontrolController extends Controller
         $documento = Auth::user()->nro_doc;
         $datosGrafico = [];
         $getCasosDash = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
+            ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
+            ->join('FACTUCONTROL.temas AS temas', 'temas_user.id_tema', '=', 'temas.id_tema')
+            ->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.id_user')
             ->where('caso.id_estado', 3)
-            ->where('caso.id_tema_user', $documento)
+            ->where('users.documento', $documento)
             ->count();
         $getCasosDashTramite = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
+            ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
+            ->join('FACTUCONTROL.temas AS temas', 'temas_user.id_tema', '=', 'temas.id_tema')
+            ->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.id_user')
             ->where('caso.id_estado', 2)
-            ->where('caso.id_tema_user', $documento)
+            ->where('users.documento', $documento)
             ->count();
         $getCasosDashAnulados = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
+            ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
+            ->join('FACTUCONTROL.temas AS temas', 'temas_user.id_tema', '=', 'temas.id_tema')
+            ->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.id_user')
             ->where('caso.id_estado', 4)
-            ->where('caso.id_tema_user', $documento)
+            ->where('users.documento', $documento)
+
             ->count();
         $getCasosDashDevolucion = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')
+            ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
+            ->join('FACTUCONTROL.temas AS temas', 'temas_user.id_tema', '=', 'temas.id_tema')
+            ->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.id_user')
             ->where('caso.id_estado', 5)
-            ->where('caso.id_tema_user', $documento)
+            ->where('users.documento', $documento)
+
             ->count();
         $getProveedoresDash = DB::connection('sqlsrv')->table('FACTUCONTROL.proveedor')
             ->count();
