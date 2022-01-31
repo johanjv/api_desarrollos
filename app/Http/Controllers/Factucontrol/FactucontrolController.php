@@ -1198,8 +1198,13 @@ class FactucontrolController extends Controller
         $documento = Auth::user()->nro_doc;
         $fechaActual = date('Y-m-d H:i:s');
         $fecha = date('Y-m-d');
-        $fechaCierreMasivoIndividual = $data["fechaCierreMasivoIndividual"] . "T" . date('H:i:s');
-
+        if ($data["fechaCierreMasivoIndividual"] == '') {
+            $fechaCierreMasivoIndividual =  null;
+        }else{
+            $fechaCierreMasivoIndividual = $data["fechaCierreMasivoIndividual"] . "T" . date('H:i:s');
+        }
+        //$fechaCierreMasivoIndividual = $data["fechaCierreMasivoIndividual"] == '' ? null : $data["fechaCierreMasivoIndividual"] . "T" . date('H:i:s');
+        /* anticipo pendiente por legalizar $625.000 */
         if ($data["fechaCierreMasivoIndividual"] <= $fecha) {
             $insertCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.historial_caso")->insert([
                 'id_caso'          => $idCaso,
@@ -1282,6 +1287,7 @@ class FactucontrolController extends Controller
     public function getcasosMasivos(Request $request)
     {
         $documento = Auth::user()->nro_doc;
+        
 
         $Cierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('caso.fecha_creacion,
@@ -1314,6 +1320,8 @@ class FactucontrolController extends Controller
             ->where('caso.id_estado', 3)
             ->orderBy('historial_caso.fecha_pasa_caso', 'DESC')
             ->get();
+
+
 
         $datos = $Cierre;
         $idCaso = [];
