@@ -936,7 +936,7 @@ class FactucontrolController extends Controller
     {
         $dataHistorial = [];
         $casosHistorialOld = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
-            ->selectRaw('historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
+            ->selectRaw('caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
             caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
             estado.descripcion_estado AS estado,
             datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
@@ -953,7 +953,7 @@ class FactucontrolController extends Controller
             ->get();
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
-            ->selectRaw('historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
+            ->selectRaw('caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
                 caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra, historial_caso.fecha_pasa_caso, historial_caso.primerMovimiento
                 , historial_caso.devolucion, historial_caso.docDevo, historial_caso.nomDevo,
 
