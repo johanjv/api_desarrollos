@@ -1389,6 +1389,7 @@ class FactucontrolController extends Controller
             estado.descripcion_estado AS estado,
             categoria.descripcion AS categoria_descripcion,
             p.razon_social,
+            caso.ordenCompra as orden_id,
             sucursal.SUC_DEPARTAMENTO AS nombre_sucursal,
             p.dias_pago as diasProveedor,
                 datediff(DAY, caso.fecha_creacion, historial_caso.fecha_pasa_caso) AS dias,
@@ -1426,8 +1427,8 @@ class FactucontrolController extends Controller
             array_push($validaCierre, $a);
         }
 
-        $a = DB::table('FACTUCONTROL.historial_caso')->selectRaw('DISTINCT caso.fecha_creacion, caso.id_caso, 
-                caso.flag_prontopago, caso.id_tipo_factura,  users.id_user, users.name, users.documento,
+        $a = DB::table('FACTUCONTROL.historial_caso')->selectRaw('DISTINCT caso.fecha_creacion, caso.id_caso,
+                caso.flag_prontopago, caso.ordenCompra as orden_id, caso.id_tipo_factura,  users.id_user, users.name, users.documento,
                 estado.descripcion_estado AS estado, categoria.descripcion AS categoria_descripcion, p.razon_social, caso.id_user_create,
                 sucursal.nombre AS nombre_sucursal, p.dias_pago as diasProveedor, datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                 datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,  datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos')
@@ -1441,8 +1442,8 @@ class FactucontrolController extends Controller
             ->leftJoin('FACTUCONTROL.sucursal', 'sucursal.suc_legal', '=', 'caso.id_sucursal');
 
 
-        $b = DB::table('FACTUCONTROL.historial_caso')->selectRaw('DISTINCT caso.fecha_creacion, caso.id_caso, 
-                caso.flag_prontopago, caso.id_tipo_factura,  users.id_user, users.name, users.documento,
+        $b = DB::table('FACTUCONTROL.historial_caso')->selectRaw('DISTINCT caso.fecha_creacion, caso.id_caso,
+                caso.flag_prontopago, caso.ordenCompra as orden_id, caso.id_tipo_factura,  users.id_user, users.name, users.documento,
                 estado.descripcion_estado AS estado, categoria.descripcion AS categoria_descripcion, p.razon_social, caso.id_user_create,
                 sucursal.nombre AS nombre_sucursal, p.dias_pago as diasProveedor, datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                 datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,  datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos')
@@ -1455,8 +1456,8 @@ class FactucontrolController extends Controller
             ->Join('FACTUCONTROL.proveedor as p', 'p.id_proveedor', '=', 'caso.id_proveedor')
             ->leftJoin('FACTUCONTROL.sucursal', 'sucursal.suc_legal', '=', 'caso.id_sucursal');
 
-        $c = DB::table('FACTUCONTROL.historial_caso')->selectRaw('DISTINCT caso.fecha_creacion, caso.id_caso, 
-            caso.flag_prontopago, caso.id_tipo_factura,  users.id_user, users.name, users.documento,
+        $c = DB::table('FACTUCONTROL.historial_caso')->selectRaw('DISTINCT caso.fecha_creacion, caso.id_caso,
+            caso.flag_prontopago, caso.ordenCompra as orden_id, caso.id_tipo_factura,  users.id_user, users.name, users.documento,
             estado.descripcion_estado AS estado, categoria.descripcion AS categoria_descripcion, p.razon_social, caso.id_user_create,
             sucursal.nombre AS nombre_sucursal, p.dias_pago as diasProveedor, datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
             datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,  datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos')
@@ -1501,6 +1502,7 @@ class FactucontrolController extends Controller
             caso.id_tipo_factura,
             temas.descripcion_temar,
             users.name,
+            caso.ordenCompra as orden_id,
             estado.descripcion_estado AS estado,
             categoria.descripcion AS categoria_descripcion,
             p.razon_social,
@@ -1552,6 +1554,7 @@ class FactucontrolController extends Controller
             caso.id_tipo_factura,
             temas.descripcion_temar,
             users.name,
+            caso.ordenCompra as orden_id,
             estado.descripcion_estado AS estado,
             categoria.descripcion AS categoria_descripcion,
             p.razon_social,
@@ -1598,6 +1601,7 @@ class FactucontrolController extends Controller
             users.id_user,
             users.name,
             users.documento,
+            caso.ordenCompra as orden_id,
             estado.descripcion_estado AS estado,
             categoria.descripcion AS categoria_descripcion,
             p.razon_social,
@@ -1626,6 +1630,7 @@ class FactucontrolController extends Controller
             temas.descripcion_temar,
             users.id_user,
             users.name,
+            caso.ordenCompra as orden_id,
             users.documento,
             estado.descripcion_estado AS estado,
             categoria.descripcion AS categoria_descripcion,
@@ -1663,6 +1668,7 @@ class FactucontrolController extends Controller
             caso.flag_prontopago,
             caso.id_tipo_factura,
             temas.descripcion_temar,
+            caso.ordenCompra as orden_id,
             users.name,
             estado.descripcion_estado AS estado,
             categoria.descripcion AS categoria_descripcion,

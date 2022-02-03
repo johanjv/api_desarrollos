@@ -287,7 +287,7 @@ class LoginController extends Controller
         if (isset($request["idApp"])) {
             $sedes = DB::table('UNIDADES_ESTANDAR')->get();
         }else{
-            $sedes = DB::table('UNIDADES_ESTANDAR')->whereIn('ID_UNIDAD', [505, 1001, 31585, 32300, 31586, 1354, 2040, 32531 , 31622, 1027 , 1032, 5133, 1128 , 1026])->get();
+            $sedes = DB::table('UNIDADES_ESTANDAR')->get();
         }
         return response()->json(["sedes" => $sedes], 200);
     }
