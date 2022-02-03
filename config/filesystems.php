@@ -81,7 +81,7 @@ return [
             'port' => env('FTP_PORT'),
             'username' => env('FTP_USERNAME'),
             'password' => env('FTP_PASSWORD'),
-            'root' => '/PruebasDesarrollo/',
+            'root' => '/ProduccionDesarrollo/',
 
             // Optional FTP Settings...
             // 'port' => env('FTP_PORT', 21),
