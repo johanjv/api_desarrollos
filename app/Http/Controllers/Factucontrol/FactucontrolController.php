@@ -998,6 +998,10 @@ class FactucontrolController extends Controller
             $r++;
         }
 
+        if (COUNT($dataHistorial) == 0) {
+            $dataHistorial = DB::connection('sqlsrv')->table('FACTUCONTROL.caso as caso')->where('id_caso', $request["idCaso"])->get();
+        }
+
         return response()->json(["dataHistorial" => $dataHistorial,  "status" => "ok"]);
     }
 
