@@ -1704,7 +1704,7 @@ class FactucontrolController extends Controller
     public function getValoresUnicos($val)
     {
         $validaCierre = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
-            ->selectRaw('DISTINCT caso.fecha_creacion,
+            ->selectRaw('caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
             caso.flag_prontopago,
