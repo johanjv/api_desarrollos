@@ -50,4 +50,9 @@ Route::middleware(['auth:api'])->group(function () {
     Route::post('/permisosFac',           'Factucontrol\FactucontrolController@permisosFac');
     Route::post('/usuariodaPermisos',     'Factucontrol\FactucontrolController@usuariodaPermisos');
     Route::post('/insertTransfiere',      'Factucontrol\FactucontrolController@insertTransfiere');
+
+
+
+    Route::get('getHistorialAdm',      'Factucontrol\FactucontrolController@getHistorialAdm');
+
 });

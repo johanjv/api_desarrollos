@@ -15,7 +15,26 @@ class HistorialCasos extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
-      'id_hcaso',
+       'id_hcaso'
+      ,'id_caso'
+      ,'fecha_movimiento'
+      ,'observaciones'
+      ,'id_user'
+      ,'fecha_asignacion'
+      ,'fecha_pasa_caso'
+      ,'primerMovimiento'
+      ,'devolucion'
+      ,'docDevo'
+      ,'nomDevo'
+      ,'idConcepDevo'
+      ,'nomConceDevo'
+      ,'idPago'
+      ,'nomConcePago'
+      ,'idAnulado'
+      ,'nomAnulado'
+      ,'seguimiento'
+      ,'fechaCierre'
+      /* 'id_hcaso',
       'id_caso',
       'fecha_movimiento',
       'observaciones',
@@ -23,7 +42,7 @@ class HistorialCasos extends Model
       'fecha_asignacion',
       'fecha_pasa_caso',
       'primerMovimiento',
-      'seguimiento'
+      'seguimiento' */
     ];
 
 }
