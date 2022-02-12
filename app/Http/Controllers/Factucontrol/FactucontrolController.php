@@ -1381,38 +1381,34 @@ class FactucontrolController extends Controller
                         )
                     ->orderBy('caso.id_caso', 'ASC')
                     ->where('caso.nuevo', null)
-                    ->where('FACTUCONTROL.caso.id_user_create', $documento)
+                    ->where('caso.id_user_create', $documento)
                     //->where('FACTUCONTROL.historial_caso.id_user', $documento)
                 ->get();
 
-                $consultaHistoricoNew = HistorialCasos::selectRaw("
-                    caso.id_caso, caso.id_user_create, caso.descripcion_tema, urad.name, urad.last_name, CONCAT(urad.name, ' ', urad.last_name) as radicadorUser, caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, u.last_name,
-                    caso.ordenCompra as orden_id, caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor, CONCAT(u.name, ' ', u.last_name) as ultUser,
-                    datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
-                    datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
-                    datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
+                $consultaHistoricoNew = Caso::selectRaw("
+                    FACTUCONTROL.caso.id_caso, FACTUCONTROL.caso.id_user_create, FACTUCONTROL.caso.descripcion_tema, 
+                    FACTUCONTROL.caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, FACTUCONTROL.caso.ordenCompra as orden_id, 
+                    FACTUCONTROL.caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor,
+                        datediff(DAY, FACTUCONTROL.caso.fecha_creacion, GETDATE()) AS dias,
+                        datediff(HOUR, FACTUCONTROL.caso.fecha_creacion, GETDATE()) %24 AS horas,
+                        datediff(MINUTE, FACTUCONTROL.caso.fecha_creacion, GETDATE()) %60 AS minutos,
                     sucursal.SUC_DEPARTAMENTO AS nombre_sucursal
-                    ")
-                    ->leftjoin('FACTUCONTROL.caso AS caso', 'caso.id_caso', '=', 'FACTUCONTROL.historial_caso.id_caso')
-                    ->leftjoin('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
-                    ->leftjoin('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
-                    ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
-                    ->leftjoin('users AS u', 'u.nro_doc', '=', DB::raw('CONVERT(VARCHAR, caso.id_tema_user)'))
-                    ->leftjoin('users AS urad', 'urad.nro_doc', '=', DB::raw('CONVERT(VARCHAR, caso.id_user_create)'))
-                    ->leftjoin('FACTUCONTROL.temas AS temas', 'u.id_tema', '=', 'temas.id_tema')
-                    //->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
-                    //->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.id_user')
-                    ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
-                    ->groupBy('caso.id_caso', 'caso.descripcion_tema', 'caso.fecha_creacion', 'estado.descripcion_estado', 'categoria.Descripcion', 'caso.ordenCompra', 'caso.id_user_create',
-                        'caso.id_tipo_factura', 'p.razon_social', 'p.dias_pago', 'u.name', 'urad.name', 'urad.last_name',
-                        /* 'FACTUCONTROL.historial_caso.fecha_pasa_caso', */
-                        'sucursal.SUC_DEPARTAMENTO','u.last_name'
+                ")
+                ->leftjoin('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
+                ->leftjoin('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
+                ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
+                ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO')
+                ->groupBy('caso.id_caso', 'caso.descripcion_tema', 'caso.fecha_creacion', 'estado.descripcion_estado', 'categoria.Descripcion', 'caso.ordenCompra', 
+                'caso.id_user_create',
+                        'caso.id_tipo_factura', 'p.razon_social', 'p.dias_pago',
+                        // 'FACTUCONTROL.historial_caso.fecha_pasa_caso',
+                        'sucursal.SUC_DEPARTAMENTO'
                     )
-                    ->orderBy('caso.id_caso', 'ASC')
-                    ->where('caso.nuevo', 1)
-                    ->where('FACTUCONTROL.caso.id_user_create', $documento)
-                    //->where('FACTUCONTROL.historial_caso.id_user', $documento)
+                ->where('FACTUCONTROL.caso.id_user_create', $documento)
+                    ->orderBy('FACTUCONTROL.caso.id_caso', 'ASC')
+                    ->where('FACTUCONTROL.caso.nuevo', 1)
                 ->get();
+
             }else {
                 $consultaHistoricoOld = HistorialCasos::selectRaw("
                     caso.id_caso, caso.id_user_create, caso.descripcion_tema, urad.name, urad.last_name, CONCAT(urad.name, ' ', urad.last_name) as radicadorUser, caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, u.last_name,
