@@ -925,7 +925,7 @@ class FactucontrolController extends Controller
             ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
             ->leftjoin('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
             ->where('caso.id_caso', $request["idCaso"])
-            ->orderBy('id_hcaso', 'ASC')
+            ->orderBy('historial_caso.fecha_movimiento', 'DESC')
             ->get();
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
@@ -943,7 +943,7 @@ class FactucontrolController extends Controller
             ->join('users', 'historial_caso.id_user', '=', 'users.nro_doc')
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
             ->where('caso.id_caso', $request["idCaso"])
-            ->orderBy('id_hcaso', 'ASC')
+            ->orderBy('historial_caso.fecha_movimiento', 'DESC')
             ->get();
 
         foreach ($casosHistorialOld as $value) {
