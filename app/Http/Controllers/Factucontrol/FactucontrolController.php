@@ -1470,9 +1470,6 @@ class FactucontrolController extends Controller
         foreach ($consultaHistoricoOld as $value) { array_push($historico, $value); }
         foreach ($consultaHistoricoNew as $value) { array_push($historico, $value); }
 
-        //$historico = arsort($historico);
-
-
         return response()->json([
             "historialPerUser" =>  $historico
         ], 200);
