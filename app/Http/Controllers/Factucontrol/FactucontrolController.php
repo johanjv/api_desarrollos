@@ -587,7 +587,7 @@ class FactucontrolController extends Controller
             ->orderBy('dias_restantes', 'ASC')
             ->get();
 
-        $casosRegistradoOld3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
+        /* $casosRegistradoOld3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
             ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -612,7 +612,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->orderBy('dias_restantes', 'ASC')
-            ->get();
+            ->get(); */
 
         $casosRegistradoOld2 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
             ->selectRaw('DISTINCT caso.fecha_creacion,
@@ -677,9 +677,9 @@ class FactucontrolController extends Controller
             array_push($casosRegistradoOld, $value);
         }
 
-        foreach ($casosRegistradoOld3 as $value) {
+       /*  foreach ($casosRegistradoOld3 as $value) {
             array_push($casosRegistradoOld, $value);
-        }
+        } */
 
 
         foreach ($casosRegistradoOld as $valueOld) {
@@ -786,7 +786,7 @@ class FactucontrolController extends Controller
             ->orderBy('dias_restantes', 'ASC')
             ->get();
 
-        $casosRegistradoOldPro3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('users.documento', $documento)->where('caso.nuevo',  null)
+        /* $casosRegistradoOldPro3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('users.documento', $documento)->where('caso.nuevo',  null)
             ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
@@ -811,7 +811,7 @@ class FactucontrolController extends Controller
             ->leftJoin('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->orderBy('dias_restantes', 'ASC')
-            ->get();
+            ->get(); */
 
 
         $casosRegistradoOldPro2 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('users.documento', $documento)->where('caso.nuevo', null)
@@ -851,11 +851,11 @@ class FactucontrolController extends Controller
             array_push($casosRegistradoOldPro, $value);
         }
 
-        foreach ($casosRegistradoOldPro3 as $value) {
+        /* foreach ($casosRegistradoOldPro3 as $value) {
             array_push($casosRegistradoOldPro, $value);
-        }
+        } */
 
-        $casosRegistradoOldProCount = $casosRegistradoOldPro1->count() + $casosRegistradoOldPro2->count() + $casosRegistradoOldPro3->count();
+        $casosRegistradoOldProCount = $casosRegistradoOldPro1->count() + $casosRegistradoOldPro2->count() /* + $casosRegistradoOldPro3->count() */;
 
         //return gettype($casosRegistradoOldPro);
 
