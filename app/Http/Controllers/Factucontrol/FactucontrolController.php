@@ -928,6 +928,26 @@ class FactucontrolController extends Controller
             ->orderBy('historial_caso.fecha_movimiento', 'DESC')
             ->get();
 
+        if (count($casosHistorialOld) == 0) {
+            $casosHistorialOld = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
+                ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
+                caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
+                estado.descripcion_estado AS estado,
+                    historial_caso.*,
+                    datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
+                datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
+                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
+                ')
+                ->leftjoin('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
+                ->leftjoin('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
+                ->leftjoin('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
+                ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
+                ->leftjoin('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
+                ->where('caso.id_caso', $request["idCaso"])
+                ->orderBy('historial_caso.fecha_movimiento', 'DESC')
+                ->get();
+        }
+
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
                 caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra, historial_caso.fecha_pasa_caso, historial_caso.primerMovimiento
