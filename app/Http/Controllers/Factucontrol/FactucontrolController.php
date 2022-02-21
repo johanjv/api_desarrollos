@@ -587,6 +587,33 @@ class FactucontrolController extends Controller
             ->orderBy('dias_restantes', 'ASC')
             ->get();
 
+        $casosRegistradoOld3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
+            ->selectRaw('DISTINCT caso.fecha_creacion,
+            caso.id_caso,
+            caso.descripcion_tema,
+            caso.flag_prontopago,
+            caso.id_tipo_factura,
+
+            users.id_user,
+            users.name,
+            users.documento,
+            estado.descripcion_estado AS estado,
+            categoria.descripcion AS categoria_descripcion,
+            p.razon_social,
+            sucursal.nombre AS nombre_sucursal,
+            p.dias_pago as diasProveedor,
+            DATEDIFF(DAY, GETDATE(), DATEADD(DAY, p.dias_pago, caso.fecha_creacion)) AS dias_restantes
+            ')
+            ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_user')
+            //->join('FACTUCONTROL.temas AS temas', 'temas_user.id_tema', '=', 'temas.id_tema')
+            ->join('FACTUCONTROL.users AS users', 'temas_user.id_user', '=', 'users.documento')
+            ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
+            ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
+            ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
+            ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
+            ->orderBy('dias_restantes', 'ASC')
+            ->get();
+
         $casosRegistradoOld2 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
             ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
@@ -647,6 +674,10 @@ class FactucontrolController extends Controller
         }
 
         foreach ($casosRegistradoOld2 as $value) {
+            array_push($casosRegistradoOld, $value);
+        }
+
+        foreach ($casosRegistradoOld3 as $value) {
             array_push($casosRegistradoOld, $value);
         }
 
