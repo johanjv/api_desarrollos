@@ -677,7 +677,7 @@ class FactucontrolController extends Controller
             array_push($casosRegistradoOld, $value);
         }
 
-       /*  foreach ($casosRegistradoOld3 as $value) {
+        /*  foreach ($casosRegistradoOld3 as $value) {
             array_push($casosRegistradoOld, $value);
         } */
 
@@ -1243,24 +1243,50 @@ class FactucontrolController extends Controller
         $misArchivosASQL = [];
         if ($request->hasFile("files")) {
             $files = $request->file("files");
-            foreach ($files as $uno) {
-                $adjuntosRepetidos = DB::connection('sqlsrv')->table('FACTUCONTROL.attachment as attachment')->where("attachment.file_name", $uno->getClientOriginalName())->selectRaw('attachment.*')->get();
-                if (sizeOf($adjuntosRepetidos) == 0) {
-                    if ($uno->guessExtension() == "pdf") {
-                        $rt = public_path("uploads/factucontrol/" . $uno->getClientOriginalName());
-                        if (sizeOf($files) > 1) {
+
+            if (sizeOf($files) > 1) {
+                foreach ($files as $uno) {
+                    $adjuntosRepetidos = DB::connection('sqlsrv')->table('FACTUCONTROL.attachment as attachment')->where("attachment.file_name", $uno->getClientOriginalName())->selectRaw('attachment.*')->get();
+                    if (sizeOf($adjuntosRepetidos) == 0) {
+                        if ($uno->guessExtension() == "pdf") {
+
+                            $rt = public_path("uploads/factucontrol/" . $uno->getClientOriginalName());
                             array_push($misArchivosASQL, $uno->getClientOriginalName());
+
+                            Storage::disk('ftp')->put($uno->getClientOriginalName(), $uno);
+                            /* copy($uno, $rt); */
+                            $adjuntoPorCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
+                                'file_name'    => $uno->getClientOriginalName(),
+                                'encrypt_name' => $uno->getClientOriginalName(),
+                                'id_caso'      => $request["idCaso"],
+                                'date_upload'  => $fechaActual,
+                                'title'        => $uno->getClientOriginalName(),
+                            ]);
                         } else {
-                            $misArchivosASQL = $uno->getClientOriginalName();
+                            return response()->json([
+                                "radicado" =>  "formatoErrado"
+                            ], 200);
                         }
-                        Storage::disk('ftp')->put($uno->getClientOriginalName(), $uno);
+                    } else {
+                        return response()->json([
+                            "adjuntoPorCaso" =>  "yaExisteArchivo"
+                        ], 200);
+                    }
+                }
+            } else {
+                $adjuntosRepetidos = DB::connection('sqlsrv')->table('FACTUCONTROL.attachment as attachment')->where("attachment.file_name", $files->getClientOriginalName())->selectRaw('attachment.*')->get();
+                if (sizeOf($adjuntosRepetidos) == 0) {
+                    if ($files->guessExtension() == "pdf") {
+                        $rt = public_path("uploads/factucontrol/" . $files->getClientOriginalName());
+                        $misArchivosASQL = $files->getClientOriginalName();
+                        Storage::disk('ftp')->put($files->getClientOriginalName(), $files);
                         /* copy($uno, $rt); */
                         $adjuntoPorCaso = DB::connection('sqlsrv')->table("FACTUCONTROL.attachment")->insert([
-                            'file_name'    => $uno->getClientOriginalName(),
-                            'encrypt_name' => $uno->getClientOriginalName(),
+                            'file_name'    => $files->getClientOriginalName(),
+                            'encrypt_name' => $files->getClientOriginalName(),
                             'id_caso'      => $request["idCaso"],
                             'date_upload'  => $fechaActual,
-                            'title'        => $uno->getClientOriginalName(),
+                            'title'        => $files->getClientOriginalName(),
                         ]);
                     } else {
                         return response()->json([
