@@ -677,7 +677,7 @@ class FactucontrolController extends Controller
             array_push($casosRegistradoOld, $value);
         }
 
-       /*  foreach ($casosRegistradoOld3 as $value) {
+        /*  foreach ($casosRegistradoOld3 as $value) {
             array_push($casosRegistradoOld, $value);
         } */
 
@@ -947,14 +947,15 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
-            ->join('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
+            ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
             ->where('caso.id_caso', $request["idCaso"])
+            ->where('caso.nuevo', null)
             ->orderBy('historial_caso.fecha_movimiento', 'DESC')
             ->get();
 
         if (count($casosHistorialOld) == 0) {
-            $casosHistorialOld = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
+            $casosHistorialOld1 = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
                 ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
                 caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
                 estado.descripcion_estado AS estado,
@@ -967,11 +968,21 @@ class FactucontrolController extends Controller
                 ->leftjoin('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
                 ->leftjoin('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
                 ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
-                ->leftjoin('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
+                ->leftjoin('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
                 ->where('caso.id_caso', $request["idCaso"])
+                ->where('caso.nuevo', null)
                 ->orderBy('historial_caso.fecha_movimiento', 'DESC')
                 ->get();
+
+            foreach ($casosHistorialOld1 as $value) {
+                $a = explode('\\n', $casosHistorialOld1[0]->descripcion_tema);
+                $b = implode($a);
+                $value->descripcionMejorada = $b;
+                $value->antiguo = true;
+                array_push($dataHistorial, $value);
+            }
         }
+
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
@@ -988,6 +999,7 @@ class FactucontrolController extends Controller
             ->join('users', 'historial_caso.id_user', '=', 'users.nro_doc')
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
             ->where('caso.id_caso', $request["idCaso"])
+            ->where('caso.nuevo', 1)
             ->orderBy('historial_caso.fecha_movimiento', 'DESC')
             ->get();
 
@@ -1246,8 +1258,9 @@ class FactucontrolController extends Controller
             foreach ($files as $uno) {
                 $adjuntosRepetidos = DB::connection('sqlsrv')->table('FACTUCONTROL.attachment as attachment')->where("attachment.file_name", $uno->getClientOriginalName())->selectRaw('attachment.*')->get();
                 if (sizeOf($adjuntosRepetidos) == 0) {
+
                     if ($uno->guessExtension() == "pdf") {
-                        
+
                         $rt = public_path("uploads/factucontrol/" . $uno->getClientOriginalName());
                         if (sizeOf($files) > 1) {
                             array_push($misArchivosASQL, $uno->getClientOriginalName());
