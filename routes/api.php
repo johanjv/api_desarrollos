@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\ChangeStatusPeriodoEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\User;
@@ -18,12 +19,21 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+/* EVENTO PRUEBA BROADCAST */
+/* Route::middleware('auth:api')->post('statusPeriodo', function (Request $request) {
+    event(new ChangeStatusPeriodoEvent($request->all()));
+    return "EVENTO OK";
+}); */
+
 Route::post('/login',     'LoginController@login');
 Route::post('/register',  'RegisterController@register');
 Route::post('/check', 'LoginController@check');
 
 /* Globals Routes */
 Route::middleware('auth:api')->group(function () {
+
+    Route::post('/statusPeriodo',             'GestionResiduos\GestionResiduosController@statusPeriodo');
+
     Route::get('/checkSession',             'LoginController@check');
     Route::post('/checkAutorizacion',       'LoginController@checkAutorizacion');
     Route::post('/logout',                  'LoginController@logout');
@@ -57,7 +67,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('getHistorial',               'Bitacora\BitacoraController@getHistorial');
     Route::get('getConteoBit',               'Bitacora\BitacoraController@getConteoBit');
 
-    Route::post('getFileFTP',                 'AdminGlobal\GlobalsController@getFileFTP');
+    Route::post('getFileFTP',                'AdminGlobal\GlobalsController@getFileFTP');
 
 });
 

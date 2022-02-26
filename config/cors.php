@@ -16,15 +16,13 @@ return [
     */
 
     'paths' => [
-        /* EN RED Y LA NUVE */
+        // EN RED Y LA NUVE
         'https://apidesarrollos.virreysolisips.com.co:1801/api/*',
-        /* LOCALES */
+        // LOCALES
 
         "http://localhost:8000/api/*",
         "http://10.10.6.220:8000/api/*",
-        "http://10.10.6.228:8000/api/*"
-
-        /* 'api/*' */
+        "http://10.10.6.228:8000/api/*",
     ],
 
     'allowed_methods' => [

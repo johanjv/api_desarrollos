@@ -1386,8 +1386,8 @@ class FactucontrolController extends Controller
                 ->get();
 
                 $consultaHistoricoNew = Caso::selectRaw("
-                    FACTUCONTROL.caso.id_caso, FACTUCONTROL.caso.id_user_create, FACTUCONTROL.caso.descripcion_tema, 
-                    FACTUCONTROL.caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, FACTUCONTROL.caso.ordenCompra as orden_id, 
+                    FACTUCONTROL.caso.id_caso, FACTUCONTROL.caso.id_user_create, FACTUCONTROL.caso.descripcion_tema,
+                    FACTUCONTROL.caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, FACTUCONTROL.caso.ordenCompra as orden_id,
                     FACTUCONTROL.caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor,
                         datediff(DAY, FACTUCONTROL.caso.fecha_creacion, GETDATE()) AS dias,
                         datediff(HOUR, FACTUCONTROL.caso.fecha_creacion, GETDATE()) %24 AS horas,
@@ -1398,7 +1398,7 @@ class FactucontrolController extends Controller
                 ->leftjoin('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
                 ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
                 ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO')
-                ->groupBy('caso.id_caso', 'caso.descripcion_tema', 'caso.fecha_creacion', 'estado.descripcion_estado', 'categoria.Descripcion', 'caso.ordenCompra', 
+                ->groupBy('caso.id_caso', 'caso.descripcion_tema', 'caso.fecha_creacion', 'estado.descripcion_estado', 'categoria.Descripcion', 'caso.ordenCompra',
                 'caso.id_user_create',
                         'caso.id_tipo_factura', 'p.razon_social', 'p.dias_pago',
                         // 'FACTUCONTROL.historial_caso.fecha_pasa_caso',

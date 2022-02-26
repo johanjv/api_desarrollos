@@ -139,6 +139,7 @@ return [
     'factuControl'  => env('APP_FACTUCONTROL', 10024),
     'citologias'    => env('APP_CITOLOGIAS', 10025),
     'mamitas'       => env('APP_MAMITAS', 10031),
+    'residuos'       => env('APP_RESIDUOS', 10034),
 
 
     /*
@@ -204,6 +205,16 @@ return [
     */
     'mamitasUsers' => env('APP_MAMITAS_USERS', 15),
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles GESTIÓN DE RESIDUOS HOSPITALARIOS
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
 
 
 

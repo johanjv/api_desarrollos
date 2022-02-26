@@ -12,7 +12,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::prefix("gestion-de-residuos-hospitalarios")->group(function(){
-        Route::post('getDataCalendar',        'GestionResiduos\GestionResiduosController@getDataCalendar');
-        Route::get('getClasif',               'GestionResiduos\GestionResiduosController@getClasif');
+        Route::post('getDataCalendar',          'GestionResiduos\GestionResiduosController@getDataCalendar');
+        Route::get('getClasif',                 'GestionResiduos\GestionResiduosController@getClasif');
+        Route::post('saveRegistroDiario',       'GestionResiduos\GestionResiduosController@saveRegistroDiario');
+        Route::post('aRevision',                'GestionResiduos\GestionResiduosController@aRevision');
+        Route::get('getPendientes',             'GestionResiduos\GestionResiduosController@getPendientes');
+        Route::get('getDetallePeriodo',         'GestionResiduos\GestionResiduosController@getDetallePeriodo');
     });
 });
