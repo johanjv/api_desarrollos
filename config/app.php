@@ -203,7 +203,7 @@ return [
     | obtener los modulos correspondientes a cada auno.
     |
     */
-    'mamitasUsers' => env('APP_MAMITAS_USERS', 15),
+    'Mamitas2_0' => env('APP_MAMITAS_USERS', 15),
 
 
     /*

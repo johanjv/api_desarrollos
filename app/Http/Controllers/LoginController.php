@@ -11,6 +11,7 @@ use App\Models\AdminGlobal\Modulos;
 use App\Models\AdminGlobal\Submodulos;
 use App\Models\Bitacora\Bitacora;
 use App\User;
+use Carbon\Carbon;
 use DB;
 
 class LoginController extends Controller
@@ -18,6 +19,7 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
+
         $request->validate([
             'username' => ['required'],
             'password' => ['required']
@@ -36,7 +38,6 @@ class LoginController extends Controller
             /* return "1"; */
             /* Extraigo la informacion basica del usuario que se loguea por primera vez para insertarlo en la tabla user */
             $detalleUser = mb_convert_encoding($usuario, 'UTF-8', 'UTF-8');
-
 
             /* Se encuentra en el directorio activo */
             $user = User::with('roles')->where('email', $request->username)->first(); //Lo busco en la tabla de user
@@ -178,6 +179,8 @@ class LoginController extends Controller
         $rolUser = [];
         foreach ($grupos as $key => $value) {
             if ($key != 'count') {
+
+                /* ROLES DE HVSEDES */
                 if ($value == 'CN=AGSuperAdmin') {
                     array_push($rolUser, 1);
                 } elseif ($value == 'CN=AGAdministrador') {
@@ -195,6 +198,7 @@ class LoginController extends Controller
                 } elseif ($value == 'CN=HVAdmTH') {
                     array_push($rolUser, 8);
                 }
+
                 /* ROLES DE FACTUCONTROL */
                 elseif ($value == 'CN=RadicadorFactu') {
                     array_push($rolUser, 9);
@@ -211,6 +215,11 @@ class LoginController extends Controller
                 /* ROLES DE CITOLOGÍAS */
                 elseif ($value == 'CN=ProfCitologias') {
                     array_push($rolUser, 13);
+                }
+
+                /* ROLES DE MAMITAS */
+                elseif ($value == 'CN=Mamitas2_0') {
+                    array_push($rolUser, 15);
                 }
             }
         }

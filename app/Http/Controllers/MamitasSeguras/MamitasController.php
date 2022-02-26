@@ -14,9 +14,9 @@ class MamitasController extends Controller
     public function getRegistrosdelDiaMamitas(Request $request)
     {
         $prof = Auth()->user()->nro_doc;
-        $registrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::today())->where('SEDE', $request['item']['sede'])->get();
+        $registrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::now())->where('SEDE', $request['item']['sede'])->get();
 
-        $CountRegistrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::today())->where('SEDE', $request['item']['sede'])->count();
+        $CountRegistrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::now())->where('SEDE', $request['item']['sede'])->count();
         $CountHistorico = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->count();
 
 
@@ -41,12 +41,12 @@ class MamitasController extends Controller
             'SEDE'              => $request['item']['sede'],
             'NRO_DOC_PROF'      => $prof,
             'EDAD_GEST'         => $request['item']['edad_gest'],
-            'FECHA_REGISTRO'    => Carbon::today()
+            'FECHA_REGISTRO'    => Carbon::now()
         ]);
 
-        $registrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::today())->where('SEDE', $request['item']['sede'])->get();
+        $registrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::now())->where('SEDE', $request['item']['sede'])->get();
 
-        $CountRegistrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::today())->where('SEDE', $request['item']['sede'])->count();
+        $CountRegistrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::now())->where('SEDE', $request['item']['sede'])->count();
         $CountHistorico = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->count();
 
 
@@ -83,9 +83,9 @@ class MamitasController extends Controller
         ]);
 
         $prof = Auth()->user()->nro_doc;
-        $registrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::today())->where('SEDE', $request['item']['sede'])->get();
+        $registrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::now())->where('SEDE', $request['item']['sede'])->get();
 
-        $CountRegistrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::today())->where('SEDE', $request['item']['sede'])->count();
+        $CountRegistrosHoy = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->whereDate('FECHA_REGISTRO', Carbon::now())->where('SEDE', $request['item']['sede'])->count();
         $CountHistorico = Mamitas::with('municipio', 'localidad')->where('NRO_DOC_PROF', $prof)->count();
 
         return response()->json([

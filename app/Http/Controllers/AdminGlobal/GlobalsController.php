@@ -295,7 +295,7 @@ class GlobalsController extends Controller
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-            }else if (in_array(config('app.mamitasUsers'), $permisos)) {
+            }else if (in_array(config('app.Mamitas2_0'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
