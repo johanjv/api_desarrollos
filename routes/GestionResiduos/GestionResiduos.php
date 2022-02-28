@@ -18,5 +18,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('aRevision',                'GestionResiduos\GestionResiduosController@aRevision');
         Route::get('getPendientes',             'GestionResiduos\GestionResiduosController@getPendientes');
         Route::get('getDetallePeriodo',         'GestionResiduos\GestionResiduosController@getDetallePeriodo');
+        Route::post('updatedStatus',            'GestionResiduos\GestionResiduosController@updatedStatus');
     });
 });

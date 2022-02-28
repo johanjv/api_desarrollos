@@ -21,6 +21,7 @@ class TiempoResiduos extends Model
         'dia',
         'mes',
         'ano',
+        'fecha_concat',
         'nro_doc_user',
         'unidad',
         'id_mes_ano',

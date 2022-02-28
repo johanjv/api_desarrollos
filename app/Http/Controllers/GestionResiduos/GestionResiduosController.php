@@ -9,6 +9,7 @@ use App\Models\Residuos\Clasificacion;
 use App\Models\Residuos\Residuos;
 use App\Models\Residuos\TiempoResiduos;
 use App\Models\Residuos\ValidarMes;
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -66,14 +67,15 @@ class GestionResiduosController extends Controller
 
         foreach ($request["item"] as $item) {
             TiempoResiduos::create([
-                'id_residuo' => $item["id_residuos"],
-                'cantidad' => $item["valor"],
-                'dia' => $request["dia"],
-                'mes' => $request["mes"],
-                'ano' => $request["ano"],
-                'nro_doc_user' => Auth::user()->nro_doc,
-                'unidad' => $request["unidad"],
-                'id_mes_ano' => $request["idMes"],
+                'id_residuo'    => $item["id_residuos"],
+                'cantidad'      => $item["valor"],
+                'dia'           => $request["dia"],
+                'mes'           => $request["mes"],
+                'ano'           => $request["ano"],
+                'fecha_concat'  => $request["ano"] . "-" . $request["mes"] . "-" . $request["dia"] . "T" . date('h:m:s'),
+                'nro_doc_user'  => Auth::user()->nro_doc,
+                'unidad'        => $request["unidad"],
+                'id_mes_ano'    => $request["idMes"],
             ]);
         }
 
@@ -164,28 +166,49 @@ class GestionResiduosController extends Controller
 
     public function getDetallePeriodo(Request $request)
     {
-        $registros = TiempoResiduos::where('id_mes_ano', $request['periodo'])->where('unidad', $request['unidad'])->get();
 
-        $sumatorias = Residuos::selectRaw('
-            RESIDUOS.residuos.nomb_residuos,
-            RESIDUOS.categoria_residuos.nomb_categoria,
-            SUM(RESIDUOS.tiempos_residuos.cantidad) as total'
-        )->join('RESIDUOS.tiempos_residuos', 'RESIDUOS.residuos.id_residuos', '=', 'RESIDUOS.tiempos_residuos.id_residuo')
-        ->join('RESIDUOS.categoria_residuos', 'RESIDUOS.categoria_residuos.id_categoria', '=', 'RESIDUOS.residuos.id_categoria')
-        ->where('RESIDUOS.tiempos_residuos.unidad', $request['unidad'])
-        ->where('RESIDUOS.tiempos_residuos.id_mes_ano', $request['periodo'])
-        ->groupBy('RESIDUOS.residuos.nomb_residuos','RESIDUOS.categoria_residuos.nomb_categoria')
-        ->orderBy('total', 'DESC')
+        $sumatorias = Residuos::selectRaw('RESIDUOS.residuos.id_residuos, RESIDUOS.residuos.nomb_residuos, RESIDUOS.categoria_residuos.nomb_categoria, SUM(RESIDUOS.tiempos_residuos.cantidad) as total')
+            ->join('RESIDUOS.tiempos_residuos', 'RESIDUOS.residuos.id_residuos', '=', 'RESIDUOS.tiempos_residuos.id_residuo')
+            ->join('RESIDUOS.categoria_residuos', 'RESIDUOS.categoria_residuos.id_categoria', '=', 'RESIDUOS.residuos.id_categoria')
+            ->where('RESIDUOS.tiempos_residuos.unidad', $request['unidad'])
+            ->where('RESIDUOS.tiempos_residuos.id_mes_ano', $request['periodo'])
+            ->groupBy('RESIDUOS.residuos.nomb_residuos','RESIDUOS.categoria_residuos.nomb_categoria','RESIDUOS.residuos.id_residuos')
+            ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
+            ->orderBy('total', 'DESC')
         ->get();
 
+        $sumatorias->map(function ($item) use ($request) {
+            $item->registros = TiempoResiduos::selectRaw('*')->where('id_mes_ano', $request['periodo'])
+                ->join('users', 'users.nro_doc', '=', 'nro_doc_user')
+                ->join('RESIDUOS.residuos', 'RESIDUOS.residuos.id_residuos', '=', 'id_residuo')
+                ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000", $request['fechaHasta'] . "T23:59:59.999"])
+                ->where('unidad', $request['unidad'])
+                ->where('id_residuo', $item->id_residuos)
+                ->orderBy('dia', 'asc')
+            ->get();
+        });
+
         return response()->json([
-            'registros'     => $registros,
             'sumatorias'    => $sumatorias
         ], 200);
 
-        return $registros;
     }
 
+    public function updatedStatus(Request $request)
+    {
+        $periodos = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->update([
+            'aprobado' => 1,
+            'nro_doc_user' => Auth::user()->nro_doc,
+            'fecha_revision' => date('Y-m-d h:m:s')
+
+        ]);
+
+
+        return response()->json([
+            'periodos'    => $periodos
+        ], 200);
+
+    }
 
 
 }
