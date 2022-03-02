@@ -19,5 +19,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('getPendientes',             'GestionResiduos\GestionResiduosController@getPendientes');
         Route::get('getDetallePeriodo',         'GestionResiduos\GestionResiduosController@getDetallePeriodo');
         Route::post('updatedStatus',            'GestionResiduos\GestionResiduosController@updatedStatus');
+        Route::post('getDatosDia',              'GestionResiduos\GestionResiduosController@getDatosDia');
+        Route::post('editarRegistro',           'GestionResiduos\GestionResiduosController@editarRegistro');
     });
 });

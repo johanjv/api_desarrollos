@@ -28,22 +28,28 @@ class GestionResiduosController extends Controller
 
     public function getDataCalendar(Request $request)
     {
-        $data = $request->all();
-        $fechaParaValidar = ValidarMes::with(['registros' => function ($q) use ($request) {
-                $q->where('unidad', $request["unidad"]);}])->where('id_mes_ano', $data['idMes'])->where('unidad', $data['unidad'])->count();
 
-        if ($fechaParaValidar == 0) {
-            ValidarMes::create([
-                'id_mes_ano'    => $request['idMes'],
-                'unidad'        => $data['unidad']
-            ]);
-        }
+        $fechaParaValidar = ValidarMes::with(['registros' => function ($q) use ($request) {
+            $q->where('unidad', $request["unidad"]);}])->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->count();
+
+            //return $fechaParaValidar;
+            if ($fechaParaValidar == 0) {
+                if ($request['idMes'] != null) {
+                    ValidarMes::create([
+                        'id_mes_ano'    => $request['idMes'],
+                        'unidad'        => $request['unidad']
+                    ]);
+                }
+            }
 
         $datosCalendario = ValidarMes::with(['registros' => function ($q) use ($request) {
-                $q->where('unidad', $request["unidad"]);}])->where('id_mes_ano', $data['idMes'])->where('unidad', $data['unidad'])->first();
+            $q->where('unidad', $request["unidad"]);}])->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->first();
+
+        $periodosDisp = ValidarMes::selectRaw('id_mes_ano')->groupBy('id_mes_ano')->orderby('id_mes_ano', 'DESC')->get();
 
         return response()->json([
-            "datosCalendario"    => $datosCalendario,
+            "datosCalendario"   => $datosCalendario,
+            "periodosDisp"      => $periodosDisp,
         ], 200);
 
     }
@@ -64,7 +70,6 @@ class GestionResiduosController extends Controller
 
     public function saveRegistroDiario(Request $request)
     {
-
         foreach ($request["item"] as $item) {
             TiempoResiduos::create([
                 'id_residuo'    => $item["id_residuos"],
@@ -209,6 +214,56 @@ class GestionResiduosController extends Controller
         ], 200);
 
     }
+
+    public function getDatosDia(Request $request)
+    {
+        $registro = TiempoResiduos::selectRaw('*')->where('id_mes_ano', $request['idMes'])
+            ->join('users', 'users.nro_doc', '=', 'nro_doc_user')
+            ->join('RESIDUOS.residuos', 'RESIDUOS.residuos.id_residuos', '=', 'id_residuo')
+            ->where('unidad', $request['unidad'])
+            ->where('dia', substr($request['day'], -2))
+            ->where('mes', substr($request['day'], 5, 2))
+            ->where('ano', substr($request['day'], 0, 4))
+            ->orderBy('dia', 'asc')
+        ->get();
+
+        return response()->json([
+            'registro'    => $registro
+        ], 200);
+    }
+
+    public function editarRegistro(Request $request)
+    {
+        TiempoResiduos::where('dia', $request['dia'])
+            ->where('mes', $request['mes'])
+            ->where('ano', $request['ano'])
+            ->where('dia', $request['dia'])
+            ->where('unidad', $request['unidad'])
+            ->where('id_mes_ano', $request['idMes'])
+        ->delete();
+
+        foreach ($request["item"] as $item) {
+            TiempoResiduos::create([
+                'id_residuo'    => $item["id_residuos"],
+                'cantidad'      => $item["valor"],
+                'dia'           => $request["dia"],
+                'mes'           => $request["mes"],
+                'ano'           => $request["ano"],
+                'fecha_concat'  => $request["ano"] . "-" . $request["mes"] . "-" . $request["dia"] . "T" . date('h:m:s'),
+                'nro_doc_user'  => Auth::user()->nro_doc,
+                'unidad'        => $request["unidad"],
+                'id_mes_ano'    => $request["idMes"],
+            ]);
+        }
+
+        $datosCalendario = ValidarMes::with(['registros' => function ($q) use ($request) {
+            $q->where('unidad', $request["unidad"]);}])->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->first();
+
+        return response()->json([
+            "datosCalendario"    => $datosCalendario,
+        ], 200);
+    }
+
 
 
 }
