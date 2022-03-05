@@ -25,6 +25,8 @@ class TiempoResiduos extends Model
         'nro_doc_user',
         'unidad',
         'id_mes_ano',
+        'is_festivo',
+        'observacion'
     ];
 
 }

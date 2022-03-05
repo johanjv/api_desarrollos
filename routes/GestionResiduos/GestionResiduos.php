@@ -21,5 +21,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('updatedStatus',            'GestionResiduos\GestionResiduosController@updatedStatus');
         Route::post('getDatosDia',              'GestionResiduos\GestionResiduosController@getDatosDia');
         Route::post('editarRegistro',           'GestionResiduos\GestionResiduosController@editarRegistro');
+        Route::post('rechazarPeriodo',          'GestionResiduos\GestionResiduosController@rechazarPeriodo');
     });
 });
