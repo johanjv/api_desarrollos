@@ -26,6 +26,6 @@ class Modulos extends Model
 
     public function submodulos()
     {
-        return $this->hasMany('App\Models\AdminGlobal\Submodulos', 'modulo_id' );
+        return $this->hasMany('App\Models\AdminGlobal\Submodulos', 'modulo_id' )->orderBy('orden', 'DESC');
     }
 }

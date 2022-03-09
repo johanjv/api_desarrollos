@@ -5,6 +5,7 @@ namespace App\Http\Controllers\GestionResiduos;
 use App\Events\ChangeStatusPeriodoEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Hvsedes\Sucursal\Sucursal;
+use App\Models\Residuos\Categoria;
 use App\Models\Residuos\Clasificacion;
 use App\Models\Residuos\HistorialRechazo;
 use App\Models\Residuos\Residuos;
@@ -15,6 +16,7 @@ use Illuminate\Console\Scheduling\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class GestionResiduosController extends Controller
 {
@@ -150,6 +152,7 @@ class GestionResiduosController extends Controller
     public function aRevision(Request $request)
     {
         //return $request->all();
+
         $estadoEnvio = 0;
         $registros = TiempoResiduos::selectRaw('dia, mes, ano, unidad, id_mes_ano')
         ->where('unidad', $request['unidad'])
@@ -185,6 +188,26 @@ class GestionResiduosController extends Controller
             "datosCalendario"    => $datosCalendario,
             "estadoEnvio"        => $estadoEnvio
         ], 200);
+    }
+
+
+    public function saveDocumentosRes(Request $request)
+    {
+        $misAdj = [];
+        if ($request->hasFile("files")) {
+            $files = $request->file("files");
+            foreach ($files as $file) {
+                Storage::disk('ftp_residuos')->put($file->getClientOriginalName(), $file);
+                array_push($misAdj, $file->getClientOriginalName());
+            }
+
+            ValidarMes::where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->update([
+                'adjuntos' => json_encode($misAdj)
+            ]);
+
+        }
+
+
     }
 
     public function getPendientes(Request $request){
@@ -275,12 +298,12 @@ class GestionResiduosController extends Controller
     public function updatedStatus(Request $request)
     {
         $periodos = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->update([
-            'aprobado' => 1,
-            'nro_doc_user' => Auth::user()->nro_doc,
-            'fecha_revision' => date('Y-m-d h:m:s')
-
+            'aprobado'          => 1,
+            'nro_doc_user'      => Auth::user()->nro_doc,
+            'fecha_revision'    => date('Y-m-d h:m:s'),
+            'start_periodo'     => $request['fechaDesde'],
+            'end_periodo'       => $request['fechaHasta']
         ]);
-
 
         return response()->json([
             'periodos'    => $periodos
@@ -359,6 +382,136 @@ class GestionResiduosController extends Controller
 
         return response()->json([
             'periodos'    => $periodos
+        ], 200);
+    }
+
+    public function getFileFTPResiduos(Request $request)
+    {
+        //return $request->all();
+        if (Storage::disk('ftp_residuos')->exists($request["item"])) {
+            $directorios = Storage::disk('ftp_residuos')->directories();
+            foreach ($directorios as $directorio) {
+                if ($request["item"] == $directorio) {
+                    $ruta = Storage::disk('ftp_residuos')->files($directorio);
+                    $archivo = Storage::disk('ftp_residuos')->get($ruta[0]);
+                    $ruta = explode("/", $ruta[0]);
+
+                    Storage::disk('residuos_up')->put($ruta[0], $archivo);
+                    return $ruta[0];
+                }
+            }
+        }
+        return "ERROR";
+    }
+
+    public function saveClas(Request $request)
+    {
+        Clasificacion::create([
+            'nomb_clasif' => $request['clasif']
+        ]);
+
+        $clasificacion = Clasificacion::with([
+            'categoria' => function($q) {
+                $q->with([
+                    'residuos'
+                    ]);
+                }])->orderBy('id_clasif_residuos', 'DESC')->get();
+
+        return response()->json([
+            "clasificacion"    => $clasificacion,
+        ], 200);
+
+    }
+
+    public function getCat(Request $request)
+    {
+        $categorias = Categoria::with(['residuos','clasificacion'])->get();
+
+        return response()->json([
+            "categorias"    => $categorias,
+        ], 200);
+    }
+
+    public function saveCat(Request $request)
+    {
+        Categoria::create([
+            'nomb_categoria' => $request['nomb_cat'],
+            'id_clasif_residuos' => $request['clasif']
+        ]);
+
+        $categorias = Categoria::with(['residuos','clasificacion'])->get();
+
+        return response()->json([
+            "categorias"    => $categorias,
+        ], 200);
+
+    }
+
+    public function getRes(Request $request)
+    {
+        $residuos = Residuos::with(['categoria'])->get();
+
+        return response()->json([
+            "residuos"    => $residuos,
+        ], 200);
+    }
+
+    public function saveRes(Request $request)
+    {
+        Residuos::create([
+            'nomb_residuos' => $request['nomb_res'],
+            'id_categoria' => $request['cat']
+        ]);
+
+        $residuos = Residuos::with(['categoria'])->get();
+
+        return response()->json([
+            "residuos"    => $residuos,
+        ], 200);
+
+    }
+
+    public function saveEditItem(Request $request)
+    {
+        $item = Clasificacion::where('id_clasif_residuos', $request['item']['id_clasif_residuos'])->update([
+            'nomb_clasif' => $request['newItem']
+        ]);
+
+        $clasificacion = Clasificacion::with([
+            'categoria' => function($q) {
+                $q->with([
+                    'residuos'
+                    ]);
+                }])->orderBy('id_clasif_residuos', 'DESC')->get();
+
+        return response()->json([
+            "clasificacion"    => $clasificacion,
+        ], 200);
+    }
+
+    public function saveEditItemCat(Request $request)
+    {
+        $item = Categoria::where('id_categoria', $request['item']['id_categoria'])->update([
+            'nomb_categoria' => $request['newItem']
+        ]);
+
+        $categorias = Categoria::with(['residuos','clasificacion'])->get();
+
+        return response()->json([
+            "categorias"    => $categorias,
+        ], 200);
+    }
+
+    public function saveEditItemRes(Request $request)
+    {
+        $item = Residuos::where('id_residuos', $request['item']['id_residuos'])->update([
+            'nomb_residuos' => $request['newItem']
+        ]);
+
+        $residuos = Residuos::with(['categoria'])->get();
+
+        return response()->json([
+            "residuos"    => $residuos,
         ], 200);
     }
 

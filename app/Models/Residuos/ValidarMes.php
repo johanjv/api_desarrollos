@@ -22,7 +22,10 @@ class ValidarMes extends Model
         'nro_doc_user',
         'id_mes_ano',
         'unidad',
-        'observacion'
+        'observacion',
+        'start_fecha',
+        'end_fecha',
+        'adjuntos'
     ];
 
 

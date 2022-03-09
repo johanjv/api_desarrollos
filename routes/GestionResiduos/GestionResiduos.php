@@ -22,5 +22,15 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('getDatosDia',              'GestionResiduos\GestionResiduosController@getDatosDia');
         Route::post('editarRegistro',           'GestionResiduos\GestionResiduosController@editarRegistro');
         Route::post('rechazarPeriodo',          'GestionResiduos\GestionResiduosController@rechazarPeriodo');
+        Route::post('saveDocumentosRes',        'GestionResiduos\GestionResiduosController@saveDocumentosRes');
+        Route::post('getFileFTPResiduos',       'GestionResiduos\GestionResiduosController@getFileFTPResiduos');
+        Route::post('saveClas',                 'GestionResiduos\GestionResiduosController@saveClas');
+        Route::get('getCat',                    'GestionResiduos\GestionResiduosController@getCat');
+        Route::post('saveCat',                  'GestionResiduos\GestionResiduosController@saveCat');
+        Route::get('getRes',                    'GestionResiduos\GestionResiduosController@getRes');
+        Route::post('saveRes',                  'GestionResiduos\GestionResiduosController@saveRes');
+        Route::post('saveEditItem',             'GestionResiduos\GestionResiduosController@saveEditItem');
+        Route::post('saveEditItemCat',             'GestionResiduos\GestionResiduosController@saveEditItemCat');
+        Route::post('saveEditItemRes',             'GestionResiduos\GestionResiduosController@saveEditItemRes');
     });
 });
