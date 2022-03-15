@@ -301,14 +301,36 @@ class GlobalsController extends Controller
                 $modulos->load($loads);
             }
         } else if ($idDesarrollo == config('app.residuos')) {
-            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+            /* if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-            }else if (in_array(config('app.mamitasUsers'), $permisos)) {
+
+            }else */ if (in_array(config('app.SupAdmResiduos'), $permisos)) {
+
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
+
+            }else if (in_array(config('app.AdmResiduos'), $permisos)) {
+                //$modulos = null;
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '10056')->orderBy('orden', 'ASC')->get();
+                $loads      = [
+                    'submodulos' => function ($q) {
+                        $q->where('id', '=', '15');
+                    }
+                ];
+                $modulos->load($loads);
+            }else if (in_array(config('app.UsersResiduos'), $permisos)) {
+                $modulos = null;
+                /* $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '10056')->orderBy('orden', 'ASC')->get(); */
+                /* $loads      = [
+                    'submodulos' => function ($q) {
+                        $q->where('id', '=', '15');
+                    }
+                ];
+                $modulos->load($loads); */
             }
         } else {
             $modulos = null;

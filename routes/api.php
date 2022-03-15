@@ -19,12 +19,6 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-/* EVENTO PRUEBA BROADCAST */
-/* Route::middleware('auth:api')->post('statusPeriodo', function (Request $request) {
-    event(new ChangeStatusPeriodoEvent($request->all()));
-    return "EVENTO OK";
-}); */
-
 Route::post('/login',     'LoginController@login');
 Route::post('/register',  'RegisterController@register');
 Route::post('/check', 'LoginController@check');
@@ -33,6 +27,8 @@ Route::post('/check', 'LoginController@check');
 Route::middleware('auth:api')->group(function () {
 
     Route::post('/statusPeriodo',             'GestionResiduos\GestionResiduosController@statusPeriodo');
+
+    Route::post('/emitEventvalidado',         'GestionResiduos\GestionResiduosController@emitEventvalidado');
 
     Route::get('/checkSession',             'LoginController@check');
     Route::post('/checkAutorizacion',       'LoginController@checkAutorizacion');

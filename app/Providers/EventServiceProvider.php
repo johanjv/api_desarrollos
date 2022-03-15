@@ -24,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\ChangeStatusPeriodoEvent' => [
             'App\Listeners\ChangeStatusPeriodoListener',
         ],
+        'App\Events\PeriodoVerificadoEvent' => [
+            'App\Listeners\PeriodoVerificadoListener',
+        ],
     ];
 
     /**

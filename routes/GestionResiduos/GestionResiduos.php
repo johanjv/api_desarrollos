@@ -30,7 +30,9 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('getRes',                    'GestionResiduos\GestionResiduosController@getRes');
         Route::post('saveRes',                  'GestionResiduos\GestionResiduosController@saveRes');
         Route::post('saveEditItem',             'GestionResiduos\GestionResiduosController@saveEditItem');
-        Route::post('saveEditItemCat',             'GestionResiduos\GestionResiduosController@saveEditItemCat');
-        Route::post('saveEditItemRes',             'GestionResiduos\GestionResiduosController@saveEditItemRes');
+        Route::post('saveEditItemCat',          'GestionResiduos\GestionResiduosController@saveEditItemCat');
+        Route::post('saveEditItemRes',          'GestionResiduos\GestionResiduosController@saveEditItemRes');
+        Route::post('getIndicadores',           'GestionResiduos\GestionResiduosController@getIndicadores');
+        Route::post('eliminarItemActual',       'GestionResiduos\GestionResiduosController@eliminarItemActual');
     });
 });

@@ -221,6 +221,17 @@ class LoginController extends Controller
                 elseif ($value == 'CN=Mamitas2_0') {
                     array_push($rolUser, 15);
                 }
+
+                /* ROLES DE RESIDUOS */
+                elseif ($value == 'CN=SupAdmResiduos') {
+                    array_push($rolUser, 16);
+                }
+                elseif ($value == 'CN=AdmResiduos') {
+                    array_push($rolUser, 17);
+                }
+                elseif ($value == 'CN=UsersResiduos') {
+                    array_push($rolUser, 18);
+                }
             }
         }
         return $rolUser;

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GestionResiduos;
 
 use App\Events\ChangeStatusPeriodoEvent;
+use App\Events\PeriodoVerificadoEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Hvsedes\Sucursal\Sucursal;
 use App\Models\Residuos\Categoria;
@@ -63,14 +64,23 @@ class GestionResiduosController extends Controller
             ->where('id_mes_ano', $request["idMes"])
         ->first();
 
-        $periodos = ValidarMes::selectRaw('id_mes_ano, aprobado, id')->groupBy('id_mes_ano','aprobado', 'id')->orderby('id_mes_ano', 'DESC')->get();
+        $periodos = ValidarMes::selectRaw('id_mes_ano, aprobado, id')
+            ->where('unidad', $request["unidad"])
+            ->groupBy('id_mes_ano','aprobado', 'id')
+            ->orderby('id_mes_ano', 'DESC')
+        ->get();
+
+        //return $periodos;
+
         $periodosDisp = [];
         foreach ($periodos as $p) {
             array_push($periodosDisp, $p);
         }
 
-        if ($periodosDisp[1]['aprobado'] != 1) {
-            array_splice($periodosDisp, 0, 1);
+        if (COUNT($periodos) > 1) {
+            if ($periodosDisp[1]['aprobado'] != 1) {
+                array_splice($periodosDisp, 0, 1);
+            }
         }
 
         $formula1 = array(11,25,73,50,20,17,66,63,5,76);
@@ -85,7 +95,7 @@ class GestionResiduosController extends Controller
                 $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
                 $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
                 $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = ( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal'] * 100);
             }
 
             if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
@@ -104,6 +114,8 @@ class GestionResiduosController extends Controller
             "idi"               => $idi,
             "idos"              => $idos,
             "idrs"              => $idrs,
+            "sumatoriaPerResiduo"              => $sumatoriaPerResiduo,
+            "sumatoriaTotal"              => $sumatoriaTotal,
         ], 200);
 
     }
@@ -124,7 +136,19 @@ class GestionResiduosController extends Controller
 
     public function saveRegistroDiario(Request $request)
     {
+
+
         foreach ($request["item"] as $item) {
+            $feriado = 0;
+            if (isset($item["isFestivo"]) ) {
+                $feriado = 1;
+            }
+            if (isset($item["noLaboral"])) {
+                $feriado = 2;
+            }
+            if (isset($item["adverso"])) {
+                $feriado = 3;
+            }
             TiempoResiduos::create([
                 'id_residuo'    => $item["id_residuos"],
                 'cantidad'      => $item["valor"],
@@ -135,7 +159,7 @@ class GestionResiduosController extends Controller
                 'nro_doc_user'  => Auth::user()->nro_doc,
                 'unidad'        => $request["unidad"],
                 'id_mes_ano'    => $request["idMes"],
-                'is_festivo'    => !isset($item["isFestivo"]) ? 0 : $item["isFestivo"],
+                'is_festivo'    => $feriado,
                 'observacion'   => $item["observacion"]
             ]);
         }
@@ -147,7 +171,6 @@ class GestionResiduosController extends Controller
             "datosCalendario"    => $datosCalendario,
         ], 200);
     }
-
 
     public function aRevision(Request $request)
     {
@@ -196,13 +219,22 @@ class GestionResiduosController extends Controller
         $misAdj = [];
         if ($request->hasFile("files")) {
             $files = $request->file("files");
+
+            $docs = ValidarMes::where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->first();
+            if ($docs->adjuntos != null) {
+                $adjuntos = json_decode($docs->adjuntos);
+            }
+
             foreach ($files as $file) {
                 Storage::disk('ftp_residuos')->put($file->getClientOriginalName(), $file);
                 array_push($misAdj, $file->getClientOriginalName());
+                if ($docs->adjuntos != null) {
+                    array_push($adjuntos, $file->getClientOriginalName());
+                }
             }
 
             ValidarMes::where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->update([
-                'adjuntos' => json_encode($misAdj)
+                'adjuntos' => isset($adjuntos) ? json_encode($adjuntos) : json_encode($misAdj)
             ]);
 
         }
@@ -210,44 +242,110 @@ class GestionResiduosController extends Controller
 
     }
 
-    public function getPendientes(Request $request){
+    public function getPendientes(Request $request)
+    {
+        $roles = json_decode(Auth::user()->rol);
 
-        $countEnProceso     = ValidarMes::where('aprobado', 0)->count();
-        $countAprobado      = ValidarMes::where('aprobado', 1)->count();
-        $countRechazados    = ValidarMes::where('aprobado', 2)->count();
-        $countPendientes    = ValidarMes::where('aprobado', 3)->count();
+        $supAdmin = 16;
+        $admin = 17;
+        $tipoUser = 0;
+
+        if (in_array($supAdmin, $roles)) {
+            $tipoUser = 1;
+        }else if (in_array($admin, $roles)) {
+            $tipoUser = 2;
+        }
+
+        $countEnProceso     = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 0)->count();
+
+        $countAprobado      = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 1)->count();
+
+        $countRechazados    = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 2)->count();
+
+        $countPendientes    = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 3)->count();
 
         $pendientes = Sucursal::selectRaw('SUC_DEPARTAMENTO, SUC_CODIGO_DEPARTAMENTO')
-        ->join('UNIDADES_ESTANDAR', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
-        ->groupBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO')
-        ->orderBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO', 'ASC')
-        ->get();
+            ->join('UNIDADES_ESTANDAR', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP');
 
-        $pendientes->map(function ($item) {
-            $item->unidadesPendientes   = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
-            $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
-                ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', $item->SUC_CODIGO_DEPARTAMENTO)
-                ->where('aprobado', 3)
+        if ($tipoUser == 1) {
+            $pendientes = $pendientes->groupBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO')
+                ->orderBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO', 'ASC')
             ->get();
-            $item->unidadesProceso   = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
-            $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
-                ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', $item->SUC_CODIGO_DEPARTAMENTO)
-                ->where('aprobado', 0)
+        }else if ($tipoUser == 2) {
+            $pendientes = $pendientes->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', $request['dep'])
+                ->groupBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO')
+                ->orderBy('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_DEPARTAMENTO', 'ASC')
             ->get();
-            $item->unidadesAprobadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
-            $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
-                ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', $item->SUC_CODIGO_DEPARTAMENTO)
-                ->where('aprobado', 1)
+        }
+
+        //return $pendientes;
+
+        $pendientes->map(function ($item) use ($request, $tipoUser) {
+            if ($tipoUser == 1) {
+                $item->unidadesPendientes   = ValidarMes::where('aprobado', 3)
+                ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
+                ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
             ->get();
-            $item->unidadesRechazadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
-            $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
-                ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', $item->SUC_CODIGO_DEPARTAMENTO)
-                ->where('aprobado', 2)
+
+                $item->unidadesProceso  = ValidarMes::where('aprobado', 0)
+                ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+               /*  ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
+                ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
             ->get();
+
+                $item->unidadesAprobadas = ValidarMes::where('aprobado', 1)
+                    ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                    /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                    /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
+                ->get();
+
+                $item->unidadesRechazadas = ValidarMes::where('aprobado', 2)
+                ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
+                ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
+            ->get();
+            }
+            if ($tipoUser == 2) {
+                $item->unidadesPendientes   = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                    /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])
+                    ->where('aprobado', 3)
+                ->get();
+
+                $item->unidadesProceso   = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])
+                    ->where('aprobado', 0)
+                ->get();
+
+                $item->unidadesAprobadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                   /*  ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])
+                    ->where('aprobado', 1)
+                ->get();
+
+                $item->unidadesRechazadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                   /*  ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])
+                    ->where('aprobado', 2)
+              ->get();
+            }
+
         });
 
         return response()->json([
@@ -272,7 +370,6 @@ class GestionResiduosController extends Controller
             ->join('RESIDUOS.tiempos_residuos', 'RESIDUOS.residuos.id_residuos', '=', 'RESIDUOS.tiempos_residuos.id_residuo')
             ->join('RESIDUOS.categoria_residuos', 'RESIDUOS.categoria_residuos.id_categoria', '=', 'RESIDUOS.residuos.id_categoria')
             ->where('RESIDUOS.tiempos_residuos.unidad', $request['unidad'])
-            /* ->where('RESIDUOS.tiempos_residuos.id_mes_ano', $request['periodo']) */
             ->groupBy('RESIDUOS.residuos.nomb_residuos','RESIDUOS.categoria_residuos.nomb_categoria','RESIDUOS.residuos.id_residuos')
             ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
             ->orderBy('total', 'DESC')
@@ -289,8 +386,52 @@ class GestionResiduosController extends Controller
             ->get();
         });
 
+        $sumatoriaPerResiduo = TiempoResiduos::selectRaw('nomb_residuos, SUM(cantidad) as total')
+            ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
+            ->where('unidad', $request["unidad"])
+            ->where('id_mes_ano', $request["periodo"])
+            ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
+            ->groupBy('nomb_residuos')
+        ->get();
+
+        $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
+            ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
+            ->where('unidad', $request["unidad"])
+            ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
+            ->where('id_mes_ano', $request["periodo"])
+        ->first();
+
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula2 = array(47,8,17,23,70,13);
+
+        $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
+
+        if ($sumatoriaTotal['sumatoriaTotal'] == null || $sumatoriaTotal['sumatoriaTotal'] == "0.0") {
+            $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
+        }else{
+            if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
+                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+            }
+
+            if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
+                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+            }
+        }
+
+
+
         return response()->json([
-            'sumatorias'    => $sumatorias
+            'sumatorias'    => $sumatorias,
+            "idr"           => $idr,
+            "idi"           => $idi,
+            "idos"          => $idos,
+            "idrs"          => $idrs,
         ], 200);
 
     }
@@ -515,7 +656,88 @@ class GestionResiduosController extends Controller
         ], 200);
     }
 
+    public function emitEventvalidado(Request $request)
+    {
+        $registros = $this->getDataCalendar($request);
+        return Event(new PeriodoVerificadoEvent($registros));
+    }
 
+    public function getIndicadores(Request $request)
+    {
+
+        $sumatoriaPerResiduo = TiempoResiduos::selectRaw('nomb_residuos, SUM(cantidad) as total')
+            ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
+            ->where('unidad', $request["unidad"])
+            ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
+            ->groupBy('nomb_residuos')
+        ->get();
+
+        $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
+            ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
+            ->where('unidad', $request["unidad"])
+            ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
+        ->first();
+
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula2 = array(47,8,17,23,70,13);
+
+        $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
+
+        if ($sumatoriaTotal['sumatoriaTotal'] == null || $sumatoriaTotal['sumatoriaTotal'] == "0.0") {
+            $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
+        }else{
+            if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
+                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+            }
+
+            if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
+                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+            }
+
+        }
+
+        return response()->json([
+            "idr"   => $idr,
+            "idi"   => $idi,
+            "idos"  => $idos,
+            "idrs"  => $idrs,
+        ], 200);
+    }
+
+    public function eliminarItemActual(Request $request)
+    {
+        $periodo = ValidarMes::where('id', $request['item']["id"])->first();
+
+        $adjuntos = json_decode($periodo->adjuntos);
+        $adj = [];
+
+        $index = "";
+
+        foreach ($adjuntos as $key => $a) {
+            if ($a == $request['itemDelete']) {
+                $index = $key;
+            }
+        }
+
+        unset($adjuntos[$index]);
+
+        foreach ($adjuntos as $key => $value) {
+            array_push($adj, $value);
+        }
+
+        $adj = json_encode($adj);
+
+        $periodo = ValidarMes::where('id', $request['item']["id"])->update([
+            'adjuntos' => $adj
+        ]);
+
+    }
 
 
 }

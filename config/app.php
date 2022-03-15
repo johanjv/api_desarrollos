@@ -216,8 +216,9 @@ return [
     |
     */
 
-
-
+    'SupAdmResiduos' => env('APP_SUPADMRESIDUOS', 16),
+    'AdmResiduos' => env('APP_ADMRESIDUOS', 17),
+    'UsersResiduos' => env('APP_USERSRESIDUOS', 18),
 
     /*
     |--------------------------------------------------------------------------
