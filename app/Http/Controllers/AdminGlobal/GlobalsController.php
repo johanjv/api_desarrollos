@@ -247,10 +247,8 @@ class GlobalsController extends Controller
                 ];
 
                 $modulos->load($loads);
-
             } else if (in_array(config('app.HvTalentoHumo'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10030')->orderBy('orden', 'ASC')->get();
-
             } else if (in_array(config('app.hvAdmTH'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10030')->orWhere('id', '=', '10027')->orderBy('orden', 'ASC')->get();
 
@@ -275,17 +273,15 @@ class GlobalsController extends Controller
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
             } else if (in_array(config('app.Atencion'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10032')->orWhere('id', '=', '10039')->get();
-            }else if (in_array(config('app.AdminFac'), $permisos)) {
+            } else if (in_array(config('app.AdminFac'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10029')->orWhere('id', '=', '10046')->orWhere('id', '10049')->orWhere('id', '10053')->get();
             }
-
-
         } else if ($idDesarrollo == config('app.citologias')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-            }else if (in_array(config('app.ProfCitologias'), $permisos)) {
+            } else if (in_array(config('app.ProfCitologias'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
@@ -295,7 +291,13 @@ class GlobalsController extends Controller
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-            }else if (in_array(config('app.mamitasUsers'), $permisos)) {
+            } else if (in_array(config('app.mamitasUsers'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $loads = ['submodulos'];
+                $modulos->load($loads);
+            }
+        } else if ($idDesarrollo == config('app.viaticos')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
@@ -312,7 +314,6 @@ class GlobalsController extends Controller
         return response()->json([
             "municipios" => $municipios,
         ], 200);
-
     }
 
     public function getLocalidades(Request $request)
@@ -321,7 +322,6 @@ class GlobalsController extends Controller
         return response()->json([
             "localidades" => $localidades,
         ], 200);
-
     }
 
     /* CASO: 51962 51966 */
@@ -343,7 +343,5 @@ class GlobalsController extends Controller
             }
         }
         return "ERROR";
-
     }
-
 }

@@ -212,6 +212,7 @@ class LoginController extends Controller
                 elseif ($value == 'CN=ProfCitologias') {
                     array_push($rolUser, 13);
                 }
+                /* ROLES DE viáticos */
             }
         }
         return $rolUser;

@@ -139,6 +139,7 @@ return [
     'factuControl'  => env('APP_FACTUCONTROL', 10024),
     'citologias'    => env('APP_CITOLOGIAS', 10025),
     'mamitas'       => env('APP_MAMITAS', 10031),
+    'viaticos'      => env('APP_VIATICOS', 10035),
 
 
     /*
@@ -177,6 +178,19 @@ return [
     'TesoreriaFactu'   => env('APP_TESORERIAFACTU', 11),
     'Atencion'         => env('APP_ATENCION', 12),
     'AdminFac'         => env('APP_ADMINFAC', 14),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles Viáticos
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'superAdmin'       => env('APP_SUPERADMIN', 1),
+    'administrador'    => env('APP_ADMINISTRADOR', 2),
 
 
     /*
