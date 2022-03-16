@@ -1458,7 +1458,7 @@ class FactucontrolController extends Controller
                 ->get();
 
             $consultaHistoricoNew = Caso::selectRaw("
-                    FACTUCONTROL.caso.id_caso, FACTUCONTROL.caso.id_user_create, FACTUCONTROL.caso.descripcion_tema,
+                    FACTUCONTROL.caso.id_caso, FACTUCONTROL.caso.id_user_create, FACTUCONTROL.caso.descripcion_tema, FACTUCONTROL.caso.Nfactura,
                     FACTUCONTROL.caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, FACTUCONTROL.caso.ordenCompra as orden_id,
                     FACTUCONTROL.caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor,
                         datediff(DAY, FACTUCONTROL.caso.fecha_creacion, GETDATE()) AS dias,
@@ -1472,6 +1472,7 @@ class FactucontrolController extends Controller
                 ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO')
                 ->groupBy(
                     'caso.id_caso',
+                    'caso.Nfactura',
                     'caso.descripcion_tema',
                     'caso.fecha_creacion',
                     'estado.descripcion_estado',
@@ -1531,7 +1532,7 @@ class FactucontrolController extends Controller
 
             $consultaHistoricoNew = HistorialCasos::selectRaw("
                     caso.id_caso, caso.id_user_create, caso.descripcion_tema, urad.name, urad.last_name, CONCAT(urad.name, ' ', urad.last_name) as radicadorUser, caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, u.last_name,
-                    caso.ordenCompra as orden_id, caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor, CONCAT(u.name, ' ', u.last_name) as ultUser,
+                    caso.ordenCompra as orden_id, caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor, CONCAT(u.name, ' ', u.last_name) as ultUser, caso.Nfactura,
                     datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                     datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
                     datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
@@ -1549,6 +1550,7 @@ class FactucontrolController extends Controller
                 ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
                 ->groupBy(
                     'caso.id_caso',
+                    'caso.Nfactura',
                     'caso.descripcion_tema',
                     'caso.fecha_creacion',
                     'estado.descripcion_estado',
