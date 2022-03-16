@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\ChangeStatusPeriodoEvent;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\User;
@@ -24,6 +25,11 @@ Route::post('/check', 'LoginController@check');
 
 /* Globals Routes */
 Route::middleware('auth:api')->group(function () {
+
+    Route::post('/statusPeriodo',             'GestionResiduos\GestionResiduosController@statusPeriodo');
+
+    Route::post('/emitEventvalidado',         'GestionResiduos\GestionResiduosController@emitEventvalidado');
+
     Route::get('/checkSession',             'LoginController@check');
     Route::post('/checkAutorizacion',       'LoginController@checkAutorizacion');
     Route::post('/logout',                  'LoginController@logout');
@@ -57,7 +63,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('getHistorial',               'Bitacora\BitacoraController@getHistorial');
     Route::get('getConteoBit',               'Bitacora\BitacoraController@getConteoBit');
 
-    Route::post('getFileFTP',                 'AdminGlobal\GlobalsController@getFileFTP');
+    Route::post('getFileFTP',                'AdminGlobal\GlobalsController@getFileFTP');
 
 });
 

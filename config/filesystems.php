@@ -82,13 +82,20 @@ return [
             'username' => env('FTP_USERNAME'),
             'password' => env('FTP_PASSWORD'),
             'root' => '/ProduccionDesarrollo/',
+        ],
 
-            // Optional FTP Settings...
-            // 'port' => env('FTP_PORT', 21),
-            // 'root' => env('FTP_ROOT'),
-            // 'passive' => true,
-            // 'ssl' => true,
-            // 'timeout' => 30,
+        'ftp_residuos' => [
+            'driver' => 'ftp',
+            'host' => env('FTP_HOST'),
+            'port' => env('FTP_PORT'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'root' => '/GestionResiduos/',
+        ],
+
+        'residuos_up' => [
+            'driver' => 'local',
+            'root'   => public_path() . '/uploads/ambiental/',
         ],
 
         'sftp' => [
