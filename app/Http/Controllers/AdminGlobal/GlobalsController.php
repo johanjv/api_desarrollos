@@ -291,7 +291,7 @@ class GlobalsController extends Controller
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-            }else if (in_array(config('app.Mamitas2_0'), $permisos)) {
+            } else if (in_array(config('app.Mamitas2_0'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
@@ -303,13 +303,13 @@ class GlobalsController extends Controller
                 $loads = ['submodulos'];
                 $modulos->load($loads);
 
-            }else */ if (in_array(config('app.SupAdmResiduos'), $permisos)) {
+            }else */
+            if (in_array(config('app.SupAdmResiduos'), $permisos)) {
 
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-
-            }else if (in_array(config('app.AdmResiduos'), $permisos)) {
+            } else if (in_array(config('app.AdmResiduos'), $permisos)) {
                 //$modulos = null;
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '10056')->orderBy('orden', 'ASC')->get();
                 $loads      = [
@@ -318,7 +318,7 @@ class GlobalsController extends Controller
                     }
                 ];
                 $modulos->load($loads);
-            }else if (in_array(config('app.UsersResiduos'), $permisos)) {
+            } else if (in_array(config('app.UsersResiduos'), $permisos)) {
                 $modulos = null;
                 /* $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '10056')->orderBy('orden', 'ASC')->get(); */
                 /* $loads      = [
@@ -327,6 +327,12 @@ class GlobalsController extends Controller
                     }
                 ];
                 $modulos->load($loads); */
+            }
+        } else if ($idDesarrollo == config('app.viaticos')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $loads = ['submodulos'];
+                $modulos->load($loads);
             }
         } else {
             $modulos = null;
