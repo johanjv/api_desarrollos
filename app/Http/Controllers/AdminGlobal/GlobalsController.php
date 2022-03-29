@@ -328,6 +328,15 @@ class GlobalsController extends Controller
                 ];
                 $modulos->load($loads); */
             }
+        } else if ($idDesarrollo == config('app.firma')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $loads = ['submodulos'];
+                $modulos->load($loads);
+
+            }
+    
         } else {
             $modulos = null;
         }
