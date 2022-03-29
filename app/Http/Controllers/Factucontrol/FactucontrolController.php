@@ -936,18 +936,20 @@ class FactucontrolController extends Controller
     {
         $dataHistorial = [];
         $casosHistorialOld = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
-            ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
+            ->selectRaw('DISTINCT caso.nuevo, caso.id_user_create, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
             caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
             estado.descripcion_estado AS estado,
                 historial_caso.*,
                 datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
             datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
-            datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
+            datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
+            usersCreadorRadicado.name as nombreRadicador
             ')
             ->join('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
             ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
+            ->leftjoin('FACTUCONTROL.users AS usersCreadorRadicado', 'caso.id_user_create', '=', 'usersCreadorRadicado.id_user')
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
             ->where('caso.id_caso', $request["idCaso"])
             ->where('caso.nuevo', null)
@@ -962,12 +964,14 @@ class FactucontrolController extends Controller
                     historial_caso.*,
                     datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                 datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
-                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
+                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
+                usersCreadorRadicado.name as nombreRadicador
                 ')
                 ->leftjoin('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
                 ->leftjoin('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
                 ->leftjoin('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
                 ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
+                ->leftjoin('FACTUCONTROL.users AS usersCreadorRadicado', 'caso.id_user_create', '=', 'usersCreadorRadicado.id_user')
                 ->leftjoin('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
                 ->where('caso.id_caso', $request["idCaso"])
                 ->where('caso.nuevo', null)
@@ -985,18 +989,21 @@ class FactucontrolController extends Controller
 
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
-            ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
+            ->selectRaw("DISTINCT caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
                 caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra, historial_caso.fecha_pasa_caso, historial_caso.primerMovimiento
                 , historial_caso.devolucion, historial_caso.docDevo, historial_caso.nomDevo,
                 historial_caso.*,
                 estado.descripcion_estado AS estado,
                 datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                 datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
-                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
-            ')
+                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
+                CONCAT(usersCreadorRadicado.name, ' ',  usersCreadorRadicado.last_name) as nombreRadicador,
+                CONCAT(users.name, ' ',  users.last_name) as name
+            ")
             ->join('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('users', 'historial_caso.id_user', '=', 'users.nro_doc')
+            ->join('users as usersCreadorRadicado', 'caso.id_user_create', '=', 'usersCreadorRadicado.nro_doc')
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
             ->where('caso.id_caso', $request["idCaso"])
             ->where('caso.nuevo', 1)

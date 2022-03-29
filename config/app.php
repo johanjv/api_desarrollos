@@ -141,6 +141,7 @@ return [
     'mamitas'       => env('APP_MAMITAS', 10031),
     'residuos'      => env('APP_RESIDUOS', 10034),
     'firma'         => env('APP_FIRMA', 10037),
+    'viaticos'      => env('APP_VIATICOS', 10035),
 
 
     /*
