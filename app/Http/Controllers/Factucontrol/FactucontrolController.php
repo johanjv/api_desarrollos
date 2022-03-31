@@ -584,7 +584,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
-            ->orderBy('dias_restantes', 'ASC')
+            ->orderBy('id_caso', 'DESC')
             ->get();
 
         /* $casosRegistradoOld3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
@@ -638,7 +638,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
-            ->orderBy('dias_restantes', 'ASC')
+            ->orderBy('id_caso', 'DESC')
             ->get();
 
 
@@ -664,7 +664,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             //->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
-            ->orderBy('dias_restantes', 'ASC')
+            ->orderBy('id_caso', 'DESC')
             ->get();
 
         $casosRegistradoOld = [];
@@ -783,7 +783,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->leftJoin('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
-            ->orderBy('dias_restantes', 'ASC')
+            ->orderBy('id_caso', 'DESC')
             ->get();
 
         $casosRegistradoOldPro2 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 2)->where('users.documento', $documento)->where('caso.nuevo', null)
@@ -810,7 +810,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->leftJoin('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
-            ->orderBy('dias_restantes', 'ASC')
+            ->orderBy('id_caso', 'DESC')
             ->get();
 
         $casosRegistradoOldPro = [];
@@ -847,7 +847,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             //->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
-            ->orderBy('dias_restantes', 'ASC')
+            ->orderBy('id_caso', 'DESC')
             ->get();
         $casosRegistradoNewProCount = $casosRegistradoNewPro->count();
 
@@ -936,18 +936,20 @@ class FactucontrolController extends Controller
     {
         $dataHistorial = [];
         $casosHistorialOld = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
-            ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
+            ->selectRaw('DISTINCT caso.nuevo, caso.id_user_create, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
             caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
             estado.descripcion_estado AS estado,
                 historial_caso.*,
                 datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
             datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
-            datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
+            datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
+            usersCreadorRadicado.name as nombreRadicador
             ')
             ->join('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
             ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
+            ->leftjoin('FACTUCONTROL.users AS usersCreadorRadicado', 'caso.id_user_create', '=', 'usersCreadorRadicado.id_user')
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto', 'LEFT')
             ->where('caso.id_caso', $request["idCaso"])
             ->where('caso.nuevo', null)
@@ -962,12 +964,14 @@ class FactucontrolController extends Controller
                     historial_caso.*,
                     datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                 datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
-                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
+                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
+                usersCreadorRadicado.name as nombreRadicador
                 ')
                 ->leftjoin('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
                 ->leftjoin('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
                 ->leftjoin('FACTUCONTROL.temas_user AS temas_user', 'caso.id_tema_user', '=', 'temas_user.id_tema_user')
                 ->leftjoin('FACTUCONTROL.users AS users', 'historial_caso.id_user', '=', 'users.id_user')
+                ->leftjoin('FACTUCONTROL.users AS usersCreadorRadicado', 'caso.id_user_create', '=', 'usersCreadorRadicado.id_user')
                 ->leftjoin('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
                 ->where('caso.id_caso', $request["idCaso"])
                 ->where('caso.nuevo', null)
@@ -985,18 +989,21 @@ class FactucontrolController extends Controller
 
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
-            ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, users.name, users.last_name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
+            ->selectRaw("DISTINCT caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
                 caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra, historial_caso.fecha_pasa_caso, historial_caso.primerMovimiento
                 , historial_caso.devolucion, historial_caso.docDevo, historial_caso.nomDevo,
                 historial_caso.*,
                 estado.descripcion_estado AS estado,
                 datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                 datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
-                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos
-            ')
+                datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
+                CONCAT(usersCreadorRadicado.name, ' ',  usersCreadorRadicado.last_name) as nombreRadicador,
+                CONCAT(users.name, ' ',  users.last_name) as name
+            ")
             ->join('FACTUCONTROL.caso AS caso', 'historial_caso.id_caso', '=', 'caso.id_caso')
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('users', 'historial_caso.id_user', '=', 'users.nro_doc')
+            ->join('users as usersCreadorRadicado', 'caso.id_user_create', '=', 'usersCreadorRadicado.nro_doc')
             ->join('FACTUCONTROL.conceptos AS conceptos', 'caso.concepto', '=', 'conceptos.idConcepto')
             ->where('caso.id_caso', $request["idCaso"])
             ->where('caso.nuevo', 1)
@@ -1458,7 +1465,7 @@ class FactucontrolController extends Controller
                 ->get();
 
             $consultaHistoricoNew = Caso::selectRaw("
-                    FACTUCONTROL.caso.id_caso, FACTUCONTROL.caso.id_user_create, FACTUCONTROL.caso.descripcion_tema,
+                    FACTUCONTROL.caso.id_caso, FACTUCONTROL.caso.id_user_create, FACTUCONTROL.caso.descripcion_tema, FACTUCONTROL.caso.Nfactura,
                     FACTUCONTROL.caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, FACTUCONTROL.caso.ordenCompra as orden_id,
                     FACTUCONTROL.caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor,
                         datediff(DAY, FACTUCONTROL.caso.fecha_creacion, GETDATE()) AS dias,
@@ -1472,6 +1479,7 @@ class FactucontrolController extends Controller
                 ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO')
                 ->groupBy(
                     'caso.id_caso',
+                    'caso.Nfactura',
                     'caso.descripcion_tema',
                     'caso.fecha_creacion',
                     'estado.descripcion_estado',
@@ -1531,7 +1539,7 @@ class FactucontrolController extends Controller
 
             $consultaHistoricoNew = HistorialCasos::selectRaw("
                     caso.id_caso, caso.id_user_create, caso.descripcion_tema, urad.name, urad.last_name, CONCAT(urad.name, ' ', urad.last_name) as radicadorUser, caso.fecha_creacion, estado.descripcion_estado, categoria.Descripcion as categoria_descripcion, u.last_name,
-                    caso.ordenCompra as orden_id, caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor, CONCAT(u.name, ' ', u.last_name) as ultUser,
+                    caso.ordenCompra as orden_id, caso.id_tipo_factura, p.razon_social, p.dias_pago as diasProveedor, CONCAT(u.name, ' ', u.last_name) as ultUser, caso.Nfactura,
                     datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
                     datediff(HOUR, caso.fecha_creacion, GETDATE()) %24 AS horas,
                     datediff(MINUTE, caso.fecha_creacion, GETDATE()) %60 AS minutos,
@@ -1549,6 +1557,7 @@ class FactucontrolController extends Controller
                 ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
                 ->groupBy(
                     'caso.id_caso',
+                    'caso.Nfactura',
                     'caso.descripcion_tema',
                     'caso.fecha_creacion',
                     'estado.descripcion_estado',

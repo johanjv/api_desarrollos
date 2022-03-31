@@ -332,9 +332,20 @@ class GlobalsController extends Controller
                 ];
                 $modulos->load($loads); */
             }
-        } else {
+        } else if ($idDesarrollo == config('app.firma')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+               $loads = ['submodulos'];
+               $modulos->load($loads);
+           }else{
+               $modulos = null;
+           }
+       } else {
             $modulos = null;
         }
+
+
+        
         return $modulos;
     }
 
@@ -344,7 +355,6 @@ class GlobalsController extends Controller
         return response()->json([
             "municipios" => $municipios,
         ], 200);
-
     }
 
     public function getLocalidades(Request $request)
@@ -353,7 +363,6 @@ class GlobalsController extends Controller
         return response()->json([
             "localidades" => $localidades,
         ], 200);
-
     }
 
     /* CASO: 51962 51966 */
@@ -375,7 +384,5 @@ class GlobalsController extends Controller
             }
         }
         return "ERROR";
-
     }
-
 }
