@@ -82,6 +82,7 @@ class RouteServiceProvider extends ServiceProvider
                 require base_path('routes/citologias/citologias.php');
                 require base_path('routes/mamitas/mamitas.php');
                 require base_path('routes/GestionResiduos/GestionResiduos.php');
+                require base_path('routes/viaticos/viaticos.php');
             });
     }
 }
