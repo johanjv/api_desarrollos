@@ -23,6 +23,7 @@ return [
         "http://localhost:8000/api/*",
         "http://10.10.6.220:8000/api/*",
         "http://10.10.6.228:8000/api/*",
+        "http://10.10.6.242:8000/api/*",
     ],
 
     'allowed_methods' => [
@@ -40,6 +41,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
