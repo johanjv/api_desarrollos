@@ -230,10 +230,10 @@ class GestionResiduosController extends Controller
             }
 
             foreach ($files as $file) {
-                Storage::disk('ftp_residuos')->put($file->getClientOriginalName() . date('Y-m-d') . "-" . date('H:m:s') . $request['idMes'] . $request['unidad'], $file);
-                array_push($misAdj, $file->getClientOriginalName() . date('Y-m-d') . "-" . date('H:m:s') . $request['idMes'] . $request['unidad']);
+                Storage::disk('ftp_residuos')->put($file->getClientOriginalName(), $file);
+                array_push($misAdj, $file->getClientOriginalName());
                 if ($docs->adjuntos != null) {
-                    array_push($adjuntos, $file->getClientOriginalName() . date('Y-m-d') . "-" . date('H:m:s') . $request['idMes'] . $request['unidad']);
+                    array_push($adjuntos, $file->getClientOriginalName());
                 }
             }
 
