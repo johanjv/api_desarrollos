@@ -25,7 +25,8 @@ class PlantaImport implements ToModel, WithHeadingRow
             'COD_CARGO'             => $row["codigo_cargo"],
             'HORAS_CONT'            => $row["horas_contratadas"],
             'HORAS_LAB'             => $row["horas_laboradas"],
-            'HORAS_SEMANA'          => $row["horas_semana"]
+            'HORAS_SEMANA'          => $row["horas_semana"],
+            'CORREO'                => $row["correo"]
         ]);
 
     }
