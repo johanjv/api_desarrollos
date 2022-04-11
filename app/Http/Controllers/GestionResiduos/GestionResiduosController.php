@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class GestionResiduosController extends Controller
 {
@@ -230,10 +231,11 @@ class GestionResiduosController extends Controller
             }
 
             foreach ($files as $file) {
-                Storage::disk('ftp_residuos')->put($file->getClientOriginalName(), $file);
-                array_push($misAdj, $file->getClientOriginalName());
+                $nameFile = Str::random(40) . "_" . $request['unidad'] . $request['idMes'] . $file->getMimetype();
+                Storage::disk('ftp_residuos')->put($nameFile, $file);
+                array_push($misAdj, $nameFile);
                 if ($docs->adjuntos != null) {
-                    array_push($adjuntos, $file->getClientOriginalName());
+                    array_push($adjuntos, $nameFile);
                 }
             }
 
