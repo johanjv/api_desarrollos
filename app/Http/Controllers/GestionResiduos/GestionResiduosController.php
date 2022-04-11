@@ -231,7 +231,7 @@ class GestionResiduosController extends Controller
             }
 
             foreach ($files as $file) {
-                $nameFile = Str::random(40) . "_" . $request['unidad'] . $request['idMes'] . $file->getMimetype();
+                $nameFile = Str::random(40) . "_" . $request['unidad'] . $request['idMes'] . '.pdf';
                 Storage::disk('ftp_residuos')->put($nameFile, $file);
                 array_push($misAdj, $nameFile);
                 if ($docs->adjuntos != null) {
