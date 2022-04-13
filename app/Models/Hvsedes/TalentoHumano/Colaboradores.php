@@ -19,7 +19,8 @@ class Colaboradores extends Model
         'COD_EPS',
         'ID_UNIDAD',
         'ID_HAB_SEDE',
-        'FOTO'
+        'FOTO',
+        'CORREO'
     ];
 
     public function eps() {

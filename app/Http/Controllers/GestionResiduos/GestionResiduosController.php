@@ -5,6 +5,8 @@ namespace App\Http\Controllers\GestionResiduos;
 use App\Events\ChangeStatusPeriodoEvent;
 use App\Events\PeriodoVerificadoEvent;
 use App\Http\Controllers\Controller;
+use App\Mail\NotificacionResiduos;
+use App\Mail\NotificacionResiduosAprobado;
 use App\Models\Hvsedes\Sucursal\Sucursal;
 use App\Models\Residuos\Categoria;
 use App\Models\Residuos\Clasificacion;
@@ -17,7 +19,9 @@ use Illuminate\Console\Scheduling\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class GestionResiduosController extends Controller
 {
@@ -195,7 +199,8 @@ class GestionResiduosController extends Controller
 
             $datosCalendario = ValidarMes::where('id_mes_ano', $request['item']['id_mes_ano'])->where('unidad', $request['unidad'])->update([
                 'aprobado'      => 3,
-                'fecha_envio'   => date('Y-m-d h:m:s')
+                'fecha_envio'   => date('Y-m-d h:m:s'),
+                'userNoty'      => Auth::user()->correo
             ]);
 
             $datosCalendario = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
@@ -226,10 +231,11 @@ class GestionResiduosController extends Controller
             }
 
             foreach ($files as $file) {
-                Storage::disk('ftp_residuos')->put($file->getClientOriginalName(), $file);
-                array_push($misAdj, $file->getClientOriginalName());
+                $nameFile = "ADJUNTO_" . Str::random(25) . "_" . $request['unidad'] . $request['idMes'] . '.pdf';
+                Storage::disk('ftp_residuos')->put($nameFile, $file);
+                array_push($misAdj, $nameFile);
                 if ($docs->adjuntos != null) {
-                    array_push($adjuntos, $file->getClientOriginalName());
+                    array_push($adjuntos, $nameFile);
                 }
             }
 
@@ -446,6 +452,10 @@ class GestionResiduosController extends Controller
             'end_periodo'       => $request['fechaHasta']
         ]);
 
+        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->first();
+
+        Mail::to($periodoGet->userNoty)->send(new NotificacionResiduosAprobado ($periodoGet));
+
         return response()->json([
             'periodos'    => $periodos
         ], 200);
@@ -513,6 +523,9 @@ class GestionResiduosController extends Controller
             'fecha_revision' => date('Y-m-d h:m:s'),
             'observacion' => $request['motivo']
         ]);
+
+        //Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
+        Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
 
         $rechazadoObs = HistorialRechazo::create([
             'id_aprobacion_mes'     => $periodoGet->id,

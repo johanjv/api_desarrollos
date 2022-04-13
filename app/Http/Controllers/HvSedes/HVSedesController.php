@@ -1197,7 +1197,8 @@ class HVSedesController extends Controller
                     'GENERO_COLABORADOR'    => $row['genero'],
                     'COD_EPS'               => $eps,
                     'ID_UNIDAD'             => $row['unidad'],
-                    'ID_HAB_SEDE'           => $row['sede']
+                    'ID_HAB_SEDE'           => $row['sede'],
+                    'CORREO'                => $row['correo']
                 ]);
 
                 array_push($docInsert, $row['documento']);
