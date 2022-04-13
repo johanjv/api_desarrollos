@@ -232,7 +232,7 @@ class LoginController extends Controller
                 elseif ($value == 'CN=UsersResiduos') {
                     array_push($rolUser, 18);
                 }
-                elseif ($value == 'CN=Firma_digital1_0') {
+                elseif ($value == 'CN=APD_Firma_digital1_0') {
                     array_push($rolUser, 19);
                 }
             }
