@@ -68,4 +68,19 @@ class FirmaDigitalController extends Controller
 
     }    
 
+    public function saveNew(Request $request)
+    {
+
+        $item = Direccion::create([
+            'Direccion' => strtoupper($request["item"])
+        ]);
+
+        $direccion = Direccion::all();
+
+        return response()->json([
+            "direccion"   => $direccion,
+        ], 200);
+
+    }
+
 }
