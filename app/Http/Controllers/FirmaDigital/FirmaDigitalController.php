@@ -8,6 +8,7 @@ use App\Models\Hvsedes\TalentoHumano\Colaboradores;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class FirmaDigitalController extends Controller
@@ -20,7 +21,7 @@ class FirmaDigitalController extends Controller
             "direccion"   => $direccion,
         ], 200);
 
-    }    
+    }
 
     public function getDettaleColaborador (Request $request)
     {
@@ -54,19 +55,16 @@ class FirmaDigitalController extends Controller
     {
 
         if ($request->hasFile("files")) {
-            unlink(public_path().'/background_firma.png');
-
             $files = $request->file("files");
-
             foreach ($files as $file) {
-
-                $rt = public_path('background_firma.png');    
+                DB::insert('insert into FIRMA.hist_img (img, fecha_creacion) values (?, ?)', [$request['imgSql'], date('Y-m-d h:m:s')]);
+                $rt = public_path('background_firma.png');
                 copy($file, $rt);
             }
         }
 
 
-    }    
+    }
 
     public function saveNew(Request $request)
     {
@@ -81,6 +79,18 @@ class FirmaDigitalController extends Controller
             "direccion"   => $direccion,
         ], 200);
 
+    }
+
+    public function getImage(Request $request)
+    {
+        $img = DB::table('FIRMA.hist_img')
+            ->orderBy('id', 'DESC')->limit(1)
+        ->first();
+        /* $img = DB::select('select * from FIRMA.hist_img order by fecha_creacion desc'); */
+
+        return response()->json([
+            "img"   => $img,
+        ], 200);
     }
 
 }
