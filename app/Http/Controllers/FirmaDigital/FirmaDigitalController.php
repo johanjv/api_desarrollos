@@ -58,8 +58,8 @@ class FirmaDigitalController extends Controller
             $files = $request->file("files");
             foreach ($files as $file) {
                 DB::insert('insert into FIRMA.hist_img (img, fecha_creacion) values (?, ?)', [$request['imgSql'], date('Y-m-d h:m:s')]);
-                $rt = public_path('background_firma.png');
-                copy($file, $rt);
+                /* $rt = public_path('background_firma.png');
+                copy($file, $rt); */
             }
         }
 
