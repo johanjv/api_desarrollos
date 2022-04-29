@@ -407,7 +407,7 @@ class GestionResiduosController extends Controller
             ->where('id_mes_ano', $request["periodo"])
         ->first();
 
-        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
         $formula2 = array(47,8,17,23,70,13);
 
         $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
@@ -691,7 +691,7 @@ class GestionResiduosController extends Controller
             ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
         ->first();
 
-        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
         $formula2 = array(47,8,17,23,70,13);
 
         $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
