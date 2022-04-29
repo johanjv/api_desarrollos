@@ -87,7 +87,7 @@ class GestionResiduosController extends Controller
             }
         }
 
-        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
         $formula2 = array(47,8,17,23,70,13);
 
         $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
