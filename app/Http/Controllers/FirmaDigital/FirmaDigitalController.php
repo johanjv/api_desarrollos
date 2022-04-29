@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\FirmaDigital;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bitacora\Bitacora;
 use App\Models\FirmaDigital\Direccion;
 use App\Models\Hvsedes\TalentoHumano\Colaboradores;
 use Carbon\Carbon;
@@ -61,6 +62,15 @@ class FirmaDigitalController extends Controller
                 /* $rt = public_path('background_firma.png');
                 copy($file, $rt); */
             }
+            /* REGISTRO EN BITACORA */
+            Bitacora::create([
+                'ID_APP' => $request["idApp"],
+                'USER_ACT' => Auth::user()->nro_doc,
+                'ACCION' => 'CAMBIO - SUBIO UNA NUEVA IMAGEN AL APLICATIVO ' . Auth::user()->nro_doc, 
+                'FECHA' => date('Y-m-d h:i:s'),
+                'USER_EMPRESA' => Auth::user()->empresa
+            ]);
+
         }
 
 
@@ -92,5 +102,19 @@ class FirmaDigitalController extends Controller
             "img"   => $img,
         ], 200);
     }
+
+    public function saveBit(Request $request)
+    {
+         /* REGISTRO EN BITACORA */
+         Bitacora::create([
+             'ID_APP' => $request["idApp"],
+             'USER_ACT' => Auth::user()->nro_doc,
+             'ACCION' => 'DESCARGO - GENERO SU FIRMA DIGITAL ' . Auth::user()->nro_doc, 
+             'FECHA' => date('Y-m-d h:i:s'),
+             'USER_EMPRESA' => Auth::user()->empresa
+        ]);
+    }
+
+    
 
 }
