@@ -16,5 +16,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('getProgramasPerAfi',    'EscalasRehabilitacion\EscalasRehabilitacionController@getProgramasPerAfi');
         Route::get('getAbandonos',          'EscalasRehabilitacion\EscalasRehabilitacionController@getAbandonos');
         Route::post('getEscalasPerPrograma', 'EscalasRehabilitacion\EscalasRehabilitacionController@getEscalasPerPrograma');
+        Route::post('saveRegistroAfi',       'EscalasRehabilitacion\EscalasRehabilitacionController@saveRegistroAfi');
+        Route::get('getProgramas',           'EscalasRehabilitacion\EscalasRehabilitacionController@getProgramas');
+        Route::get('getDiagnosticos',        'EscalasRehabilitacion\EscalasRehabilitacionController@getDiagnosticos');
     });
 });

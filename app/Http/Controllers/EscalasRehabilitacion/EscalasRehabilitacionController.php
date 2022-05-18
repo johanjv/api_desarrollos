@@ -7,12 +7,22 @@ use App\Models\Escalas\Abandonos;
 use App\Models\Escalas\Programa;
 use App\Models\Escalas\Registros;
 use Illuminate\Http\Request;
+use DB;
 
 class EscalasRehabilitacionController extends Controller
 {
+    public function getProgramas(Request $request)
+    {
+        $programas = Programa::all();
+
+        return response()->json([
+            "programas"   => $programas,
+        ], 200);
+    }
+
     public function getProgramasPerAfi(Request $request)
     {
-        $programas = Registros::with(['programas','afiliado'])->where('afiliado_id', $request['nro_doc'])->get();
+        $programas = Registros::with(['programas','afiliado'])->where('afiliado_id', $request['nro_doc'])->where('abandono', '!=', 'SI')->get();
 
         return response()->json([
             "programas"   => $programas,
@@ -38,6 +48,28 @@ class EscalasRehabilitacionController extends Controller
 
         return response()->json([
             "programas"   => $programas,
+        ], 200);
+    }
+
+    public function saveRegistroAfi(Request $request)
+    {
+        //return $request->all();
+
+        $registro = Registros::where('idRegistro', $request['detalleAfi']['idRegistro'])->first();
+
+
+        return response()->json([
+            "registro"   => $registro,
+        ], 200);
+    }
+
+    public function getDiagnosticos(Request $request)
+    {
+        $diagnosticos = DB::connection('sqlsrv_2')->table('Parametrico.TP_Diagnostico')->get();
+
+
+        return response()->json([
+            "diagnosticos"   => $diagnosticos,
         ], 200);
     }
 }
