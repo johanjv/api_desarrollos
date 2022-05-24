@@ -15,7 +15,6 @@ class Registros extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'idRegistro',
         'afiliado_id',
         'fecha_inicio',
         'fecha_fin',

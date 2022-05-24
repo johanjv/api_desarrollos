@@ -4,10 +4,13 @@ namespace App\Http\Controllers\EscalasRehabilitacion;
 
 use App\Http\Controllers\Controller;
 use App\Models\Escalas\Abandonos;
+use App\Models\Escalas\Historial;
+use App\Models\Escalas\Justificacion;
 use App\Models\Escalas\Programa;
 use App\Models\Escalas\Registros;
 use Illuminate\Http\Request;
 use DB;
+use Illuminate\Support\Facades\Auth;
 
 class EscalasRehabilitacionController extends Controller
 {
@@ -53,10 +56,7 @@ class EscalasRehabilitacionController extends Controller
 
     public function saveRegistroAfi(Request $request)
     {
-        //return $request->all();
-
         $registro = Registros::where('idRegistro', $request['detalleAfi']['idRegistro'])->first();
-
 
         return response()->json([
             "registro"   => $registro,
@@ -70,6 +70,73 @@ class EscalasRehabilitacionController extends Controller
 
         return response()->json([
             "diagnosticos"   => $diagnosticos,
+        ], 200);
+    }
+
+    public function almacenarNewItem(Request $request)
+    {
+        //return $request->all();
+        try {
+            $registro = Registros::create([
+                'afiliado_id'               => $request["docAfi"],
+                'fecha_inicio'              => $request["fecha_inicial"],
+                'fecha_fin'                 => $request["fecha_fin"],
+                'tiempo_atencion'           => null,
+                'sesiones'                  => $request["sesiones"],
+                'programa_id'               => $request["idPrograma"],
+                'abandono'                  => $request["abandono"],
+                'abandono_id'               => 11,
+                'diagnostico'               => $request["diag1"]["ID"],
+                'diagnostico_secundario'    => $request["diag2"]["ID"],
+                'IT'                        => $request["IT"],
+            ]);
+
+            $idRegistro = Registros::latest('idRegistro')->first();
+
+            $historial = Historial::create([
+                'registro_id'   => $idRegistro->idRegistro,
+                'fecha' => date('Y-m-d'),
+                'unidad_id' => $request["unidad"],
+                'estado_id' => 1,
+                'usuario_idusuario' => Auth::user()->nro_doc,
+            ]);
+
+            $idHistorial = Historial::latest('idhistorial')->first();
+
+            $justificacion = Justificacion::create([
+                'idHistoria'        => $idHistorial->idhistorial,
+                'descripcion'       => $request["justificacion"],
+            ]);
+
+            foreach ($request["escalas"] as $escala) {
+                foreach ($escala["atributos"] as $atributo) {
+                    $insert = DB::table('ESCALAS.historial_atributo')->insert([
+                        'historial_idhistorial' => $idHistorial->idhistorial,
+                        'atributo_idatributo'   => $atributo['idAtributo'],
+                        'valor'                 => isset($atributo['valorAsignado']) ? $atributo['valorAsignado'] : 0,
+                    ]);
+                }
+            }
+
+            foreach ($request["escalas"] as $escala) {
+
+                $result = DB::table('ESCALAS.resultado')->where('escala_id', $escala["escala_idescala"])->where('estado_idestado', 1)->first(); //1 porque es inicial
+
+                foreach ($escala["atributos"] as $atributo) {
+                    $insert = DB::table('ESCALAS.historial_resultado')->insert([
+                        'historial_idhistorial' => $idHistorial->idhistorial,
+                        'resultado_idresultado' => $result->idResultado,
+                        'valor'                 => isset($atributo['valorAsignado']) ? $atributo['valorAsignado'] : 0,
+                    ]);
+                }
+            }
+
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+
+        return response()->json([
+            "registro"   => $registro,
         ], 200);
     }
 }
