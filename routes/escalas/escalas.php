@@ -20,5 +20,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('getProgramas',           'EscalasRehabilitacion\EscalasRehabilitacionController@getProgramas');
         Route::get('getDiagnosticos',        'EscalasRehabilitacion\EscalasRehabilitacionController@getDiagnosticos');
         Route::post('almacenarNewItem',      'EscalasRehabilitacion\EscalasRehabilitacionController@almacenarNewItem');
+        Route::post('getResultados',         'EscalasRehabilitacion\EscalasRehabilitacionController@getResultados');
     });
 });
