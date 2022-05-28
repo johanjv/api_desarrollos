@@ -41,13 +41,23 @@ class GestionResiduosController extends Controller
             $q->where('unidad', $request["unidad"]);}])
         ->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->count();
 
+        //return $fechaParaValidar;
+
             if ($fechaParaValidar == 0) {
-                if ($request['idMes'] != null) {
-                    ValidarMes::create([
-                        'id_mes_ano'    => $request['idMes'],
-                        'unidad'        => $request['unidad']
-                    ]);
+
+                $periodoPrev = ValidarMes::selectRaw('id_mes_ano, aprobado, id')->where('unidad', $request["unidad"])->groupBy('id_mes_ano','aprobado', 'id')->orderby('id_mes_ano', 'DESC')->get();
+
+
+                if ($periodoPrev[0]['aprobado'] == 1) {
+                    if ($request['idMes'] != null) {
+                        ValidarMes::create([
+                            'id_mes_ano'    => $request['idMes'],
+                            'unidad'        => $request['unidad']
+                        ]);
+                    }
                 }
+
+
             }
 
         $datosCalendario = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
@@ -263,10 +273,9 @@ class GestionResiduosController extends Controller
         }
 
         $countEnProceso     = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 0)->count();
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 3)->count();
 
         $countAprobado      = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-            ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
         ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 1)->count();
 
         $countRechazados    = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
@@ -274,8 +283,7 @@ class GestionResiduosController extends Controller
         ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 2)->count();
 
         $countPendientes    = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-            ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
-        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 3)->count();
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 0)->count();
 
         $pendientes = Sucursal::selectRaw('SUC_DEPARTAMENTO, SUC_CODIGO_DEPARTAMENTO')
             ->join('UNIDADES_ESTANDAR', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP');
