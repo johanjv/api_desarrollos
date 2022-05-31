@@ -45,7 +45,7 @@ class EscalasRehabilitacionController extends Controller
     {
         $programas = Programa::with([
             'escalas'=> function($q) {
-                $q->with(['detalleEscalas', 'atributos']);
+                $q->with(['detalleEscalas', 'atributos', 'resultados']);
             }
         ])->where('idPrograma', $request['idPrograma'])->first();
 
@@ -94,7 +94,7 @@ class EscalasRehabilitacionController extends Controller
                 }
             }
 
-            foreach ($request["detalleAfi"]["programas"]["escalas"]["escalas"] as $escala) {
+            /* foreach ($request["detalleAfi"]["programas"]["escalas"]["escalas"] as $escala) {
 
                 $result = DB::table('ESCALAS.resultado')->where('escala_id', $escala["escala_idescala"])->where('estado_idestado', 1)->first(); //1 porque es inicial
 
@@ -107,7 +107,7 @@ class EscalasRehabilitacionController extends Controller
                         ]);
                     }
                 }
-            }
+            } */
 
             //$datosHistorico = Historial::where('registro_id', $request['detalleAfi']['idRegistro'])->get();
 
@@ -173,7 +173,7 @@ class EscalasRehabilitacionController extends Controller
                 }
             }
 
-            foreach ($request["escalas"] as $escala) {
+            /* foreach ($request["escalas"] as $escala) {
 
                 $result = DB::table('ESCALAS.resultado')->where('escala_id', $escala["escala_idescala"])->where('estado_idestado', 2)->first(); //1 porque es inicial
 
@@ -186,7 +186,7 @@ class EscalasRehabilitacionController extends Controller
                         ]);
                     }
                 }
-            }
+            } */
 
         } catch (\Throwable $th) {
             throw $th;
@@ -199,6 +199,7 @@ class EscalasRehabilitacionController extends Controller
 
     public function getResultados(Request $request)
     {
+
         if ($request['registro']['detalleAfi']['programa_id'] == 1) { //CARDIACO
             return "programa 1";
         }
@@ -209,15 +210,49 @@ class EscalasRehabilitacionController extends Controller
 
         if ($request['registro']['detalleAfi']['programa_id'] == 3) { //ACONDICIONAMIENTO
 
-            $registros = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 1)->get(); //HISTORIA INICIAL
-            $registros = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 2)->get(); //HISTORIA FINAL
+            $catInicial = 0;
+            $catFinal   = 0;
 
+            $registroInicial = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 1)->first(); //HISTORIA INICIAL
+                $atributosIniciales = DB::table('ESCALAS.historial_atributo')->where('historial_idhistorial', $registroInicial->idhistorial)->get();
 
+            $registrosFinal = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 2)->first(); //HISTORIA FINAL
+                $atributosFinales = DB::table('ESCALAS.historial_atributo')->where('historial_idhistorial', $registrosFinal->idhistorial)->get();
 
+                foreach ($atributosIniciales as $attIni) {
+                    if ($attIni->atributo_idatributo == 25) {
+                        $catInicial = intval($attIni->valor);
+                    }
+                }
 
+                foreach ($atributosFinales as $attFin) {
+                    if ($attFin->atributo_idatributo == 26) {
+                        $catFinal = intval($attFin->valor);
+                    }
+                }
 
+            $resultado = $catInicial - $catFinal;
 
-            return "programa 3";
+            if ($resultado <= -3) {
+                return "s";
+            }
+
+            return response()->json([
+                "catInicial"   => $catInicial,
+                "catFinal"     => $catFinal,
+            ], 200);
+
+            /*
+                mejoro      = Cat Final - Cat Inicial   <= 3;
+                igual       = Cat Final - Cat Inicial   = 0;
+                Desmejoro   = Cat Final - Cat Inicial   >= 1;
+                No Alcanz   = Cat Final - Cat Inicial   < 0 per 1;
+            */
+
+            return response()->json([
+                "atributosIniciales"   => $atributosIniciales,
+                "atributosFinales"     => $atributosFinales,
+            ], 200);
         }
 
         if ($request['registro']['detalleAfi']['programa_id'] == 4) { //PISO PELVICO

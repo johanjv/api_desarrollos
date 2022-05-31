@@ -31,4 +31,9 @@ class ProgramaEscala extends Model
         return $this->hasMany(Atributos::class, 'escala_idescala', 'escala_idescala' );
     }
 
+    public function resultados()
+    {
+        return $this->hasMany(Resultados::class, 'escala_id', 'escala_idescala', );
+    }
+
 }
