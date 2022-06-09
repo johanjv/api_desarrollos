@@ -15,6 +15,7 @@ class Registros extends Model
     const UPDATED_AT = null;
 
     protected $fillable = [
+        'idRegistro',
         'afiliado_id',
         'fecha_inicio',
         'fecha_fin',
@@ -36,6 +37,11 @@ class Registros extends Model
     public function afiliado()
     {
         return $this->hasOne('App\Models\Api_Afiliados_Interna\Afiliados', 'Documento', 'afiliado_id');
+    }
+
+    public function abandono()
+    {
+        return $this->hasOne('App\Models\Escalas\Abandonos', 'idAbandono', 'abandono_id');
     }
 
 }

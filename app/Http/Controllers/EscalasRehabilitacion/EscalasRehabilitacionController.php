@@ -25,10 +25,20 @@ class EscalasRehabilitacionController extends Controller
 
     public function getProgramasPerAfi(Request $request)
     {
-        $programas = Registros::with(['programas','afiliado'])->where('afiliado_id', $request['nro_doc'])->where('abandono', 'NO')->get();
+        $registrosPerAfi = Registros::with(['programas','afiliado'])->where('afiliado_id', $request['nro_doc'])->where('abandono_id', 11)->get();
+        $programasDisponibles = [];
+        foreach ($registrosPerAfi as $p) {
+            if ($p['abandono_id'] == 11) {
+                $contadorRegistros = Historial::where('registro_id', $p['idRegistro'])->where('estado_id', 2)->count();
+                if ($contadorRegistros > 0) {
+                }else{
+                    array_push($programasDisponibles, $p);
+                }
+            }
+        }
 
         return response()->json([
-            "programas"   => $programas,
+            "programas"   => $programasDisponibles,
         ], 200);
     }
 
@@ -44,8 +54,16 @@ class EscalasRehabilitacionController extends Controller
     public function getEscalasPerPrograma(Request $request)
     {
         $programas = Programa::with([
-            'escalas'=> function($q) {
-                $q->with(['detalleEscalas', 'atributos', 'resultados']);
+            'escalas' => function($q) use ($request){
+                $q->with([
+                    'detalleEscalas',
+                    'atributos' => function($q)use ($request){
+                        $q->where('estado_idestado', $request['tipoRegistro'])->get();
+                    },
+                    'resultados' => function($q)use ($request){
+                        $q->where('estado_idestado', $request['tipoRegistro'])->get();
+                    },
+                ]);
             }
         ])->where('idPrograma', $request['idPrograma'])->first();
 
@@ -56,13 +74,29 @@ class EscalasRehabilitacionController extends Controller
 
     public function saveRegistroAfi(Request $request)
     {
-        //return $request->all();
+
+        $abandonoDesc =  null;
+
+        if (COUNT($request['motivo_abandono']) > 0) {
+            $abandonoDesc = array([
+                'id'    => $request['motivo_abandono']['idAbandono'],
+                'desc'  => $request['motivo_abandono']['descripcion']
+            ]);
+        } else {
+            $abandonoDesc = array([
+                'id'    => $request['detalleAfi']['abandono_id'],
+                'desc'  => $request['detalleAfi']['abandono']
+            ]);
+        }
+
+        //return $abandonoDesc;
+
         $registro = Registros::where('idRegistro', $request['detalleAfi']['idRegistro'])->update([
             'fecha_fin'         => $request['fecha_final'],
             'tiempo_atencion'   => $request['tiempoAtencion'],
             'sesiones'          => $request['sesiones'],
-            'abandono'          => $request['abandono']['id'],
-            'abandono_id'       => $request['abandono']['id']
+            'abandono'          => $abandonoDesc[0]['desc'],
+            'abandono_id'       => $abandonoDesc[0]['id']
         ]);
 
         $idRegistro = Registros::where('idRegistro', $request['detalleAfi']['idRegistro'])->first();
@@ -94,11 +128,11 @@ class EscalasRehabilitacionController extends Controller
                 }
             }
 
-            /* foreach ($request["detalleAfi"]["programas"]["escalas"]["escalas"] as $escala) {
+            foreach ($request["detalleAfi"]["programas"]["escalas"]["escalas"] as $escala) {
 
-                $result = DB::table('ESCALAS.resultado')->where('escala_id', $escala["escala_idescala"])->where('estado_idestado', 1)->first(); //1 porque es inicial
+                $result = DB::table('ESCALAS.resultado')->where('escala_id', $escala["escala_idescala"])->where('estado_idestado', 2)->first(); //2 porque es final
 
-                foreach ($escala["atributos"] as $atributo) {
+                foreach ($escala["resultados"] as $atributo) {
                     if ($atributo["estado_idestado"] == 2) {
                         $insert = DB::table('ESCALAS.historial_resultado')->insert([
                             'historial_idhistorial' => $idHistorial->idhistorial,
@@ -107,7 +141,7 @@ class EscalasRehabilitacionController extends Controller
                         ]);
                     }
                 }
-            } */
+            }
 
             //$datosHistorico = Historial::where('registro_id', $request['detalleAfi']['idRegistro'])->get();
 
@@ -173,12 +207,12 @@ class EscalasRehabilitacionController extends Controller
                 }
             }
 
-            /* foreach ($request["escalas"] as $escala) {
+            foreach ($request["escalas"] as $escala) {
 
-                $result = DB::table('ESCALAS.resultado')->where('escala_id', $escala["escala_idescala"])->where('estado_idestado', 2)->first(); //1 porque es inicial
+                $result = DB::table('ESCALAS.resultado')->where('escala_id', $escala["escala_idescala"])->where('estado_idestado', 1)->first(); //1 porque es inicial
 
-                foreach ($escala["atributos"] as $atributo) {
-                    if ($atributo["estado_idestado"] == 2) {
+                foreach ($escala["resultados"] as $atributo) {
+                    if ($atributo["estado_idestado"] == 1) {
                         $insert = DB::table('ESCALAS.historial_resultado')->insert([
                             'historial_idhistorial' => $idHistorial->idhistorial,
                             'resultado_idresultado' => $result->idResultado,
@@ -186,7 +220,7 @@ class EscalasRehabilitacionController extends Controller
                         ]);
                     }
                 }
-            } */
+            }
 
         } catch (\Throwable $th) {
             throw $th;
@@ -201,69 +235,190 @@ class EscalasRehabilitacionController extends Controller
     {
 
         if ($request['registro']['detalleAfi']['programa_id'] == 1) { //CARDIACO
-            return "programa 1";
+
+            $catInicial     = 0;
+            $catFinal       = 0;
+            $detalleRes     = "";
+            $tipoRes        = "QLMI MCID 5 PUNTOS";
+
+            $registroInicial = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 1)->first(); //HISTORIA INICIAL
+                $atributosIniciales = DB::table('ESCALAS.historial_resultado')->where('historial_idhistorial', $registroInicial->idhistorial)->get();
+
+            $registroFinal = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 2)->first(); //HISTORIA FINAL
+                $atributosFinales = DB::table('ESCALAS.historial_resultado')->where('historial_idhistorial', $registroFinal->idhistorial)->get();
+
+                foreach ($atributosIniciales as $attIni) {
+                    if ($attIni->resultado_idresultado == 3) {
+                        $catInicial = floatval($attIni->valor);
+                    }
+                }
+
+                foreach ($atributosFinales as $attFin) {
+                    if ($attFin->resultado_idresultado == 4) {
+                        $catFinal = floatval($attFin->valor);
+                    }
+                }
+
+            $resultado = $catFinal - $catInicial;
+
+            if (floatval($resultado) >= 5 || floatval($resultado) == 189) {
+                $detalleRes = "Mejoró";
+           }
+           else if (floatval($resultado) == 0) {
+                $detalleRes = "Igual";
+           }
+           else if (floatval($resultado) < 0) {
+                $detalleRes = "Desmejoró";
+           }
+           else if (floatval($resultado) < 5 || floatval($resultado) > 0 ) {
+                $detalleRes = "Mejoró - No alcanza MCID";
+           }
+
+           return response()->json([
+               "catInicial"        => $catInicial,
+               "catFinal"          => $catFinal,
+               "detalleRes"        => $detalleRes,
+               "tipoRes"           => $tipoRes,
+               'registroInicial'   => $registroInicial,
+               'registroFinal'     => $registroFinal,
+               'idRegistro'        => $registroFinal->idhistorial
+
+           ], 200);
         }
 
-        if ($request['registro']['detalleAfi']['programa_id'] == 2) { //PULMONAR
-            return "programa 2";
-        }
+        if ($request['registro']['detalleAfi']['programa_id'] == 3 || $request['registro']['detalleAfi']['programa_id'] == 2) { //ACONDICIONAMIENTO O PULMONAR
 
-        if ($request['registro']['detalleAfi']['programa_id'] == 3) { //ACONDICIONAMIENTO
-
-            $catInicial = 0;
-            $catFinal   = 0;
+            $catInicial     = 0;
+            $catFinal       = 0;
+            $detalleRes     = "";
+            $tipoRes        = "CAT MCID-3 PUNTOS";
 
             $registroInicial = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 1)->first(); //HISTORIA INICIAL
                 $atributosIniciales = DB::table('ESCALAS.historial_atributo')->where('historial_idhistorial', $registroInicial->idhistorial)->get();
 
-            $registrosFinal = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 2)->first(); //HISTORIA FINAL
-                $atributosFinales = DB::table('ESCALAS.historial_atributo')->where('historial_idhistorial', $registrosFinal->idhistorial)->get();
+            $registroFinal = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 2)->first(); //HISTORIA FINAL
+                $atributosFinales = DB::table('ESCALAS.historial_atributo')->where('historial_idhistorial', $registroFinal->idhistorial)->get();
 
                 foreach ($atributosIniciales as $attIni) {
                     if ($attIni->atributo_idatributo == 25) {
-                        $catInicial = intval($attIni->valor);
+                        $catInicial = floatval($attIni->valor);
                     }
                 }
 
                 foreach ($atributosFinales as $attFin) {
                     if ($attFin->atributo_idatributo == 26) {
-                        $catFinal = intval($attFin->valor);
+                        $catFinal = floatval($attFin->valor);
+                    }
+                }
+
+            $resultado = $catFinal - $catInicial ;
+
+            if (floatval($resultado) <= -3) {
+                 $detalleRes = "Mejoró";
+            }
+            else if (floatval($resultado) == 0) {
+                 $detalleRes = "Igual";
+            }
+            else if (floatval($resultado) >= 1) {
+                 $detalleRes = "Desmejoró";
+            }
+            else if (floatval($resultado) < 0 || floatval($resultado) >= -2 ) {
+                 $detalleRes = "Mejoró - No alcanza MCID";
+            }
+
+            return response()->json([
+                "catInicial"        => $catInicial,
+                "catFinal"          => $catFinal,
+                "detalleRes"        => $detalleRes,
+                "tipoRes"           => $tipoRes,
+                'registroInicial'   => $registroInicial,
+                'registroFinal'     => $registroFinal,
+                'idRegistro'        => $registroFinal->idhistorial
+
+            ], 200);
+        }
+
+        if ($request['registro']['detalleAfi']['programa_id'] == 4) { //PISO PELVICO
+            $catInicial     = 0;
+            $catFinal       = 0;
+            $detalleRes     = "";
+            $tipoRes        = "MCID 4 PUNTOS";
+
+            $registroInicial = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 1)->first(); //HISTORIA INICIAL
+                $atributosIniciales = DB::table('ESCALAS.historial_resultado')->where('historial_idhistorial', $registroInicial->idhistorial)->get();
+
+            $registroFinal = historial::where('registro_id', $request['idRegistro']["registro"])->where('estado_id', 2)->first(); //HISTORIA FINAL
+                $atributosFinales = DB::table('ESCALAS.historial_resultado')->where('historial_idhistorial', $registroFinal->idhistorial)->get();
+
+                foreach ($atributosIniciales as $attIni) {
+                    if ($attIni->resultado_idresultado == 12) {
+                        $catInicial = floatval($attIni->valor);
+                    }
+                }
+
+                foreach ($atributosFinales as $attFin) {
+                    if ($attFin->resultado_idresultado == 13) {
+                        $catFinal = floatval($attFin->valor);
                     }
                 }
 
             $resultado = $catInicial - $catFinal;
 
-            if ($resultado <= -3) {
-                return "s";
-            }
+            if (floatval($resultado) >= 4) {
+                $detalleRes = "Mejoró";
+           }
+           else if (floatval($resultado) == 0) {
+                $detalleRes = "Igual";
+           }
+           else if (floatval($resultado) < 0) {
+                $detalleRes = "No Mejoró";
+           }
+           else if (floatval($resultado) >= 1 && floatval($resultado) <= 3 ) {
+                $detalleRes = "No significativo - Mejora";
+           }
 
-            return response()->json([
-                "catInicial"   => $catInicial,
-                "catFinal"     => $catFinal,
-            ], 200);
+           return response()->json([
+               "catInicial"        => $catInicial,
+               "catFinal"          => $catFinal,
+               "detalleRes"        => $detalleRes,
+               "tipoRes"           => $tipoRes,
+               'registroInicial'   => $registroInicial,
+               'registroFinal'     => $registroFinal,
+               'idRegistro'        => $registroFinal->idhistorial
 
-            /*
-                mejoro      = Cat Final - Cat Inicial   <= 3;
-                igual       = Cat Final - Cat Inicial   = 0;
-                Desmejoro   = Cat Final - Cat Inicial   >= 1;
-                No Alcanz   = Cat Final - Cat Inicial   < 0 per 1;
-            */
-
-            return response()->json([
-                "atributosIniciales"   => $atributosIniciales,
-                "atributosFinales"     => $atributosFinales,
-            ], 200);
+           ], 200);
         }
-
-        if ($request['registro']['detalleAfi']['programa_id'] == 4) { //PISO PELVICO
-            return "programa 4";
-        }
-
 
         return $request->all();
 
     }
 
+    public function finalizarRegistro(Request $request)
+    {
+        /*
+            1: Finaliza
+            2: Continua
+        */
+        if ($request->abandono == 'NO') {
 
+            if ($request->finalizo == 2) {
+                Historial::where('idhistorial', $request->idRegistroF)->update([
+                    'estado_id' => 3
+                ]);
+            }
+        }else{
+            Historial::where('idhistorial', $request->idRegistroF)->update([
+                'estado_id' => 4
+            ]);
+
+        }
+
+        return response()->json([
+            "informacion"               => "ajuste realizado...",
+            "abandono"                  => $request['abandono'],
+            "registrohistorialupdated"  => $request['idRegistroF'],
+            "todo"                      => $request->all(),
+        ], 200);
+    }
 
 }
