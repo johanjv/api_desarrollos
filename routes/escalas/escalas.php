@@ -13,8 +13,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::prefix("escalas-rehabilitacion")->group(function(){
-        Route::get('getProgramasPerAfi',    'EscalasRehabilitacion\EscalasRehabilitacionController@getProgramasPerAfi');
-        Route::get('getAbandonos',          'EscalasRehabilitacion\EscalasRehabilitacionController@getAbandonos');
+        Route::get('detalleGrafico',         'EscalasRehabilitacion\EscalasRehabilitacionController@detalleGrafico');
+        Route::get('detalleStats',           'EscalasRehabilitacion\EscalasRehabilitacionController@detalleStats');
+
+        Route::get('getProgramasPerAfi',     'EscalasRehabilitacion\EscalasRehabilitacionController@getProgramasPerAfi');
+        Route::get('getAbandonos',           'EscalasRehabilitacion\EscalasRehabilitacionController@getAbandonos');
         Route::post('getEscalasPerPrograma', 'EscalasRehabilitacion\EscalasRehabilitacionController@getEscalasPerPrograma');
         Route::post('saveRegistroAfi',       'EscalasRehabilitacion\EscalasRehabilitacionController@saveRegistroAfi');
         Route::get('getProgramas',           'EscalasRehabilitacion\EscalasRehabilitacionController@getProgramas');
@@ -22,6 +25,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('almacenarNewItem',      'EscalasRehabilitacion\EscalasRehabilitacionController@almacenarNewItem');
         Route::post('getResultados',         'EscalasRehabilitacion\EscalasRehabilitacionController@getResultados');
         Route::post('finalizarRegistro',     'EscalasRehabilitacion\EscalasRehabilitacionController@finalizarRegistro');
+
         Route::post('getHistorial',          'EscalasRehabilitacion\HistorialRehabilitacionController@getHistorial');
+        Route::post('getDetalleHistorial',   'EscalasRehabilitacion\HistorialRehabilitacionController@getDetalleHistorial');
     });
 });

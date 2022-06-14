@@ -14,6 +14,36 @@ use Illuminate\Support\Facades\Auth;
 
 class EscalasRehabilitacionController extends Controller
 {
+    public function detalleGrafico(Request $request)
+    {
+        $programas = Programa::selectRaw('idPrograma, nombre')->get();
+
+        $programas->map(function($item){
+            $item->inicial  = Registros::join('ESCALAS.historial as h', 'h.registro_id', 'ESCALAS.registro.idRegistro')->where('ESCALAS.registro.programa_id', $item->idPrograma)->where('h.estado_id', 1)->count();
+            $item->parcial  = Registros::join('ESCALAS.historial as h', 'h.registro_id', 'ESCALAS.registro.idRegistro')->where('ESCALAS.registro.programa_id', $item->idPrograma)->where('h.estado_id', 3)->count();
+            $item->final    = Registros::join('ESCALAS.historial as h', 'h.registro_id', 'ESCALAS.registro.idRegistro')->where('ESCALAS.registro.programa_id', $item->idPrograma)->where('h.estado_id', 2)->count();
+            $item->abandono = Registros::join('ESCALAS.historial as h', 'h.registro_id', 'ESCALAS.registro.idRegistro')->where('ESCALAS.registro.programa_id', $item->idPrograma)->where('h.estado_id', 4)->count();
+        });
+
+        return response()->json([ "multiplesVal" => $programas, ], 200);
+    }
+
+    public function detalleStats(Request $request)
+    {
+        $cardiaco  = Registros::with('programas')->where('programa_id', 1)->count();
+        $pulmonar  = Registros::with('programas')->where('programa_id', 2)->count();
+        $acondici  = Registros::with('programas')->where('programa_id', 3)->count();
+        $pisopelv  = Registros::with('programas')->where('programa_id', 4)->count();
+
+        return response()->json([
+            "cardiaco" => $cardiaco,
+            "pulmonar" => $pulmonar,
+            "acondici"   => $acondici,
+            "pisopelv" => $pisopelv,
+        ], 200);
+
+    }
+
     public function getProgramas(Request $request)
     {
         $programas = Programa::all();
@@ -388,8 +418,6 @@ class EscalasRehabilitacionController extends Controller
 
            ], 200);
         }
-
-        return $request->all();
 
     }
 
