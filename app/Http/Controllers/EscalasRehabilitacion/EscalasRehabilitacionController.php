@@ -74,7 +74,7 @@ class EscalasRehabilitacionController extends Controller
 
     public function getAbandonos(Request $request)
     {
-        $abandonos = Abandonos::all();
+        $abandonos = Abandonos::where('activo', 1)->get();
 
         return response()->json([
             "abandonos"   => $abandonos,
@@ -447,6 +447,39 @@ class EscalasRehabilitacionController extends Controller
             "registrohistorialupdated"  => $request['idRegistroF'],
             "todo"                      => $request->all(),
         ], 200);
+    }
+
+
+    public function guardarEdicion(Request $request)
+    {
+
+        $abandonoUpdate = Abandonos::where('idAbandono', $request['item']['idAbandono'])->update([
+            'activo'        => $request['item']['activo'],
+            'descripcion'   => $request['item']['descripcion']
+        ]);
+
+        $abandonos = Abandonos::all();
+
+        return response()->json([
+            "abandonos"   => $abandonos,
+        ], 200);
+
+    }
+
+    public function guardarNew(Request $request)
+    {
+
+        $abandonoNew = Abandonos::create([
+            'activo'        => $request['activo'],
+            'descripcion'   => $request['descripcion']
+        ]);
+
+        $abandonos = Abandonos::all();
+
+        return response()->json([
+            "abandonos"   => $abandonos,
+        ], 200);
+
     }
 
 }

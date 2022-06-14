@@ -28,5 +28,8 @@ Route::middleware(['auth:api'])->group(function () {
 
         Route::post('getHistorial',          'EscalasRehabilitacion\HistorialRehabilitacionController@getHistorial');
         Route::post('getDetalleHistorial',   'EscalasRehabilitacion\HistorialRehabilitacionController@getDetalleHistorial');
+
+        Route::post('guardarEdicion',        'EscalasRehabilitacion\EscalasRehabilitacionController@guardarEdicion');
+        Route::post('guardarNew',            'EscalasRehabilitacion\EscalasRehabilitacionController@guardarNew');
     });
 });
