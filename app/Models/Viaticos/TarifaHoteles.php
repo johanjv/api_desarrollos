@@ -5,18 +5,21 @@ namespace App\Models\Viaticos;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MotivosViajes extends Model
+class TarifaHoteles extends Model
 {
     use HasFactory;
 
-    protected  $table = "VIATICOS.MotivosViajes";
+    protected  $table = "VIATICOS.hotelTarifas";
 
     const CREATED_AT = null;
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'idMotivoViajes',
-        'nomMotivo',
-        'estado',
+        'idHotelTarifa',
+        'hotel_id',
+        'acomodacion_id',
+        'tarifaSinImpuesto',
+        'seguro',
+        'habitacion',
     ];
 }

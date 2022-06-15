@@ -5,21 +5,19 @@ namespace App\Models\Viaticos;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Directivos extends Model
+class Alimentos extends Model
 {
     use HasFactory;
 
-    protected  $table = "VIATICOS.Directivos";
+    protected  $table = "VIATICOS.tarifaViaticos";
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
 
     protected $fillable = [
-        'idDirectivos',
-        'nomDirectivo',
-        'docDirectivo',
-        'cargo',
-        'proceso',
+        'idTarifas',
+        'alimentos',
+        'valor',
         'estado',
     ];
 }

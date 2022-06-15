@@ -346,7 +346,16 @@ class GlobalsController extends Controller
                 $loads = ['submodulos'];
                 $modulos->load($loads);
             }
-        } else {
+        } else if ($idDesarrollo == config('app.viaticos')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+               $loads = ['submodulos'];
+               $modulos->load($loads);
+           }else{
+               $modulos = null;
+           }
+        }
+        else {
             $modulos = null;
         }
 

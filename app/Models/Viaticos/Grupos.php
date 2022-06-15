@@ -5,18 +5,18 @@ namespace App\Models\Viaticos;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MotivosViajes extends Model
+class Grupos extends Model
 {
     use HasFactory;
 
-    protected  $table = "VIATICOS.MotivosViajes";
+    protected  $table = "VIATICOS.grupos";
 
     const CREATED_AT = null;
     const UPDATED_AT = null;
 
     protected $fillable = [
-        'idMotivoViajes',
-        'nomMotivo',
+        'idGrupos',
+        'nomGrupo',
         'estado',
     ];
 }
