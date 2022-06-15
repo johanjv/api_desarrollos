@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class GestionResiduosController extends Controller
 {
@@ -40,13 +41,23 @@ class GestionResiduosController extends Controller
             $q->where('unidad', $request["unidad"]);}])
         ->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->count();
 
+        //return $fechaParaValidar;
+
             if ($fechaParaValidar == 0) {
-                if ($request['idMes'] != null) {
-                    ValidarMes::create([
-                        'id_mes_ano'    => $request['idMes'],
-                        'unidad'        => $request['unidad']
-                    ]);
+
+                $periodoPrev = ValidarMes::selectRaw('id_mes_ano, aprobado, id')->where('unidad', $request["unidad"])->groupBy('id_mes_ano','aprobado', 'id')->orderby('id_mes_ano', 'DESC')->get();
+
+
+                if ($periodoPrev[0]['aprobado'] == 1) {
+                    if ($request['idMes'] != null) {
+                        ValidarMes::create([
+                            'id_mes_ano'    => $request['idMes'],
+                            'unidad'        => $request['unidad']
+                        ]);
+                    }
                 }
+
+
             }
 
         $datosCalendario = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
@@ -60,6 +71,21 @@ class GestionResiduosController extends Controller
             ->where('id_mes_ano', $request["idMes"])
             ->groupBy('nomb_residuos')
         ->get();
+
+        $residuo0   = isset($sumatoriaPerResiduo[0]['total'])    ? $sumatoriaPerResiduo[0]['total']   : 0;
+        $residuo1   = isset($sumatoriaPerResiduo[1]['total'])    ? $sumatoriaPerResiduo[1]['total']   : 0;
+        $residuo2   = isset($sumatoriaPerResiduo[2]['total'])    ? $sumatoriaPerResiduo[2]['total']   : 0;
+        $residuo3   = isset($sumatoriaPerResiduo[3]['total'])    ? $sumatoriaPerResiduo[3]['total']   : 0;
+        $residuo4   = isset($sumatoriaPerResiduo[4]['total'])    ? $sumatoriaPerResiduo[4]['total']   : 0;
+        $residuo5   = isset($sumatoriaPerResiduo[5]['total'])    ? $sumatoriaPerResiduo[5]['total']   : 0;
+        $residuo6   = isset($sumatoriaPerResiduo[6]['total'])    ? $sumatoriaPerResiduo[6]['total']   : 0;
+        $residuo7   = isset($sumatoriaPerResiduo[7]['total'])    ? $sumatoriaPerResiduo[7]['total']   : 0;
+        $residuo8   = isset($sumatoriaPerResiduo[8]['total'])    ? $sumatoriaPerResiduo[8]['total']   : 0;
+        $residuo9   = isset($sumatoriaPerResiduo[9]['total'])    ? $sumatoriaPerResiduo[9]['total']   : 0;
+        $residuo10  = isset($sumatoriaPerResiduo[10]['total'])   ? $sumatoriaPerResiduo[10]['total']  : 0;
+        $residuo11  = isset($sumatoriaPerResiduo[11]['total'])   ? $sumatoriaPerResiduo[11]['total']  : 0;
+        $residuo12  = isset($sumatoriaPerResiduo[12]['total'])   ? $sumatoriaPerResiduo[12]['total']  : 0;
+        $residuo13  = isset($sumatoriaPerResiduo[13]['total'])   ? $sumatoriaPerResiduo[13]['total']  : 0;
 
         $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
@@ -86,7 +112,7 @@ class GestionResiduosController extends Controller
             }
         }
 
-        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
         $formula2 = array(47,8,17,23,70,13);
 
         $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
@@ -95,17 +121,17 @@ class GestionResiduosController extends Controller
             $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
         }else{
             if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = ( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal'] * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo2+$residuo3 + $residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = ( $residuo9/$sumatoriaTotal['sumatoriaTotal'] * 100);
             }
 
             if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo2+$residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo3+$residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $residuo9/$sumatoriaTotal['sumatoriaTotal']) * 100);
             }
 
         }
@@ -154,7 +180,7 @@ class GestionResiduosController extends Controller
             }
             TiempoResiduos::create([
                 'id_residuo'    => $item["id_residuos"],
-                'cantidad'      => $item["valor"],
+                'cantidad'      => floatval($item["valor"]),
                 'dia'           => $request["dia"],
                 'mes'           => $request["mes"],
                 'ano'           => $request["ano"],
@@ -230,10 +256,11 @@ class GestionResiduosController extends Controller
             }
 
             foreach ($files as $file) {
-                Storage::disk('ftp_residuos')->put($file->getClientOriginalName(), $file);
-                array_push($misAdj, $file->getClientOriginalName());
+                $nameFile = "ADJUNTO_" . Str::random(25) . "_" . $request['unidad'] . $request['idMes'] . '.pdf';
+                Storage::disk('ftp_residuos')->put($nameFile, $file);
+                array_push($misAdj, $nameFile);
                 if ($docs->adjuntos != null) {
-                    array_push($adjuntos, $file->getClientOriginalName());
+                    array_push($adjuntos, $nameFile);
                 }
             }
 
@@ -261,10 +288,9 @@ class GestionResiduosController extends Controller
         }
 
         $countEnProceso     = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 0)->count();
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 3)->count();
 
         $countAprobado      = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-            ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
         ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 1)->count();
 
         $countRechazados    = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
@@ -272,8 +298,7 @@ class GestionResiduosController extends Controller
         ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 2)->count();
 
         $countPendientes    = ValidarMes::join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-            ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP')
-        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 3)->count();
+        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])->where('aprobado', 0)->count();
 
         $pendientes = Sucursal::selectRaw('SUC_DEPARTAMENTO, SUC_CODIGO_DEPARTAMENTO')
             ->join('UNIDADES_ESTANDAR', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP');
@@ -293,28 +318,32 @@ class GestionResiduosController extends Controller
 
         $pendientes->map(function ($item) use ($request, $tipoUser) {
             if ($tipoUser == 1) {
-                $item->unidadesPendientes   = ValidarMes::where('aprobado', 3)
+                $item->unidadesPendientes   = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 3)
                 ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
                 /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
                 ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
                 /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
             ->get();
 
-                $item->unidadesProceso  = ValidarMes::where('aprobado', 0)
+                $item->unidadesProceso  = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 0)
                 ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
                /*  ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
                 ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
                 /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
             ->get();
 
-                $item->unidadesAprobadas = ValidarMes::where('aprobado', 1)
+                $item->unidadesAprobadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 1)
                     ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
                     /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
                     ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
                     /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
                 ->get();
 
-                $item->unidadesRechazadas = ValidarMes::where('aprobado', 2)
+                $item->unidadesRechazadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 2)
                 ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
                 /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
                 ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
@@ -398,6 +427,21 @@ class GestionResiduosController extends Controller
             ->groupBy('nomb_residuos')
         ->get();
 
+        $residuo0   = isset($sumatoriaPerResiduo[0]['total'])    ? $sumatoriaPerResiduo[0]['total']   : 0;
+        $residuo1   = isset($sumatoriaPerResiduo[1]['total'])    ? $sumatoriaPerResiduo[1]['total']   : 0;
+        $residuo2   = isset($sumatoriaPerResiduo[2]['total'])    ? $sumatoriaPerResiduo[2]['total']   : 0;
+        $residuo3   = isset($sumatoriaPerResiduo[3]['total'])    ? $sumatoriaPerResiduo[3]['total']   : 0;
+        $residuo4   = isset($sumatoriaPerResiduo[4]['total'])    ? $sumatoriaPerResiduo[4]['total']   : 0;
+        $residuo5   = isset($sumatoriaPerResiduo[5]['total'])    ? $sumatoriaPerResiduo[5]['total']   : 0;
+        $residuo6   = isset($sumatoriaPerResiduo[6]['total'])    ? $sumatoriaPerResiduo[6]['total']   : 0;
+        $residuo7   = isset($sumatoriaPerResiduo[7]['total'])    ? $sumatoriaPerResiduo[7]['total']   : 0;
+        $residuo8   = isset($sumatoriaPerResiduo[8]['total'])    ? $sumatoriaPerResiduo[8]['total']   : 0;
+        $residuo9   = isset($sumatoriaPerResiduo[9]['total'])    ? $sumatoriaPerResiduo[9]['total']   : 0;
+        $residuo10  = isset($sumatoriaPerResiduo[10]['total'])   ? $sumatoriaPerResiduo[10]['total']  : 0;
+        $residuo11  = isset($sumatoriaPerResiduo[11]['total'])   ? $sumatoriaPerResiduo[11]['total']  : 0;
+        $residuo12  = isset($sumatoriaPerResiduo[12]['total'])   ? $sumatoriaPerResiduo[12]['total']  : 0;
+        $residuo13  = isset($sumatoriaPerResiduo[13]['total'])   ? $sumatoriaPerResiduo[13]['total']  : 0;
+
         $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
@@ -405,7 +449,7 @@ class GestionResiduosController extends Controller
             ->where('id_mes_ano', $request["periodo"])
         ->first();
 
-        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
         $formula2 = array(47,8,17,23,70,13);
 
         $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
@@ -414,18 +458,19 @@ class GestionResiduosController extends Controller
             $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
         }else{
             if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo2+$residuo3 + $residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = ( $residuo9/$sumatoriaTotal['sumatoriaTotal'] * 100);
             }
 
             if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo2+$residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo3+$residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $residuo9/$sumatoriaTotal['sumatoriaTotal']) * 100);
             }
+
         }
 
 
@@ -490,7 +535,7 @@ class GestionResiduosController extends Controller
         foreach ($request["item"] as $item) {
             TiempoResiduos::create([
                 'id_residuo'    => $item["id_residuos"],
-                'cantidad'      => $item["valor"],
+                'cantidad'      => floatval($item["valor"]),
                 'dia'           => $request["dia"],
                 'mes'           => $request["mes"],
                 'ano'           => $request["ano"],
@@ -683,13 +728,28 @@ class GestionResiduosController extends Controller
             ->groupBy('nomb_residuos')
         ->get();
 
+        $residuo0   = isset($sumatoriaPerResiduo[0]['total'])    ? $sumatoriaPerResiduo[0]['total']   : 0;
+        $residuo1   = isset($sumatoriaPerResiduo[1]['total'])    ? $sumatoriaPerResiduo[1]['total']   : 0;
+        $residuo2   = isset($sumatoriaPerResiduo[2]['total'])    ? $sumatoriaPerResiduo[2]['total']   : 0;
+        $residuo3   = isset($sumatoriaPerResiduo[3]['total'])    ? $sumatoriaPerResiduo[3]['total']   : 0;
+        $residuo4   = isset($sumatoriaPerResiduo[4]['total'])    ? $sumatoriaPerResiduo[4]['total']   : 0;
+        $residuo5   = isset($sumatoriaPerResiduo[5]['total'])    ? $sumatoriaPerResiduo[5]['total']   : 0;
+        $residuo6   = isset($sumatoriaPerResiduo[6]['total'])    ? $sumatoriaPerResiduo[6]['total']   : 0;
+        $residuo7   = isset($sumatoriaPerResiduo[7]['total'])    ? $sumatoriaPerResiduo[7]['total']   : 0;
+        $residuo8   = isset($sumatoriaPerResiduo[8]['total'])    ? $sumatoriaPerResiduo[8]['total']   : 0;
+        $residuo9   = isset($sumatoriaPerResiduo[9]['total'])    ? $sumatoriaPerResiduo[9]['total']   : 0;
+        $residuo10  = isset($sumatoriaPerResiduo[10]['total'])   ? $sumatoriaPerResiduo[10]['total']  : 0;
+        $residuo11  = isset($sumatoriaPerResiduo[11]['total'])   ? $sumatoriaPerResiduo[11]['total']  : 0;
+        $residuo12  = isset($sumatoriaPerResiduo[12]['total'])   ? $sumatoriaPerResiduo[12]['total']  : 0;
+        $residuo13  = isset($sumatoriaPerResiduo[13]['total'])   ? $sumatoriaPerResiduo[13]['total']  : 0;
+
         $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
             ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
         ->first();
 
-        $formula1 = array(11,25,73,50,20,17,66,63,5,76);
+        $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
         $formula2 = array(47,8,17,23,70,13);
 
         $tipoFormula = DB::table('UNIDADES_ESTANDAR')->where('ID_UNIDAD', $request['unidad'])->first();
@@ -698,17 +758,17 @@ class GestionResiduosController extends Controller
             $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
         }else{
             if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo2+$residuo3 + $residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = ( $residuo9/$sumatoriaTotal['sumatoriaTotal'] * 100);
             }
 
             if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo2+$residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo3+$residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $residuo9/$sumatoriaTotal['sumatoriaTotal']) * 100);
             }
 
         }

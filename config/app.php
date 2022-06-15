@@ -236,6 +236,22 @@ return [
     'AdmResiduos' => env('APP_ADMRESIDUOS', 17),
     'UsersResiduos' => env('APP_USERSRESIDUOS', 18),
 
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles FIRMA DIGITAL
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'userAdmFirma' => env('APP_USERADMFIRMA', 19),
+
+
+    
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
