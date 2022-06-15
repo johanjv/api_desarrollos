@@ -535,7 +535,7 @@ class GestionResiduosController extends Controller
         foreach ($request["item"] as $item) {
             TiempoResiduos::create([
                 'id_residuo'    => $item["id_residuos"],
-                'cantidad'      => $item["valor"],
+                'cantidad'      => floatval($item["valor"]),
                 'dia'           => $request["dia"],
                 'mes'           => $request["mes"],
                 'ano'           => $request["ano"],
