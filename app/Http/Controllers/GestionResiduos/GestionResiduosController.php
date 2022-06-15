@@ -72,6 +72,21 @@ class GestionResiduosController extends Controller
             ->groupBy('nomb_residuos')
         ->get();
 
+        $residuo0   = isset($sumatoriaPerResiduo[0]['total'])    ? $sumatoriaPerResiduo[0]['total']   : 0;
+        $residuo1   = isset($sumatoriaPerResiduo[1]['total'])    ? $sumatoriaPerResiduo[1]['total']   : 0;
+        $residuo2   = isset($sumatoriaPerResiduo[2]['total'])    ? $sumatoriaPerResiduo[2]['total']   : 0;
+        $residuo3   = isset($sumatoriaPerResiduo[3]['total'])    ? $sumatoriaPerResiduo[3]['total']   : 0;
+        $residuo4   = isset($sumatoriaPerResiduo[4]['total'])    ? $sumatoriaPerResiduo[4]['total']   : 0;
+        $residuo5   = isset($sumatoriaPerResiduo[5]['total'])    ? $sumatoriaPerResiduo[5]['total']   : 0;
+        $residuo6   = isset($sumatoriaPerResiduo[6]['total'])    ? $sumatoriaPerResiduo[6]['total']   : 0;
+        $residuo7   = isset($sumatoriaPerResiduo[7]['total'])    ? $sumatoriaPerResiduo[7]['total']   : 0;
+        $residuo8   = isset($sumatoriaPerResiduo[8]['total'])    ? $sumatoriaPerResiduo[8]['total']   : 0;
+        $residuo9   = isset($sumatoriaPerResiduo[9]['total'])    ? $sumatoriaPerResiduo[9]['total']   : 0;
+        $residuo10  = isset($sumatoriaPerResiduo[10]['total'])   ? $sumatoriaPerResiduo[10]['total']  : 0;
+        $residuo11  = isset($sumatoriaPerResiduo[11]['total'])   ? $sumatoriaPerResiduo[11]['total']  : 0;
+        $residuo12  = isset($sumatoriaPerResiduo[12]['total'])   ? $sumatoriaPerResiduo[12]['total']  : 0;
+        $residuo13  = isset($sumatoriaPerResiduo[13]['total'])   ? $sumatoriaPerResiduo[13]['total']  : 0;
+
         $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
@@ -106,17 +121,17 @@ class GestionResiduosController extends Controller
             $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
         }else{
             if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = ( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal'] * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo2+$residuo3 + $residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = ( $residuo9/$sumatoriaTotal['sumatoriaTotal'] * 100);
             }
 
             if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo2+$residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo3+$residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $residuo9/$sumatoriaTotal['sumatoriaTotal']) * 100);
             }
 
         }
@@ -408,6 +423,21 @@ class GestionResiduosController extends Controller
             ->groupBy('nomb_residuos')
         ->get();
 
+        $residuo0   = isset($sumatoriaPerResiduo[0]['total'])    ? $sumatoriaPerResiduo[0]['total']   : 0;
+        $residuo1   = isset($sumatoriaPerResiduo[1]['total'])    ? $sumatoriaPerResiduo[1]['total']   : 0;
+        $residuo2   = isset($sumatoriaPerResiduo[2]['total'])    ? $sumatoriaPerResiduo[2]['total']   : 0;
+        $residuo3   = isset($sumatoriaPerResiduo[3]['total'])    ? $sumatoriaPerResiduo[3]['total']   : 0;
+        $residuo4   = isset($sumatoriaPerResiduo[4]['total'])    ? $sumatoriaPerResiduo[4]['total']   : 0;
+        $residuo5   = isset($sumatoriaPerResiduo[5]['total'])    ? $sumatoriaPerResiduo[5]['total']   : 0;
+        $residuo6   = isset($sumatoriaPerResiduo[6]['total'])    ? $sumatoriaPerResiduo[6]['total']   : 0;
+        $residuo7   = isset($sumatoriaPerResiduo[7]['total'])    ? $sumatoriaPerResiduo[7]['total']   : 0;
+        $residuo8   = isset($sumatoriaPerResiduo[8]['total'])    ? $sumatoriaPerResiduo[8]['total']   : 0;
+        $residuo9   = isset($sumatoriaPerResiduo[9]['total'])    ? $sumatoriaPerResiduo[9]['total']   : 0;
+        $residuo10  = isset($sumatoriaPerResiduo[10]['total'])   ? $sumatoriaPerResiduo[10]['total']  : 0;
+        $residuo11  = isset($sumatoriaPerResiduo[11]['total'])   ? $sumatoriaPerResiduo[11]['total']  : 0;
+        $residuo12  = isset($sumatoriaPerResiduo[12]['total'])   ? $sumatoriaPerResiduo[12]['total']  : 0;
+        $residuo13  = isset($sumatoriaPerResiduo[13]['total'])   ? $sumatoriaPerResiduo[13]['total']  : 0;
+
         $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
@@ -424,18 +454,19 @@ class GestionResiduosController extends Controller
             $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
         }else{
             if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo2+$residuo3 + $residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = ( $residuo9/$sumatoriaTotal['sumatoriaTotal'] * 100);
             }
 
             if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo2+$residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo3+$residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $residuo9/$sumatoriaTotal['sumatoriaTotal']) * 100);
             }
+
         }
 
 
@@ -693,6 +724,21 @@ class GestionResiduosController extends Controller
             ->groupBy('nomb_residuos')
         ->get();
 
+        $residuo0   = isset($sumatoriaPerResiduo[0]['total'])    ? $sumatoriaPerResiduo[0]['total']   : 0;
+        $residuo1   = isset($sumatoriaPerResiduo[1]['total'])    ? $sumatoriaPerResiduo[1]['total']   : 0;
+        $residuo2   = isset($sumatoriaPerResiduo[2]['total'])    ? $sumatoriaPerResiduo[2]['total']   : 0;
+        $residuo3   = isset($sumatoriaPerResiduo[3]['total'])    ? $sumatoriaPerResiduo[3]['total']   : 0;
+        $residuo4   = isset($sumatoriaPerResiduo[4]['total'])    ? $sumatoriaPerResiduo[4]['total']   : 0;
+        $residuo5   = isset($sumatoriaPerResiduo[5]['total'])    ? $sumatoriaPerResiduo[5]['total']   : 0;
+        $residuo6   = isset($sumatoriaPerResiduo[6]['total'])    ? $sumatoriaPerResiduo[6]['total']   : 0;
+        $residuo7   = isset($sumatoriaPerResiduo[7]['total'])    ? $sumatoriaPerResiduo[7]['total']   : 0;
+        $residuo8   = isset($sumatoriaPerResiduo[8]['total'])    ? $sumatoriaPerResiduo[8]['total']   : 0;
+        $residuo9   = isset($sumatoriaPerResiduo[9]['total'])    ? $sumatoriaPerResiduo[9]['total']   : 0;
+        $residuo10  = isset($sumatoriaPerResiduo[10]['total'])   ? $sumatoriaPerResiduo[10]['total']  : 0;
+        $residuo11  = isset($sumatoriaPerResiduo[11]['total'])   ? $sumatoriaPerResiduo[11]['total']  : 0;
+        $residuo12  = isset($sumatoriaPerResiduo[12]['total'])   ? $sumatoriaPerResiduo[12]['total']  : 0;
+        $residuo13  = isset($sumatoriaPerResiduo[13]['total'])   ? $sumatoriaPerResiduo[13]['total']  : 0;
+
         $sumatoriaTotal = TiempoResiduos::selectRaw('SUM(cantidad) as sumatoriaTotal')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
@@ -708,17 +754,17 @@ class GestionResiduosController extends Controller
             $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
         }else{
             if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[3]['total'] + $sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo2+$residuo3 + $residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = ( $residuo9/$sumatoriaTotal['sumatoriaTotal'] * 100);
             }
 
             if (in_array($tipoFormula->SED_COD_DEP, $formula2)) {
-                $idr    = (($sumatoriaPerResiduo[12]['total']/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idi    = (((($sumatoriaPerResiduo[2]['total']+$sumatoriaPerResiduo[4]['total']+$sumatoriaPerResiduo[1]['total']+$sumatoriaPerResiduo[5]['total']))/$sumatoriaTotal['sumatoriaTotal'])*100);
-                $idos   = ((( $sumatoriaPerResiduo[3]['total']+$sumatoriaPerResiduo[8]['total'] + $sumatoriaPerResiduo[11]['total'] + $sumatoriaPerResiduo[13]['total'] + $sumatoriaPerResiduo[6]['total'] + $sumatoriaPerResiduo[7]['total'] + $sumatoriaPerResiduo[10]['total'] + $sumatoriaPerResiduo[0]['total']) / $sumatoriaTotal['sumatoriaTotal']) * 100);
-                $idrs   = (( $sumatoriaPerResiduo[9]['total']/$sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idi    = (((($residuo2+$residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
+                $idos   = ((( $residuo3+$residuo8 + $residuo11 + $residuo13 + $residuo6 + $residuo7 + $residuo10 + $residuo0) / $sumatoriaTotal['sumatoriaTotal']) * 100);
+                $idrs   = (( $residuo9/$sumatoriaTotal['sumatoriaTotal']) * 100);
             }
 
         }
