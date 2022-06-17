@@ -585,7 +585,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->orderBy('id_caso', 'DESC')
-            ->get();
+        ->get();
 
         /* $casosRegistradoOld3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
             ->selectRaw('DISTINCT caso.fecha_creacion,
@@ -639,16 +639,17 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->orderBy('id_caso', 'DESC')
-            ->get();
+        ->get();
 
+          //  return $documento;
 
-        $casosRegistradoNew = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('caso.id_tema_user', $documento)->where('caso.nuevo', 1)
+        $casosRegistradoNew = DB::table('FACTUCONTROL.caso AS caso')
             ->selectRaw('DISTINCT caso.fecha_creacion,
             caso.id_caso,
             caso.descripcion_tema,
             caso.flag_prontopago,
             caso.id_tipo_factura,
-
+            
             users.name,
             estado.descripcion_estado AS estado,
             categoria.descripcion AS categoria_descripcion,
@@ -657,15 +658,20 @@ class FactucontrolController extends Controller
             p.dias_pago as diasProveedor,
             DATEDIFF(DAY, GETDATE(), DATEADD(DAY, p.dias_pago, caso.fecha_creacion)) AS dias_restantes
             ')
-            /* ->join('FACTUCONTROL.temas AS temas', 'caso.idTema', '=', 'temas.id_tema') */
             ->join('users', 'caso.documento', '=', 'users.nro_doc')
             ->join('FACTUCONTROL.estado AS estado', 'caso.id_estado', '=', 'estado.id_estado')
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
-            //->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
+            
+            ->where('caso.id_estado', 1)
+            ->where('caso.nuevo', 1) 
+            ->where('caso.id_tema_user', $documento)
+            /* 
+            */
+
             ->orderBy('id_caso', 'DESC')
-            ->get();
+        ->get();
 
         $casosRegistradoOld = [];
 
