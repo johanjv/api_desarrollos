@@ -228,6 +228,13 @@ class AuthController extends Controller
                 elseif ($value == 'CN=UsersResiduos') {
                     array_push($rolUser, 18);
                 }
+
+                /* ROLES DE ESCALAS DE REHABILITACION */
+                elseif ($value == 'CN=APD_UsersEscalas') {
+                    array_push($rolUser, 21);
+                } elseif ($value == 'CN=APD_AdminEscalas') {
+                    array_push($rolUser, 22);
+                }
             }
         }
         return $rolUser;

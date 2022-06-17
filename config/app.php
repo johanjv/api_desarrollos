@@ -142,7 +142,7 @@ return [
     'residuos'      => env('APP_RESIDUOS', 10034),
     'firma'         => env('APP_FIRMA', 10037),
     'viaticos'      => env('APP_VIATICOS', 10035),
-    'backendApp'      => env('APP_BACKENDAPP', 10039),
+    'escalas'      => env('APP_ESCALAS', 10039),
 
 
     /*
@@ -250,7 +250,18 @@ return [
     'userAdmFirma' => env('APP_USERADMFIRMA', 19),
 
 
-    
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles ESCALAS DE REHABILITACION
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'UsersEscalas' => env('APP_USERSESCALAS', 21),
+    'AdminEscalas' => env('APP_ADMINESCALAS', 22),
 
     /*
     |--------------------------------------------------------------------------
