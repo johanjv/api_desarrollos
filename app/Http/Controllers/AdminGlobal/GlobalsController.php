@@ -355,7 +355,7 @@ class GlobalsController extends Controller
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-            } else if (in_array(config('app.superAdmin'), $permisos)) {
+            } else if (in_array(config('app.APD_ViaticosAdmin'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10057')->orWhere('id', '=', '10058')->orWhere('id', '=', '10062')
                     ->orWhere('id', '=', '10068')->orWhere('id', '=', '10070')->orWhere('id', '=', '10071')->orWhere('id', '=', '10072')->orWhere('id', '=', '10073')
                     ->orWhere('id', '=', '10074')->orWhere('id', '=', '10075')->orWhere('id', '=', '10076')->orWhere('id', '=', '10077')->get();

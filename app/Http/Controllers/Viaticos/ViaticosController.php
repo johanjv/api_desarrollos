@@ -414,7 +414,7 @@ class ViaticosController extends Controller
     {
         $data = $request->all();
         $correos = explode(",", $data["correos"]);
-
+        
         $misArchivosASQL = [];
         if ($request->hasFile("files")) {
             $files = $request->file("files");
@@ -442,6 +442,7 @@ class ViaticosController extends Controller
             $tarifaAdministrativaHosp  = $data["tarifaAdministrativaHosp"];
             $valorTiquete              = $data["valorTiquete"];
             $otroValor                 = $data["otroValor"];
+            $valorHotelNoche           = $data["valorPorNoche"];
 
             $insertItinerario = Itinerario::create([
                 'solicitud_id'      => $idSolicitud,
@@ -458,6 +459,7 @@ class ViaticosController extends Controller
                 'tarifaAdminHosp'   => $tarifaAdministrativaHosp,
                 'valorTiquete'      => $valorTiquete,
                 'otroValor'         => $otroValor,
+                'valorHotelNoche'   => $valorHotelNoche,
             ]);
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([

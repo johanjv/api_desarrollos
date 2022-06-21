@@ -30,5 +30,6 @@ class Itinerario extends Model
         'tarifaAdminHosp',
         'valorTiquete',
         'otroValor',
+        'valorHotelNoche',
     ];
 }
