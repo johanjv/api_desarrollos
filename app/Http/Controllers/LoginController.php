@@ -59,7 +59,7 @@ class LoginController extends Controller
                     $request->session()->regenerate();
 
                     /* REGISTRO EN BITACORA */
-                    Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
+                    Bitacora::create(['ID_APP' => $request["idDesarrollo"], 'USER_ACT' => $user["nro_doc"], 'ACCION' => 'LOGIN SUCCESS', 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $user["empresa"]]);
 
                     return response()->json([
                         "estado" => "1",
@@ -86,7 +86,7 @@ class LoginController extends Controller
                     $tokenUser = $user->createToken('Auth Token')->accessToken;
                     $request->session()->regenerate();
                     /* REGISTRO EN BITACORA */
-                    Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
+                    Bitacora::create(['ID_APP' => $request["idDesarrollo"], 'USER_ACT' => $user["nro_doc"], 'ACCION' => 'LOGIN SUCCESS', 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $user["empresa"]]);
 
                     return response()->json([
                         "estado" => "1",
@@ -120,7 +120,7 @@ class LoginController extends Controller
                 $tokenUser = $user->createToken('Auth Token')->accessToken;
                 $request->session()->regenerate();
                 /* REGISTRO EN BITACORA */
-                Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
+                Bitacora::create(['ID_APP' => $request["idDesarrollo"], 'USER_ACT' => $user["nro_doc"], 'ACCION' => 'LOGIN SUCCESS', 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $user["empresa"]]);
 
                 return response()->json([
                     "estado" => "4",
@@ -139,7 +139,7 @@ class LoginController extends Controller
                     $tokenUser = $user->createToken('Auth Token')->accessToken;
                     $request->session()->regenerate();
                     /* REGISTRO EN BITACORA */
-                    Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
+                    Bitacora::create(['ID_APP' => $request["idDesarrollo"], 'USER_ACT' => $user["nro_doc"], 'ACCION' => 'LOGIN SUCCESS', 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $user["empresa"]]);
 
                     return response()->json([
                         "estado" => "1",
@@ -199,8 +199,7 @@ class LoginController extends Controller
                     array_push($rolUser, 8);
                 }
 
-                /* ROLES DE FACTUCONTROL */
-                elseif ($value == 'CN=RadicadorFactu') {
+                /* ROLES DE FACTUCONTROL */ elseif ($value == 'CN=RadicadorFactu') {
                     array_push($rolUser, 9);
                 } elseif ($value == 'CN=CoordinadorFactu') {
                     array_push($rolUser, 10);
@@ -208,32 +207,29 @@ class LoginController extends Controller
                     array_push($rolUser, 11);
                 } elseif ($value == 'CN=Atencion') {
                     array_push($rolUser, 12);
-                }elseif ($value == 'CN=AdminFac') {
+                } elseif ($value == 'CN=AdminFac') {
                     array_push($rolUser, 14);
                 }
 
-                /* ROLES DE CITOLOGÍAS */
-                elseif ($value == 'CN=ProfCitologias') {
+                /* ROLES DE CITOLOGÍAS */ elseif ($value == 'CN=ProfCitologias') {
                     array_push($rolUser, 13);
                 }
 
-                /* ROLES DE MAMITAS */
-                elseif ($value == 'CN=Mamitas2_0') {
+                /* ROLES DE MAMITAS */ elseif ($value == 'CN=Mamitas2_0') {
                     array_push($rolUser, 15);
                 }
 
-                /* ROLES DE RESIDUOS */
-                elseif ($value == 'CN=SupAdmResiduos') {
+                /* ROLES DE RESIDUOS */ elseif ($value == 'CN=SupAdmResiduos') {
                     array_push($rolUser, 16);
-                }
-                elseif ($value == 'CN=AdmResiduos') {
+                } elseif ($value == 'CN=AdmResiduos') {
                     array_push($rolUser, 17);
-                }
-                elseif ($value == 'CN=UsersResiduos') {
+                } elseif ($value == 'CN=UsersResiduos') {
                     array_push($rolUser, 18);
-                }
-                elseif ($value == 'CN=APD_Firma_digital1_0') {
+                } elseif ($value == 'CN=APD_Firma_digital1_0') {
                     array_push($rolUser, 19);
+                }
+                /* viaticos */ elseif ($value == 'CN=APD_ViaticosAdmin') {
+                    array_push($rolUser, 20);
                 }
             }
         }
@@ -247,7 +243,7 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         /* REGISTRO EN BITACORA */
-        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'LOGOUT SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+        Bitacora::create(['ID_APP' => $request["idApp"], 'USER_ACT' => $request->user()->nro_doc, 'ACCION' => 'LOGOUT SUCCESS', 'FECHA' => date('Y-m-d h:i:s'), 'USER_EMPRESA' => $request->user()->empresa]);
 
 
         return response()->json(["message" => "Sesion Finalizada"]);
@@ -309,7 +305,7 @@ class LoginController extends Controller
     {
         if (isset($request["idApp"])) {
             $sedes = DB::table('UNIDADES_ESTANDAR')->get();
-        }else{
+        } else {
             $sedes = DB::table('UNIDADES_ESTANDAR')->get();
         }
         return response()->json(["sedes" => $sedes], 200);
