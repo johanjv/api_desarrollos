@@ -204,7 +204,7 @@ class AuthController extends Controller
                     array_push($rolUser, 11);
                 } elseif ($value == 'CN=Atencion') {
                     array_push($rolUser, 12);
-                }elseif ($value == 'CN=AdminFac') {
+                } elseif ($value == 'CN=AdminFac') {
                     array_push($rolUser, 14);
                 }
 
@@ -227,6 +227,13 @@ class AuthController extends Controller
                 }
                 elseif ($value == 'CN=UsersResiduos') {
                     array_push($rolUser, 18);
+                }
+
+                /* ROLES DE ESCALAS DE REHABILITACION */
+                elseif ($value == 'CN=APD_UsersEscalas') {
+                    array_push($rolUser, 21);
+                } elseif ($value == 'CN=APD_AdminEscalas') {
+                    array_push($rolUser, 22);
                 }
             }
         }

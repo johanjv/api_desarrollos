@@ -330,15 +330,23 @@ class GlobalsController extends Controller
             }
         } else if ($idDesarrollo == config('app.firma')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.userAdmFirma'), $permisos)) {
+               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+               $loads = ['submodulos'];
+               $modulos->load($loads);
+           }else{
+               $modulos = null;
+           }
+        } else if ($idDesarrollo == config('app.escalas')) {
+            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
+               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+               $loads = ['submodulos'];
+               $modulos->load($loads);
+           } else if (in_array(config('app.AdminEscalas'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
-            } else {
-                $modulos = null;
-            }
-        } else if ($idDesarrollo == config('app.backendApp')) {
-            if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
-                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+            } else if (in_array(config('app.UsersEscalas'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10063')->orWhere('id', '=', '10065')->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
             }
