@@ -85,9 +85,17 @@ class ViaticosController extends Controller
         $obsMotivos = $request["obsMotivos"];
         $observaciones = $request["observaciones"];
         $documento = Auth::user()->nro_doc;
+        $rol = json_decode(Auth::user()->rol);
+
+        $admin = 0;
+        foreach ($rol as $value) {
+            if ($value == 20) {
+                $admin = 1;
+            }
+        }
 
         if ($fecRetorno >= $fecSalida) {
-            if ($dias < 7) {
+            if ($dias < 7 && $admin == 0) {
                 return response()->json([
                     "insertSolicitud" =>  false
                 ], 200);
@@ -414,7 +422,7 @@ class ViaticosController extends Controller
     {
         $data = $request->all();
         $correos = explode(",", $data["correos"]);
-        
+
         $misArchivosASQL = [];
         if ($request->hasFile("files")) {
             $files = $request->file("files");
@@ -836,5 +844,4 @@ class ViaticosController extends Controller
         });
         return response()->json(["aprobacion" => $aprobacion, "status" => "ok"]);
     }
-
 }
