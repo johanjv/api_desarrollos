@@ -428,7 +428,7 @@ class ViaticosController extends Controller
             $files = $request->file("files");
             foreach ($files as $uno) {
                 $rt = $uno->getClientOriginalName();
-                copy($uno, $rt);
+                copy($uno, public_path($rt));
                 foreach ($correos as $value) {
                     Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
                 }
