@@ -52,14 +52,14 @@ class ViaticosController extends Controller
             ->selectRaw('SUC.SUC_DEPARTAMENTO, COUNT(SED.SED_NOMBRE_SEDE) as CantidadSedes, SUC.SUC_CODIGO_DEPARTAMENTO')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DANE', '=', 'SED.SUC_CODIGO_DANE')
             ->groupBy('SUC.SUC_DEPARTAMENTO', 'SUC.SUC_CODIGO_DEPARTAMENTO')
-            ->orderBy('CantidadSedes', 'DESC')
+            ->orderBy('SUC.SUC_DEPARTAMENTO', 'ASC')
             ->get();
         return response()->json(["sucursales" => $sucursales, "status" => "ok"]);
     }
 
     public function getMotivoViajes(Request $request)
     {
-        $motivosViajes = MotivosViajes::select('*')->distinct()->get();
+        $motivosViajes = MotivosViajes::select('*')->distinct()->orderBy('nomMotivo', 'ASC')->get();
         return response()->json(["motivosViajes" => $motivosViajes, "status" => "ok"]);
     }
 
@@ -427,8 +427,9 @@ class ViaticosController extends Controller
         if ($request->hasFile("files")) {
             $files = $request->file("files");
             foreach ($files as $uno) {
-                $rt = $uno->getClientOriginalName();
-                copy($uno, public_path($rt));
+                //$rt = $uno->getClientOriginalName();
+                $rt = "uploads/hvsedes/".$uno->getClientOriginalName();
+                copy($uno,$rt);
                 foreach ($correos as $value) {
                     Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
                 }
