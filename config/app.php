@@ -192,8 +192,9 @@ return [
     |
     */
 
-    'superAdmin'       => env('APP_SUPERADMIN', 1),
-    'administrador'    => env('APP_ADMINISTRADOR', 2),
+    'superAdmin'        => env('APP_SUPERADMIN', 1),
+    'administrador'     => env('APP_ADMINISTRADOR', 2),
+    'APD_ViaticosAdmin' => env('APP_ADMINUSER', 20),
 
 
     /*
@@ -236,7 +237,7 @@ return [
     'AdmResiduos' => env('APP_ADMRESIDUOS', 17),
     'UsersResiduos' => env('APP_USERSRESIDUOS', 18),
 
-    
+
     /*
     |--------------------------------------------------------------------------
     | Grupos disponibles FIRMA DIGITAL
