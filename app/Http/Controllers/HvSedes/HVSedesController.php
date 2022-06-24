@@ -1266,9 +1266,9 @@ class HVSedesController extends Controller
             $colCargEdit = CargosColab::create([
                 'DOC_COLABORADOR'   => $data['item']['DOC_COLABORADOR'],
                 'COD_CARGO'         => $cargo['COD_CARGO'],
-                'HORAS_CONT'        => $cargo['HORAS_CONT'],
-                'HORAS_LAB'         => $cargo['HORAS_LAB'],
-                'HORAS_SEMANA'      => $cargo['HORAS_SEMANA']
+                'HORAS_CONT'        => isset($cargo['HORAS_CONT']) ? $cargo['HORAS_CONT'] : $cargo['horas_cont'],
+                'HORAS_LAB'         => isset($cargo['HORAS_LAB']) ? $cargo['HORAS_LAB'] : $cargo['horas_lab'],
+                'HORAS_SEMANA'      => isset($cargo['HORAS_SEMANA']) ? $cargo['HORAS_SEMANA'] : $cargo['horas_semana'],
             ]);
 
             if (isset($cargo['horarios'])) {
@@ -1284,6 +1284,20 @@ class HVSedesController extends Controller
                     ]);
                 }
             }
+        }
+
+
+        if ($data['changeCargo'] == true) {
+
+            $deleteCargos = CargosColab::where('DOC_COLABORADOR', $data['item']['DOC_COLABORADOR'])->update([
+                'COD_CARGO'       => $data['newCargo'][0]['COD_CARGO'],
+            ]);
+
+            $deleteHorarios = HorariosColab::where('DOC_COLABORADOR', $data['item']['DOC_COLABORADOR'])->update([
+                'COD_CARGO'       => $data['newCargo'][0]['COD_CARGO'],
+            ]);
+
+
         }
 
         Bitacora::create([
@@ -1665,6 +1679,7 @@ class HVSedesController extends Controller
               $count++;
             }
 
+
             $equipos = DB::table('HOJADEVIDASEDES.DOT_EQUIPOS')
                 ->selectRaw('NOMBRE_EQUIPO, SUM(CANTIDAD_EQUIPOS) as CANTIDAD_EQUIPOS, ESTADO')
                 ->where('ID_HAB_SEDE', $request['sed'])
@@ -1695,6 +1710,8 @@ class HVSedesController extends Controller
                 "UnidadDisp"            => $UnidadDisp
             ], 200);
         }
+
+
 
 
 
