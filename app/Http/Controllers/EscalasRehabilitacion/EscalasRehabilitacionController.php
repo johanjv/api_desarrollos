@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\EscalasRehabilitacion;
 
 use App\Http\Controllers\Controller;
+use App\Models\Api_Afiliados_Interna\Afiliados;
 use App\Models\Escalas\Abandonos;
 use App\Models\Escalas\Historial;
 use App\Models\Escalas\Justificacion;
@@ -55,6 +56,9 @@ class EscalasRehabilitacionController extends Controller
 
     public function getProgramasPerAfi(Request $request)
     {
+        $afiliado = Afiliados::where('Documento', $request['nro_doc'])->first();
+        //$afiliado = DB::table('ESCALAS.afiliado')->where('idAfiliado', $request['nro_doc'])->first();
+
         $registrosPerAfi = Registros::with(['programas','afiliado'])->where('afiliado_id', $request['nro_doc'])->where('abandono_id', 11)->get();
         $programasDisponibles = [];
         foreach ($registrosPerAfi as $p) {
@@ -69,6 +73,7 @@ class EscalasRehabilitacionController extends Controller
 
         return response()->json([
             "programas"   => $programasDisponibles,
+            "afiliado"   => $afiliado,
         ], 200);
     }
 
