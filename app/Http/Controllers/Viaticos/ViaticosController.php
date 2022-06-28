@@ -67,7 +67,7 @@ class ViaticosController extends Controller
     {
         $fecSalida = $request["fecSalida"];
         $fecRetorno = $request["fecRetorno"];
-        $fechaActual = date('Y-m-d H:i:s');
+        $fechaActual = date('Y-m-d');
         $dias = (strtotime($fecSalida) - strtotime($fechaActual)) / 86400;
         $dias = abs($dias);
         $dias = floor($dias);
@@ -171,8 +171,33 @@ class ViaticosController extends Controller
     public function getSolicitudes(Request $request)
     {
         $documento = Auth::user()->nro_doc;
+        $aprobacionAnulados = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
+            ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno, SOL.fechaSolicitud, SOL.idSolicitud,
+            SOL.idCiudadOrigen, SOL.idCiudadDestino, SOL.observaciones, SOL.idMotivoViaje, motivos.nomMotivo, SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
+            ->join('VIATICOS.MotivosViajes AS motivos', 'motivos.idMotivoViajes', '=', 'SOL.idMotivoViaje')
+            ->where('SOL.docPerAprobacion', $documento)
+            ->where('SOL.aprobado', '<', 1)
+            ->distinct("SOL.idSolicitud")
+            ->orderBy('SOL.idSolicitud', 'ASC')
+            ->get();
+
+        $fechaActual = date('Y-m-d H:i:s');
+        foreach ($aprobacionAnulados as $value) {
+            $dias = (strtotime($value->fechaSolicitud) - strtotime($fechaActual)) / 86400;
+            $dias = abs($dias);
+            $dias = floor($dias);
+            //si es mayor a dos dias se anulan automaticamente ya que no deberian ser aprobados ni rechazados
+            if ($dias > 2) {
+                $insertSolicitud = RegistroSolicitud::where('idSolicitud', $value->idSolicitud)->update([
+                    'aprobado'  => 3,
+                ]);
+            }
+        }
+
         $aprobacion = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
-            ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,
+            ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno, SOL.fechaSolicitud, SOL.idSolicitud,
             SOL.idCiudadOrigen, SOL.idCiudadDestino, SOL.observaciones, SOL.idMotivoViaje, motivos.nomMotivo, SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
@@ -429,8 +454,8 @@ class ViaticosController extends Controller
             $files = $request->file("files");
             foreach ($files as $uno) {
                 //$rt = $uno->getClientOriginalName();
-                $rt = "uploads/viaticos/".$uno->getClientOriginalName();
-                copy($uno,$rt);
+                $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
+                copy($uno, $rt);
                 foreach ($correos as $value) {
                     Mail::to($value)->send(new NotificacionViaticosAdjuntos($uno->getClientOriginalName()));
                 }
