@@ -173,9 +173,10 @@ class ViaticosController extends Controller
         $documento = Auth::user()->nro_doc;
         $aprobacion = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
             ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,
-            SOL.idCiudadOrigen, SOL.idCiudadDestino, SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+            SOL.idCiudadOrigen, SOL.idCiudadDestino, SOL.observaciones, SOL.idMotivoViaje, motivos.nomMotivo, SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
+            ->join('VIATICOS.MotivosViajes AS motivos', 'motivos.idMotivoViajes', '=', 'SOL.idMotivoViaje')
             ->where('SOL.docPerAprobacion', $documento)
             ->where('SOL.aprobado', '<', 1)
             ->distinct("SOL.idSolicitud")
@@ -830,9 +831,10 @@ class ViaticosController extends Controller
         $documento = Auth::user()->nro_doc;
         $aprobacion = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
             ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,
-            SOL.idCiudadOrigen, SOL.idCiudadDestino, SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+            SOL.idCiudadOrigen, SOL.idCiudadDestino, SOL.observaciones, SOL.idMotivoViaje, motivos.nomMotivo, SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
+            ->join('VIATICOS.MotivosViajes AS motivos', 'motivos.idMotivoViajes', '=', 'SOL.idMotivoViaje')
             ->where('SOL.docPerAprobacion', $documento)
             ->distinct("SOL.idSolicitud")
             ->orderBy('SOL.idSolicitud', 'ASC')
