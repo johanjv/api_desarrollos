@@ -26,10 +26,16 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('getResultados',         'EscalasRehabilitacion\EscalasRehabilitacionController@getResultados');
         Route::post('finalizarRegistro',     'EscalasRehabilitacion\EscalasRehabilitacionController@finalizarRegistro');
 
+        Route::post('guardarEdicion',        'EscalasRehabilitacion\EscalasRehabilitacionController@guardarEdicion');
+        Route::post('guardarNew',            'EscalasRehabilitacion\EscalasRehabilitacionController@guardarNew');
+
+        Route::post('modificarEstadoUnico',  'EscalasRehabilitacion\EscalasRehabilitacionController@modificarEstadoUnico');
+
+
         Route::post('getHistorial',          'EscalasRehabilitacion\HistorialRehabilitacionController@getHistorial');
         Route::post('getDetalleHistorial',   'EscalasRehabilitacion\HistorialRehabilitacionController@getDetalleHistorial');
 
-        Route::post('guardarEdicion',        'EscalasRehabilitacion\EscalasRehabilitacionController@guardarEdicion');
-        Route::post('guardarNew',            'EscalasRehabilitacion\EscalasRehabilitacionController@guardarNew');
+
+
     });
 });

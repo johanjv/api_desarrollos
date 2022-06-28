@@ -482,4 +482,24 @@ class EscalasRehabilitacionController extends Controller
 
     }
 
+    public function modificarEstadoUnico(Request $request)
+    {
+        $registro = Registros::where('idRegistro', $request['programa']['idRegistro'])->update([
+            'abandono'      => "SI",
+            'abandono_id'   => 8
+        ]);
+
+        $historial = Historial::where('registro_id', $request['programa']['idRegistro'])->update([
+            'estado_id' => 4
+        ]);
+
+        return response()->json([
+            "registro"   => $registro,
+            "historial"   => $historial,
+        ], 200);
+
+    }
+
+
+
 }
