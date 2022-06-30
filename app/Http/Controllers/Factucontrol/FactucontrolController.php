@@ -943,7 +943,7 @@ class FactucontrolController extends Controller
         $dataHistorial = [];
         $casosHistorialOld = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw('DISTINCT caso.nuevo, caso.id_user_create, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
-            caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
+            caso.fechaRadicado, caso.fecha_creacion, caso.valor, caso.nuevo, conceptos.nameConceptos, caso.ordenCompra,
             estado.descripcion_estado AS estado,
                 historial_caso.*,
                 datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
@@ -965,7 +965,7 @@ class FactucontrolController extends Controller
         if (count($casosHistorialOld) == 0) {
             $casosHistorialOld1 = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
                 ->selectRaw('DISTINCT caso.nuevo, historial_caso.fecha_movimiento,  historial_caso.observaciones, users.name, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
-                caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra,
+                caso.fechaRadicado, caso.fecha_creacion, caso.valor, caso.nuevo, conceptos.nameConceptos, caso.ordenCompra,
                 estado.descripcion_estado AS estado,
                     historial_caso.*,
                     datediff(DAY, caso.fecha_creacion, GETDATE()) AS dias,
@@ -996,7 +996,7 @@ class FactucontrolController extends Controller
 
         $casosHistorialNew = DB::connection('sqlsrv')->table('FACTUCONTROL.historial_caso AS historial_caso')
             ->selectRaw("DISTINCT caso.nuevo, historial_caso.fecha_movimiento, historial_caso.observaciones, caso.id_caso, caso.descripcion_tema, caso.Nfactura,
-                caso.fechaRadicado, caso.fecha_creacion, caso.valor, conceptos.nameConceptos, caso.ordenCompra, historial_caso.fecha_pasa_caso, historial_caso.primerMovimiento
+                caso.fechaRadicado, caso.fecha_creacion, caso.valor, caso.nuevo, conceptos.nameConceptos, caso.ordenCompra, historial_caso.fecha_pasa_caso, historial_caso.primerMovimiento
                 , historial_caso.devolucion, historial_caso.docDevo, historial_caso.nomDevo,
                 historial_caso.*,
                 estado.descripcion_estado AS estado,
