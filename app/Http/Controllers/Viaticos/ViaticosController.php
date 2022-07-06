@@ -48,9 +48,8 @@ class ViaticosController extends Controller
 
     public function getSucursal(Request $request)
     {
-        $sucursales = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.SED_SEDE AS SED')
-            ->selectRaw('SUC.SUC_DEPARTAMENTO, COUNT(SED.SED_NOMBRE_SEDE) as CantidadSedes, SUC.SUC_CODIGO_DEPARTAMENTO')
-            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DANE', '=', 'SED.SUC_CODIGO_DANE')
+        $sucursales = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC')
+            ->selectRaw('SUC.SUC_DEPARTAMENTO, SUC.SUC_CODIGO_DEPARTAMENTO')
             ->groupBy('SUC.SUC_DEPARTAMENTO', 'SUC.SUC_CODIGO_DEPARTAMENTO')
             ->orderBy('SUC.SUC_DEPARTAMENTO', 'ASC')
             ->get();
@@ -117,10 +116,10 @@ class ViaticosController extends Controller
                     'docCreador'         => $documento,
                 ]);
                 $data = Solicitud::latest('idSolicitud')->first();
-                foreach ($request["cedulaColaborador"] as $key => $value) {
+                foreach ($request["nomColaborador"] as $key => $value) {
                     $insertSolicitud = GrupoRegistro::create([
                         'solicitud_id'    => $data->idSolicitud,
-                        'colaborador_id'  => $value,
+                        'colaborador_id'  => $value["documento"],
                     ]);
                 }
                 return response()->json([
