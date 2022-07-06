@@ -100,20 +100,20 @@ class ViaticosController extends Controller
                 ], 200);
             } else {
                 $insertSolicitud = RegistroSolicitud::create([
-                    'idCiudadOrigen'     => $sucOrigen,
-                    'idCiudadDestino'    => $sucDestino,
-                    'fechaSalida'        => $fecSalida,
-                    'fechaRetorno'       => $fecRetorno,
-                    'horaEstimadaSalida' => $horaEstimadaSalida,
+                    'idCiudadOrigen'      => $sucOrigen,
+                    'idCiudadDestino'     => $sucDestino,
+                    'fechaSalida'         => $fecSalida,
+                    'fechaRetorno'        => $fecRetorno,
+                    'horaEstimadaSalida'  => $horaEstimadaSalida,
                     'horaEstimadaRetorno' => $horaEstimadaRetorno,
-                    'docPerAprobacion'   => $docPerAprobacion,
-                    'hospedaje'          => $hospedaje,
-                    'idMotivoViaje'      => $motivoViaje,
-                    'obsMotivos'         => $obsMotivos,
-                    'observaciones'      => $observaciones,
-                    'aprobado'           => 0,
-                    'estadoSolicitud'    => 1,
-                    'docCreador'         => $documento,
+                    'docPerAprobacion'    => $docPerAprobacion,
+                    'hospedaje'           => $hospedaje,
+                    'idMotivoViaje'       => $motivoViaje,
+                    'obsMotivos'          => $obsMotivos,
+                    'observaciones'       => $observaciones,
+                    'aprobado'            => 0,
+                    'estadoSolicitud'     => 1,
+                    'docCreador'          => $documento,
                 ]);
                 $data = Solicitud::latest('idSolicitud')->first();
                 foreach ($request["nomColaborador"] as $key => $value) {
@@ -339,7 +339,7 @@ class ViaticosController extends Controller
     {
         $aprobacion = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
             ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,SOL.idCiudadOrigen, SOL.idCiudadDestino, 
-            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado, SOL.hospedaje')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
             ->where('SOL.aprobado', 1)
@@ -349,7 +349,7 @@ class ViaticosController extends Controller
         //El número 1 es aprobado 
         $rechazo = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
             ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,SOL.idCiudadOrigen, SOL.idCiudadDestino, 
-            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado, SOL.hospedaje')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
             ->where('SOL.aprobado', 2)
@@ -359,7 +359,7 @@ class ViaticosController extends Controller
         //El número 2 es aprobado 
         $anulado = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
             ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,SOL.idCiudadOrigen, SOL.idCiudadDestino, 
-            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado, SOL.hospedaje')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
             ->where('SOL.aprobado', 3)
@@ -870,5 +870,64 @@ class ViaticosController extends Controller
                 ->where("solicitud_id", $item->idSolicitud)->get();
         });
         return response()->json(["aprobacion" => $aprobacion, "status" => "ok"]);
+    }
+
+    public function insertItinerariosNo(Request $request)
+    {
+        $data = $request->all();
+        $correos = explode(",", $data["correos"]);
+
+        $misArchivosASQL = [];
+        if ($request->hasFile("files")) {
+            $files = $request->file("files");
+            foreach ($files as $uno) {
+                //$rt = $uno->getClientOriginalName();
+                $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
+                copy($uno, $rt);
+                foreach ($correos as $value) {
+                    Mail::to($value)->send(new NotificacionViaticosAdjuntos($uno->getClientOriginalName()));
+                }
+            }
+        }
+
+        if ($request->hasFile("files") > 0) {
+            $idSolicitud               = $data["idSolicitud"];
+            $aerolinea_id              = $data["aerolinea_id"];
+            $idViaticosSucursal        = $data["idViaticosSucursal"];
+            $opcion_id                 = $data["opcion_id"];
+            $grupos_id                 = $data["grupos_id"];
+            $seguro_id                 = $data["seguro_id"];
+            $horaSalida                = $data["horaSalida"];
+            $horaRetorno               = $data["horaRetorno"];
+            $tarifaAdministrativaTrans = $data["tarifaAdministrativaTrans"];
+            $valorTiquete              = $data["valorTiquete"];
+            $otroValor                 = $data["otroValor"];
+
+            $insertItinerario = Itinerario::create([
+                'solicitud_id'      => $idSolicitud,
+                'aerolinea_id'      => $aerolinea_id,
+                'viaticosSuc_id'    => $idViaticosSucursal,
+                'opcion_id'         => $opcion_id,
+                'grupo_id'          => $grupos_id,
+                'seguro_id'         => $seguro_id,
+                'horaSalida'        => $horaSalida,
+                'horaRetorno'       => $horaRetorno,
+                'tarifaAdminTrans'  => $tarifaAdministrativaTrans,
+                'valorTiquete'      => $valorTiquete,
+                'otroValor'         => $otroValor,
+            ]);
+            //aprobado # 4 es cuando queda ya finalizado el registro
+            $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
+                'aprobado'  => 4,
+            ]);
+
+            return response()->json([
+                "insertItinerario" =>  true,
+            ], 200);
+        } else {
+            return response()->json([
+                "sinArchivos" =>  true,
+            ], 200);
+        }
     }
 }

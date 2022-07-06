@@ -50,5 +50,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/insertTarifa', 'Viaticos\ViaticosController@insertTarifa');
         Route::post('/editarTarifa', 'Viaticos\ViaticosController@editarTarifa');
         Route::get('/getSolicitudesAdmin', 'Viaticos\ViaticosController@getSolicitudesAdmin');
+        Route::post('/insertItinerariosNo', 'Viaticos\ViaticosController@insertItinerariosNo');
     });
 });
