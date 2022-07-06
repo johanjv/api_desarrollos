@@ -386,13 +386,13 @@ class EscalasRehabilitacionController extends Controller
                 $atributosFinales = DB::table('ESCALAS.historial_resultado')->where('historial_idhistorial', $registroFinal->idhistorial)->get();
 
                 foreach ($atributosIniciales as $attIni) {
-                    if ($attIni->resultado_idresultado == 12) {
+                    if ($attIni->resultado_idresultado == 1) {
                         $catInicial = floatval($attIni->valor);
                     }
                 }
 
                 foreach ($atributosFinales as $attFin) {
-                    if ($attFin->resultado_idresultado == 13) {
+                    if ($attFin->resultado_idresultado == 2) {
                         $catFinal = floatval($attFin->valor);
                     }
                 }
