@@ -453,10 +453,10 @@ class ViaticosController extends Controller
             $files = $request->file("files");
             foreach ($files as $uno) {
                 //$rt = $uno->getClientOriginalName();
-                $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
-                copy($uno, $rt);
+                $rt = "uploads/hvsedes/".$uno->getClientOriginalName();
+                copy($uno,$rt);
                 foreach ($correos as $value) {
-                    Mail::to($value)->send(new NotificacionViaticosAdjuntos($uno->getClientOriginalName()));
+                    Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
                 }
             }
         }
@@ -929,5 +929,30 @@ class ViaticosController extends Controller
                 "sinArchivos" =>  true,
             ], 200);
         }
+    }
+
+    public function getTarifaSucursales(Request $request)
+    {
+        $sucursales = ViaticosAeropuerto::selectRaw('idViaticosSucursal, recorridoUno, recorridoDos, totalRecorrido, codSuc, estado, SUC.SUC_DEPARTAMENTO, SUC.SUC_CODIGO_DEPARTAMENTO')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DEPARTAMENTO', '=', 'codSuc')
+            ->distinct("SUC.SUC_DEPARTAMENTO")
+            ->orderBy('SUC.SUC_DEPARTAMENTO', 'ASC')
+            ->get();
+        return response()->json(["sucursales" => $sucursales, "status" => "ok"]);
+    }
+
+    public function editarTarifaSucursales(Request $request)
+    {
+        $data = $request->all();
+        $valorTotal = $data["recorridoUno"] + $data["recorridoDos"];
+        $update = ViaticosAeropuerto::where("idViaticosSucursal", $data["idViaticosSucursal"])->update([
+            'recorridoUno'   => $data["recorridoUno"],
+            'recorridoDos'   => $data["recorridoDos"],
+            'totalRecorrido' => $valorTotal,
+        ]);
+
+        return response()->json([
+            "editTarifa" =>  true,
+        ], 200);
     }
 }
