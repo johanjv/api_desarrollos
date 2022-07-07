@@ -26,10 +26,11 @@ class RegistroSolicitud extends Model
         'hospedaje',
         'obsMotivos',
         'observaciones',
-        'estadoSolicitud',
         'docCreador',
         'aprobado',
         'docPerAprobacion',
         'fechaSolicitud',
+        'sistemaAnula',
+        'docPerCancela',
     ];
 }

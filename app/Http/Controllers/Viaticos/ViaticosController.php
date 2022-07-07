@@ -22,7 +22,6 @@ use App\Models\Viaticos\Opciones;
 use App\Models\Viaticos\Rechazo;
 use App\Models\Viaticos\RegistroSolicitud;
 use App\Models\Viaticos\Seguro;
-use App\Models\Viaticos\Solicitud;
 use App\Models\Viaticos\TarifaHoteles;
 use App\Models\Viaticos\TarifaViaticos;
 use App\Models\Viaticos\ViaticosAeropuerto;
@@ -112,10 +111,9 @@ class ViaticosController extends Controller
                     'obsMotivos'          => $obsMotivos,
                     'observaciones'       => $observaciones,
                     'aprobado'            => 0,
-                    'estadoSolicitud'     => 1,
                     'docCreador'          => $documento,
                 ]);
-                $data = Solicitud::latest('idSolicitud')->first();
+                $data = RegistroSolicitud::latest('idSolicitud')->first();
                 foreach ($request["nomColaborador"] as $key => $value) {
                     $insertSolicitud = GrupoRegistro::create([
                         'solicitud_id'    => $data->idSolicitud,
@@ -190,7 +188,8 @@ class ViaticosController extends Controller
             //si es mayor a dos dias se anulan automaticamente ya que no deberian ser aprobados ni rechazados
             if ($dias > 2) {
                 $insertSolicitud = RegistroSolicitud::where('idSolicitud', $value->idSolicitud)->update([
-                    'aprobado'  => 3,
+                    'aprobado'     => 3,
+                    'sistemaAnula' => "El sistema anuló el registro",
                 ]);
             }
         }
@@ -241,7 +240,8 @@ class ViaticosController extends Controller
         if ($dias > 2) {
             //1 es para aprobado el 2 es para rechazado y el 3 para anulado
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
-                'aprobado'  => 3,
+                'aprobado'     => 3,
+                'sistemaAnula' => "El sistema anuló el registro",
             ]);
 
             return response()->json([
@@ -274,6 +274,7 @@ class ViaticosController extends Controller
     public function getRechazoSolicitud(Request $request)
     {
         $data = $request->all();
+        $documento = Auth::user()->nro_doc;
         $idSolicitud = $data["idSolicitud"];
         $observaciones = $data["observaciones"];
 
@@ -300,7 +301,8 @@ class ViaticosController extends Controller
         if ($dias > 2) {
             //1 es para aprobado el 2 es para rechazado y el 3 para anulado
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
-                'aprobado'  => 3,
+                'aprobado'     => 3,
+                'sistemaAnula' => "El sistema anuló el registro",
             ]);
 
             return response()->json([
@@ -310,6 +312,7 @@ class ViaticosController extends Controller
             $insertSolicitud = Rechazo::create([
                 'solicitud_id'  => $idSolicitud,
                 'observaciones' => $observaciones,
+                'docPerRechaza' => $documento,
             ]);
             //si lo aprueba el valor es 1 si lo rechaza el valor es 2 si es anulado el valor es 3
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
@@ -446,6 +449,7 @@ class ViaticosController extends Controller
     public function insertItinerarios(Request $request)
     {
         $data = $request->all();
+        $documento = Auth::user()->nro_doc;
         $correos = explode(",", $data["correos"]);
 
         $misArchivosASQL = [];
@@ -494,6 +498,7 @@ class ViaticosController extends Controller
                 'valorTiquete'      => $valorTiquete,
                 'otroValor'         => $otroValor,
                 'valorHotelNoche'   => $valorHotelNoche,
+                'docPerRegistra'    => $documento,
             ]);
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
@@ -533,9 +538,11 @@ class ViaticosController extends Controller
     public function cancelaRegistro(Request $request)
     {
         $data = $request->all();
+        $documento = Auth::user()->nro_doc;
         //5 cancela el registro
         $insertSolicitud = RegistroSolicitud::where('idSolicitud', $data["idSolicitud"])->update([
-            'aprobado'  => 5,
+            'aprobado'      => 5,
+            'docPerCancela' => $documento,
         ]);
 
         return response()->json([
@@ -875,6 +882,7 @@ class ViaticosController extends Controller
     public function insertItinerariosNo(Request $request)
     {
         $data = $request->all();
+        $documento = Auth::user()->nro_doc;
         $correos = explode(",", $data["correos"]);
 
         $misArchivosASQL = [];
@@ -915,6 +923,7 @@ class ViaticosController extends Controller
                 'tarifaAdminTrans'  => $tarifaAdministrativaTrans,
                 'valorTiquete'      => $valorTiquete,
                 'otroValor'         => $otroValor,
+                'docPerRegistra'    => $documento,
             ]);
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
