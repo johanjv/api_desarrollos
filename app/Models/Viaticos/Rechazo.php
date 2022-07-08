@@ -18,5 +18,6 @@ class Rechazo extends Model
         'idHistorialRechazo',
         'solicitud_id',
         'observaciones',
+        'docPerRechaza',
     ];
 }

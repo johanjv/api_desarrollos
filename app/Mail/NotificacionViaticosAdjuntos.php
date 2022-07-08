@@ -33,6 +33,6 @@ class NotificacionViaticosAdjuntos extends Mailable
      */
     public function build()
     {
-        return $this->subject('Notificación de Viáticos - RECHAZADO')->view('mailsViaticos.notificacionViaticosAdjuntos')->attach(public_path($this->datos));
+        return $this->subject('Notificación de Viáticos - FINALIZADO')->view('mailsViaticos.notificacionViaticosAdjuntos')->attach(public_path($this->datos));
     }
 }

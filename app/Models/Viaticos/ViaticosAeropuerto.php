@@ -11,8 +11,8 @@ class ViaticosAeropuerto extends Model
 
     protected  $table = "VIATICOS.viaticosSucursal";
 
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = 'updated_at';
+    const CREATED_AT = null;
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'idViaticosSucursal',
