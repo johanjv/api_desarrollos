@@ -31,11 +31,9 @@ Route::middleware(['auth:api'])->group(function () {
 
         Route::post('modificarEstadoUnico',  'EscalasRehabilitacion\EscalasRehabilitacionController@modificarEstadoUnico');
 
-
         Route::post('getHistorial',          'EscalasRehabilitacion\HistorialRehabilitacionController@getHistorial');
         Route::post('getDetalleHistorial',   'EscalasRehabilitacion\HistorialRehabilitacionController@getDetalleHistorial');
-
-
+        Route::post('saveUpdateHistoria',   'EscalasRehabilitacion\HistorialRehabilitacionController@saveUpdateHistoria');
 
     });
 });

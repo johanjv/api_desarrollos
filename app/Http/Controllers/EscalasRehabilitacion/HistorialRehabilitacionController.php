@@ -242,4 +242,22 @@ class HistorialRehabilitacionController extends Controller
             'idRegistro'        => $registroFinal != null ? $registroFinal->idhistorial : null
         ], 200);
     }
+
+    public function saveUpdateHistoria(Request $request)
+    {
+
+        foreach ($request['item'] as $item) {
+            foreach ($item['escalasDisp'] as $escala) {
+                if (isset($escala['id_historial'])) {
+                    $upd = HistorialAtributo::where('historial_idhistorial', $escala['id_historial'])->where('atributo_idatributo', $escala['idAtributo'])->update([
+                        'valor' => $escala['valor']
+                    ]);
+                }
+            }
+        }
+
+        return response()->json([
+            'historial'         => $upd
+        ], 200);
+    }
 }
