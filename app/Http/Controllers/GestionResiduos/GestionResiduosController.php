@@ -35,29 +35,56 @@ class GestionResiduosController extends Controller
         $this->middleware('auth:api');
     }
 
+    public function validarExistenciaPeriodo($periodosPrev, $perNew)
+    {
+        $valPer = false;
+        foreach ($periodosPrev as $periodo) {
+            if ($periodo['id_mes_ano'] == $perNew) {
+                $valPer = true;
+            }
+        }
+
+        return $valPer;
+    }
+
     public function getDataCalendar(Request $request)
     {
         $fechaParaValidar = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
             $q->where('unidad', $request["unidad"]);}])
         ->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->count();
 
-        //return $fechaParaValidar;
+        $periodosDisp = [];
 
             if ($fechaParaValidar == 0) {
 
-                $periodoPrev = ValidarMes::selectRaw('id_mes_ano, aprobado, id')->where('unidad', $request["unidad"])->groupBy('id_mes_ano','aprobado', 'id')->orderby('id_mes_ano', 'DESC')->get();
+                $periodosPrev = ValidarMes::selectRaw('id_mes_ano, aprobado, id')
+                    ->where('unidad', $request["unidad"])
+                    ->groupBy('id_mes_ano','aprobado', 'id')
+                    ->orderby('id_mes_ano', 'DESC')
+                ->get()->toArray();
 
-
-                if ($periodoPrev[0]['aprobado'] == 1) {
-                    if ($request['idMes'] != null) {
-                        ValidarMes::create([
-                            'id_mes_ano'    => $request['idMes'],
-                            'unidad'        => $request['unidad']
-                        ]);
+                foreach ($periodosPrev as $periodo) {
+                    if ($periodo['aprobado'] == 1) {
+                        array_push($periodosDisp, $periodo);
                     }
                 }
 
+                $ultMesAprobado = substr($periodosDisp[0]['id_mes_ano'], 0, 2);
 
+                $nuevoMesDisp = $ultMesAprobado == '12' ? '01' : str_pad(intval($ultMesAprobado) + 1, strlen($ultMesAprobado), '0', STR_PAD_LEFT);
+
+                $perNew = $nuevoMesDisp . date('Y');
+
+                $validacion = $this->validarExistenciaPeriodo($periodosPrev, $perNew);
+
+                if ($validacion == 1) { //si esta el mes
+
+                }else{
+                    ValidarMes::create([
+                        'id_mes_ano'    => $perNew,
+                        'unidad'        => $request['unidad']
+                    ]);
+                }
             }
 
         $datosCalendario = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
