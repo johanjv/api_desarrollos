@@ -35,6 +35,18 @@ class GestionResiduosController extends Controller
         $this->middleware('auth:api');
     }
 
+    public function validarAprobacionPeriodo($periodosDisp)
+    {
+        $valPer = false;
+        foreach ($periodosDisp as $periodo) {
+            if ($periodo['aprobado'] == 0) {
+                $valPer = true;
+            }
+        }
+
+        return $valPer;
+    }
+
     public function validarExistenciaPeriodo($periodosPrev, $perNew)
     {
         $valPer = false;
@@ -49,47 +61,59 @@ class GestionResiduosController extends Controller
 
     public function getDataCalendar(Request $request)
     {
-        /* $fechaParaValidar = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
-            $q->where('unidad', $request["unidad"]);}])
-        ->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->count();
-
-        return $fechaParaValidar;
-
         $periodosDisp = [];
 
-            if ($fechaParaValidar == 0) { */
-                $periodosDisp = [];
+        $periodosPrev = ValidarMes::selectRaw('id_mes_ano, aprobado, id')
+            ->where('unidad', $request["unidad"])
+            ->groupBy('id_mes_ano','aprobado', 'id')
+            ->orderby('id_mes_ano', 'DESC')
+        ->get()->toArray();
 
-                $periodosPrev = ValidarMes::selectRaw('id_mes_ano, aprobado, id')
-                    ->where('unidad', $request["unidad"])
-                    ->groupBy('id_mes_ano','aprobado', 'id')
-                    ->orderby('id_mes_ano', 'DESC')
-                ->get()->toArray();
+        foreach ($periodosPrev as $periodo) {
+            if ($periodo['aprobado'] == 1) {
+                array_push($periodosDisp, $periodo);
+            }
+        }
 
-                foreach ($periodosPrev as $periodo) {
-                    if ($periodo['aprobado'] == 1) {
-                        array_push($periodosDisp, $periodo);
+        if (COUNT($periodosDisp) == 0 ) {
+
+            $periodosPrev = array_reverse($periodosPrev);
+
+            //return $periodosPrev;
+
+            $validacion = $this->validarExistenciaPeriodo($periodosPrev, $periodosPrev[0]['id_mes_ano']);
+
+
+            if ($validacion == 1) { //si esta el mes
+                array_push($periodosDisp, $periodosPrev[0]['id_mes_ano']);
+            }else{
+
+            }
+        }else{
+
+            $ultMesAprobado = substr($periodosDisp[0]['id_mes_ano'], 0, 2);
+
+            $nuevoMesDisp = $ultMesAprobado == '12' ? '01' : str_pad(intval($ultMesAprobado) + 1, strlen($ultMesAprobado), '0', STR_PAD_LEFT);
+
+            $perNew = $nuevoMesDisp . date('Y');
+
+            $validacion = $this->validarExistenciaPeriodo($periodosPrev, $perNew);
+
+            if ($validacion == 1) { //si esta el mes
+                /* foreach ($periodosDisp as $pDis) { */
+                    $validacionAp = $this->validarAprobacionPeriodo($periodosDisp);
+                    if ($validacionAp == 0) {
+                        array_push($periodosDisp, $perNew);
                     }
-                }
+                /* } */
+            }else{
+                ValidarMes::create([
+                    'id_mes_ano'    => $perNew,
+                    'unidad'        => $request['unidad']
+                ]);
+            }
+        }
 
-                $ultMesAprobado = substr($periodosDisp[0]['id_mes_ano'], 0, 2);
-
-                $nuevoMesDisp = $ultMesAprobado == '12' ? '01' : str_pad(intval($ultMesAprobado) + 1, strlen($ultMesAprobado), '0', STR_PAD_LEFT);
-
-                $perNew = $nuevoMesDisp . date('Y');
-
-                $validacion = $this->validarExistenciaPeriodo($periodosPrev, $perNew);
-
-                /* return $perNew; */
-
-                if ($validacion == 1) { //si esta el mes
-
-                }else{
-                    ValidarMes::create([
-                        'id_mes_ano'    => $perNew,
-                        'unidad'        => $request['unidad']
-                    ]);
-                }
             /* } */
 
         $datosCalendario = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
@@ -124,25 +148,6 @@ class GestionResiduosController extends Controller
             ->where('unidad', $request["unidad"])
             ->where('id_mes_ano', $request["idMes"])
         ->first();
-
-        $periodos = ValidarMes::selectRaw('id_mes_ano, aprobado, id')
-            ->where('unidad', $request["unidad"])
-            ->groupBy('id_mes_ano','aprobado', 'id')
-            ->orderby('id_mes_ano', 'DESC')
-        ->get();
-
-        //return $periodos;
-
-        $periodosDisp = [];
-        foreach ($periodos as $p) {
-            array_push($periodosDisp, $p);
-        }
-
-        if (COUNT($periodos) > 1) {
-            if ($periodosDisp[1]['aprobado'] != 1) {
-                array_splice($periodosDisp, 0, 1);
-            }
-        }
 
         $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
         $formula2 = array(47,8,17,23,70,13);
