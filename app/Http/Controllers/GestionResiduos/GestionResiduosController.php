@@ -103,7 +103,7 @@ class GestionResiduosController extends Controller
                 /* foreach ($periodosDisp as $pDis) { */
                     $validacionAp = $this->validarAprobacionPeriodo($periodosDisp);
                     if ($validacionAp == 0) {
-                        array_push($periodosDisp, $perNew);
+                        array_unshift($periodosDisp, $perNew);
                     }
                 /* } */
             }else{
