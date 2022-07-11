@@ -14,7 +14,6 @@
         <strong> Motivo de Rechazo: </strong>{{ $validarMes->observacion }} <br>
         <strong> Fecha de Revisión: </strong>{{ $validarMes->fecha_revision }}<br><br>
 
-
     <strong>Este mensaje es una notificación automática, por lo tanto le solicitamos no responder a esta dirección.</strong>
     </p>
 </body>

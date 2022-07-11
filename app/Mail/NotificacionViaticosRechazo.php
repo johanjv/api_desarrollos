@@ -33,6 +33,8 @@ class NotificacionViaticosRechazo extends Mailable
      */
     public function build()
     {
-        return $this->subject('Notificación de Viáticos - RECHAZADO')->view('mailsViaticos.notificacionViaticosRechazo');
+        return $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Viáticos')
+            ->subject('Notificación de Viáticos - RECHAZADO')
+        ->view('mailsViaticos.notificacionViaticosRechazo');
     }
 }

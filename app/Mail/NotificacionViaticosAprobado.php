@@ -29,6 +29,8 @@ class NotificacionViaticosAprobado extends Mailable
      */
     public function build()
     {
-        return $this->subject('Notificación de Viáticos - APROBADO')->view('mailsViaticos.notificacionViaticosAprobado');
+        return $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Viáticos')
+            ->subject('Notificación de Viáticos - APROBADO')
+        ->view('mailsViaticos.notificacionViaticosAprobado');
     }
 }

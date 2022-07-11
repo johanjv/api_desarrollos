@@ -26,6 +26,8 @@ class NotificacionResiduosAprobado extends Mailable
      */
     public function build()
     {
-        return $this->subject('Notificación de Residuos - APROBADO')->view('mails.notificacionResiduosAprobado');
+        return $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Residuos Hospitalarios')
+            ->subject('Notificación de Residuos - APROBADO')
+        ->view('mails.notificacionResiduosAprobado');
     }
 }

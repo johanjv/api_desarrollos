@@ -596,7 +596,7 @@ class GestionResiduosController extends Controller
 
     public function rechazarPeriodo(Request $request)
     {
-        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->first();
+        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->orderBy('fecha_revision', 'DESC')->first();
 
         $periodos   = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->update([
             'aprobado' => 2,
