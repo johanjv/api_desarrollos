@@ -49,13 +49,16 @@ class GestionResiduosController extends Controller
 
     public function getDataCalendar(Request $request)
     {
-        $fechaParaValidar = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
+        /* $fechaParaValidar = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
             $q->where('unidad', $request["unidad"]);}])
         ->where('id_mes_ano', $request['idMes'])->where('unidad', $request['unidad'])->count();
 
+        return $fechaParaValidar;
+
         $periodosDisp = [];
 
-            if ($fechaParaValidar == 0) {
+            if ($fechaParaValidar == 0) { */
+                $periodosDisp = [];
 
                 $periodosPrev = ValidarMes::selectRaw('id_mes_ano, aprobado, id')
                     ->where('unidad', $request["unidad"])
@@ -77,6 +80,8 @@ class GestionResiduosController extends Controller
 
                 $validacion = $this->validarExistenciaPeriodo($periodosPrev, $perNew);
 
+                /* return $perNew; */
+
                 if ($validacion == 1) { //si esta el mes
 
                 }else{
@@ -85,7 +90,7 @@ class GestionResiduosController extends Controller
                         'unidad'        => $request['unidad']
                     ]);
                 }
-            }
+            /* } */
 
         $datosCalendario = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($request) {
             $q->where('unidad', $request["unidad"]);}])
@@ -147,6 +152,7 @@ class GestionResiduosController extends Controller
         if ($sumatoriaTotal['sumatoriaTotal'] == null || $sumatoriaTotal['sumatoriaTotal'] == "0.0") {
             $idr = 0; $idi = 0; $idos = 0; $idrs = 0;
         }else{
+
             if (in_array($tipoFormula->SED_COD_DEP, $formula1)) {
                 $idr    = (($residuo12/$sumatoriaTotal['sumatoriaTotal'])*100);
                 $idi    = (((($residuo4+$residuo1+$residuo5))/$sumatoriaTotal['sumatoriaTotal'])*100);
