@@ -596,7 +596,7 @@ class GestionResiduosController extends Controller
 
     public function rechazarPeriodo(Request $request)
     {
-        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->orderBy('fecha_revision', 'DESC')->first();
+        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->first();
 
         $periodos   = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->update([
             'aprobado' => 2,
@@ -605,15 +605,15 @@ class GestionResiduosController extends Controller
             'observacion' => $request['motivo']
         ]);
 
-        //Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
-        Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
-
         $rechazadoObs = HistorialRechazo::create([
             'id_aprobacion_mes'     => $periodoGet->id,
             'observacion_rechazo'   => $request['motivo'],
             'fecha_rechazo'         => date('Y-m-d h:m:s'),
             'nro_doc_user'          => Auth::user()->nro_doc,
         ]);
+
+        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->orderBy('fecha_revision', 'DESC')->first();
+        Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
 
         return response()->json([
             'periodos'    => $periodos
