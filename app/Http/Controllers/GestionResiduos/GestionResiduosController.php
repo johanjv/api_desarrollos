@@ -460,7 +460,7 @@ class GestionResiduosController extends Controller
         $sumatoriaPerResiduo = TiempoResiduos::selectRaw('nomb_residuos, SUM(cantidad) as total')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
-            ->where('id_mes_ano', $request["periodo"])
+            /* ->where('id_mes_ano', $request["periodo"]) */
             ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
             ->groupBy('nomb_residuos')
         ->get();
@@ -484,7 +484,7 @@ class GestionResiduosController extends Controller
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
             ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
-            ->where('id_mes_ano', $request["periodo"])
+            /* ->where('id_mes_ano', $request["periodo"]) */
         ->first();
 
         $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
