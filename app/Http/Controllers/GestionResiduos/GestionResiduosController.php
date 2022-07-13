@@ -447,7 +447,7 @@ class GestionResiduosController extends Controller
         ->get();
 
         $sumatorias->map(function ($item) use ($request) {
-            $item->registros = TiempoResiduos::selectRaw('*')->where('id_mes_ano', $request['periodo'])
+            $item->registros = TiempoResiduos::selectRaw('*')/* ->where('id_mes_ano', $request['periodo']) */
                 ->join('users', 'users.nro_doc', '=', 'nro_doc_user')
                 ->join('RESIDUOS.residuos', 'RESIDUOS.residuos.id_residuos', '=', 'id_residuo')
                 ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000", $request['fechaHasta'] . "T23:59:59.999"])
