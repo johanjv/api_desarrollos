@@ -447,7 +447,7 @@ class GestionResiduosController extends Controller
         ->get();
 
         $sumatorias->map(function ($item) use ($request) {
-            $item->registros = TiempoResiduos::selectRaw('*')->where('id_mes_ano', $request['periodo'])
+            $item->registros = TiempoResiduos::selectRaw('*')/* ->where('id_mes_ano', $request['periodo']) */
                 ->join('users', 'users.nro_doc', '=', 'nro_doc_user')
                 ->join('RESIDUOS.residuos', 'RESIDUOS.residuos.id_residuos', '=', 'id_residuo')
                 ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000", $request['fechaHasta'] . "T23:59:59.999"])
@@ -460,7 +460,7 @@ class GestionResiduosController extends Controller
         $sumatoriaPerResiduo = TiempoResiduos::selectRaw('nomb_residuos, SUM(cantidad) as total')
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
-            ->where('id_mes_ano', $request["periodo"])
+            /* ->where('id_mes_ano', $request["periodo"]) */
             ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
             ->groupBy('nomb_residuos')
         ->get();
@@ -484,7 +484,7 @@ class GestionResiduosController extends Controller
             ->join('RESIDUOS.residuos','RESIDUOS.residuos.id_residuos','=','RESIDUOS.tiempos_residuos.id_residuo')
             ->where('unidad', $request["unidad"])
             ->whereBetween('fecha_concat', [$request['fechaDesde'] . "T00:00:00.000",$request['fechaHasta'] . "T23:59:59.999"])
-            ->where('id_mes_ano', $request["periodo"])
+            /* ->where('id_mes_ano', $request["periodo"]) */
         ->first();
 
         $formula1 = array(11,25,73,50,20,17,66,63,5,76,54);
@@ -596,7 +596,7 @@ class GestionResiduosController extends Controller
 
     public function rechazarPeriodo(Request $request)
     {
-        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->orderBy('fecha_revision', 'DESC')->first();
+        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->first();
 
         $periodos   = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->update([
             'aprobado' => 2,
@@ -605,15 +605,15 @@ class GestionResiduosController extends Controller
             'observacion' => $request['motivo']
         ]);
 
-        //Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
-        Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
-
         $rechazadoObs = HistorialRechazo::create([
             'id_aprobacion_mes'     => $periodoGet->id,
             'observacion_rechazo'   => $request['motivo'],
             'fecha_rechazo'         => date('Y-m-d h:m:s'),
             'nro_doc_user'          => Auth::user()->nro_doc,
         ]);
+
+        $periodoGet = ValidarMes::where('unidad', $request['unidad'])->where('id_mes_ano', $request['periodo'])->orderBy('fecha_revision', 'DESC')->first();
+        Mail::to($periodoGet->userNoty)->send(new NotificacionResiduos ($periodoGet));
 
         return response()->json([
             'periodos'    => $periodos
