@@ -555,6 +555,24 @@ class ViaticosController extends Controller
         ], 200);
     }
 
+    public function cancelCasosMasivos(Request $request)
+    {
+        $data = $request->all();
+        $documento = Auth::user()->nro_doc;
+        //5 cancela el registro
+        foreach ($data["cancelaCasos"] as $value) {
+            $insertSolicitud = RegistroSolicitud::where('idSolicitud', $value["idSolicitud"])->update([
+                'aprobado'          => 5,
+                'docPerCancela'     => $documento,
+                'obserCancelaCasos' => $data["obserCancelaCasos"],
+            ]);
+        }
+
+        return response()->json([
+            "cancelado" =>  true,
+        ], 200);
+    }
+
     public function getViaticosDash()
     {
         $datosGrafico = [];

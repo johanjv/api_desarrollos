@@ -32,5 +32,6 @@ class RegistroSolicitud extends Model
         'fechaSolicitud',
         'sistemaAnula',
         'docPerCancela',
+        'obserCancelaCasos',
     ];
 }
