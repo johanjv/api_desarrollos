@@ -18,5 +18,7 @@ class GrupoRegistro extends Model
         'idGrupoRegistro',
         'solicitud_id',
         'colaborador_id',
+        'estado',
+        'observaciones',
     ];
 }

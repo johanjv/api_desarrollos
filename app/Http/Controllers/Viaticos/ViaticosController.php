@@ -158,7 +158,30 @@ class ViaticosController extends Controller
         foreach ($usersList as $user) {
             $cadaUno = array(
                 'documento' => $user['DOC_COLABORADOR'],
-                'nombres'   => $user['NOMB_COLABORADOR']
+                'nombres'   => $user['NOMB_COLABORADOR'],
+                'correo'    => $user['CORREO']
+            );
+            array_push($datos, $cadaUno);
+        }
+        return $datos;
+    }
+
+    public function usuariodal(Request $request)
+    {
+        $buscar = $request["nombre"];
+        $usersList = Colaboradores::where(function ($q) use ($buscar) {
+            $buscar != null ? $q->where("NOMB_COLABORADOR", 'like', '%' . $buscar . '%') : $q;
+        })->orWhere(function ($q) use ($buscar) {
+            $buscar != null ? $q->where("DOC_COLABORADOR", 'like', '%' . $buscar . '%') : $q;
+        })->get();
+
+        $datos = [];
+
+        foreach ($usersList as $user) {
+            $cadaUno = array(
+                'DOC_COLABORADOR'  => $user['DOC_COLABORADOR'],
+                'NOMB_COLABORADOR' => $user['NOMB_COLABORADOR'],
+                'CORREO'           => $user['CORREO']
             );
             array_push($datos, $cadaUno);
         }
@@ -524,7 +547,7 @@ class ViaticosController extends Controller
     {
         //Esta consulta obtiene los documentos que estan ligados al idSolicitud ya que pueden ser 1 o varios
         $documentosCol = GrupoRegistro::selectRaw('idGrupoRegistro, solicitud_id, colaborador_id, fechaSolicitud')
-            ->where('solicitud_id', $request["idSolicitud"])->get();
+            ->where('solicitud_id', $request["idSolicitud"])->where('estado', null)->get();
 
         //serealiza un foreach con una consulta para obtener los documentos de los colaboradores
         $toatalCorreos = [];
@@ -987,6 +1010,33 @@ class ViaticosController extends Controller
 
         return response()->json([
             "editTarifa" =>  true,
+        ], 200);
+    }
+
+    public function eliminaColaborador(Request $request)
+    {
+        $data = $request->all();
+        $update = GrupoRegistro::where("solicitud_id", $data["idSolicitud"])->where("colaborador_id", $data["documento"])->update([
+            'estado'         => 1,
+            'observaciones'  => $data["observaciones"],
+        ]);
+
+        return response()->json([
+            "eliminado" =>  true,
+        ], 200);
+    }
+
+    public function agregaColaborador(Request $request)
+    {
+        $data = $request->all();
+
+        $insertSolicitud = GrupoRegistro::create([
+            'solicitud_id'    => $data["idSolicitud"],
+            'colaborador_id'  => $data["datos"]["DOC_COLABORADOR"],
+        ]);
+
+        return response()->json([
+            "insert" =>  true,
         ], 200);
     }
 }
