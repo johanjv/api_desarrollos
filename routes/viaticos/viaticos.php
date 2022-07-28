@@ -53,5 +53,9 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/insertItinerariosNo', 'Viaticos\ViaticosController@insertItinerariosNo');
         Route::get('/getTarifaSucursales', 'Viaticos\ViaticosController@getTarifaSucursales');
         Route::post('/editarTarifaSucursales', 'Viaticos\ViaticosController@editarTarifaSucursales');
+        Route::post('/cancelCasosMasivos', 'Viaticos\ViaticosController@cancelCasosMasivos');
+        Route::post('/eliminaColaborador', 'Viaticos\ViaticosController@eliminaColaborador');
+        Route::post('/usuariodal', 'Viaticos\ViaticosController@usuariodal');
+        Route::post('/agregaColaborador', 'Viaticos\ViaticosController@agregaColaborador');
     });
 });

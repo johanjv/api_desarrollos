@@ -330,18 +330,18 @@ class GlobalsController extends Controller
             }
         } else if ($idDesarrollo == config('app.firma')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.userAdmFirma'), $permisos)) {
-               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
-               $loads = ['submodulos'];
-               $modulos->load($loads);
-           }else{
-               $modulos = null;
-           }
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $loads = ['submodulos'];
+                $modulos->load($loads);
+            } else {
+                $modulos = null;
+            }
         } else if ($idDesarrollo == config('app.escalas')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
-               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
-               $loads = ['submodulos'];
-               $modulos->load($loads);
-           } else if (in_array(config('app.AdminEscalas'), $permisos)) {
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+                $loads = ['submodulos'];
+                $modulos->load($loads);
+            } else if (in_array(config('app.AdminEscalas'), $permisos)) {
                 $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
@@ -356,9 +356,8 @@ class GlobalsController extends Controller
                 $loads = ['submodulos'];
                 $modulos->load($loads);
             } else if (in_array(config('app.APD_ViaticosAdmin'), $permisos)) {
-                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10057')->orWhere('id', '=', '10058')->orWhere('id', '=', '10062')
-                    ->orWhere('id', '=', '10068')->orWhere('id', '=', '10070')->orWhere('id', '=', '10071')->orWhere('id', '=', '10072')->orWhere('id', '=', '10073')
-                    ->orWhere('id', '=', '10074')->orWhere('id', '=', '10075')->orWhere('id', '=', '10076')->orWhere('id', '=', '10077')->orWhere('id', '=', '10078')->get();
+                $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->where('id', '=', '10054')->orWhere('id', '=', '10058')->orWhere('id', '=', '10077')
+                    ->orWhere('id', '=', '10081')->get();
                 $loads = ['submodulos'];
                 $modulos->load($loads);
             } else {

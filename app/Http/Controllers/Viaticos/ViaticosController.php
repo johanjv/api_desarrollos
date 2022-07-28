@@ -158,7 +158,30 @@ class ViaticosController extends Controller
         foreach ($usersList as $user) {
             $cadaUno = array(
                 'documento' => $user['DOC_COLABORADOR'],
-                'nombres'   => $user['NOMB_COLABORADOR']
+                'nombres'   => $user['NOMB_COLABORADOR'],
+                'correo'    => $user['CORREO']
+            );
+            array_push($datos, $cadaUno);
+        }
+        return $datos;
+    }
+
+    public function usuariodal(Request $request)
+    {
+        $buscar = $request["nombre"];
+        $usersList = Colaboradores::where(function ($q) use ($buscar) {
+            $buscar != null ? $q->where("NOMB_COLABORADOR", 'like', '%' . $buscar . '%') : $q;
+        })->orWhere(function ($q) use ($buscar) {
+            $buscar != null ? $q->where("DOC_COLABORADOR", 'like', '%' . $buscar . '%') : $q;
+        })->get();
+
+        $datos = [];
+
+        foreach ($usersList as $user) {
+            $cadaUno = array(
+                'DOC_COLABORADOR'  => $user['DOC_COLABORADOR'],
+                'NOMB_COLABORADOR' => $user['NOMB_COLABORADOR'],
+                'CORREO'           => $user['CORREO']
             );
             array_push($datos, $cadaUno);
         }
@@ -257,6 +280,7 @@ class ViaticosController extends Controller
                 SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
                 ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
                 ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
+                ->where('SOL.idSolicitud', $idSolicitud)
                 ->distinct()
                 ->first();
             $solicitudGet = RegistroSolicitud::where('idSolicitud', $idSolicitud)->first();
@@ -481,24 +505,28 @@ class ViaticosController extends Controller
             $valorTiquete              = $data["valorTiquete"];
             $otroValor                 = $data["otroValor"];
             $valorHotelNoche           = $data["valorPorNoche"];
+            $docAignacionValorViaticos = $data["docAignacionValorViaticos"];
+            $valorViaticosAsignados    = $data["valorViaticosAsignados"];
 
             $insertItinerario = Itinerario::create([
-                'solicitud_id'      => $idSolicitud,
-                'aerolinea_id'      => $aerolinea_id,
-                'hotel_id'          => $hotel_id,
-                'viaticosSuc_id'    => $idViaticosSucursal,
-                'opcion_id'         => $opcion_id,
-                'grupo_id'          => $grupos_id,
-                'acomodacion_id'    => $acomodacion_id,
-                'seguro_id'         => $seguro_id,
-                'horaSalida'        => $horaSalida,
-                'horaRetorno'       => $horaRetorno,
-                'tarifaAdminTrans'  => $tarifaAdministrativaTrans,
-                'tarifaAdminHosp'   => $tarifaAdministrativaHosp,
-                'valorTiquete'      => $valorTiquete,
-                'otroValor'         => $otroValor,
-                'valorHotelNoche'   => $valorHotelNoche,
-                'docPerRegistra'    => $documento,
+                'solicitud_id'              => $idSolicitud,
+                'aerolinea_id'              => $aerolinea_id,
+                'hotel_id'                  => $hotel_id,
+                'viaticosSuc_id'            => $idViaticosSucursal,
+                'opcion_id'                 => $opcion_id,
+                'grupo_id'                  => $grupos_id,
+                'acomodacion_id'            => $acomodacion_id,
+                'seguro_id'                 => $seguro_id,
+                'horaSalida'                => $horaSalida,
+                'horaRetorno'               => $horaRetorno,
+                'tarifaAdminTrans'          => $tarifaAdministrativaTrans,
+                'tarifaAdminHosp'           => $tarifaAdministrativaHosp,
+                'valorTiquete'              => $valorTiquete,
+                'otroValor'                 => $otroValor,
+                'valorHotelNoche'           => $valorHotelNoche,
+                'docPerRegistra'            => $documento,
+                'docAignacionValorViaticos' => $docAignacionValorViaticos,
+                'valorViaticosAsignados'    => $valorViaticosAsignados,
             ]);
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
@@ -519,7 +547,7 @@ class ViaticosController extends Controller
     {
         //Esta consulta obtiene los documentos que estan ligados al idSolicitud ya que pueden ser 1 o varios
         $documentosCol = GrupoRegistro::selectRaw('idGrupoRegistro, solicitud_id, colaborador_id, fechaSolicitud')
-            ->where('solicitud_id', $request["idSolicitud"])->get();
+            ->where('solicitud_id', $request["idSolicitud"])->where('estado', null)->get();
 
         //serealiza un foreach con una consulta para obtener los documentos de los colaboradores
         $toatalCorreos = [];
@@ -544,6 +572,24 @@ class ViaticosController extends Controller
             'aprobado'      => 5,
             'docPerCancela' => $documento,
         ]);
+
+        return response()->json([
+            "cancelado" =>  true,
+        ], 200);
+    }
+
+    public function cancelCasosMasivos(Request $request)
+    {
+        $data = $request->all();
+        $documento = Auth::user()->nro_doc;
+        //5 cancela el registro
+        foreach ($data["cancelaCasos"] as $value) {
+            $insertSolicitud = RegistroSolicitud::where('idSolicitud', $value["idSolicitud"])->update([
+                'aprobado'          => 5,
+                'docPerCancela'     => $documento,
+                'obserCancelaCasos' => $data["obserCancelaCasos"],
+            ]);
+        }
 
         return response()->json([
             "cancelado" =>  true,
@@ -904,26 +950,28 @@ class ViaticosController extends Controller
             $idViaticosSucursal        = $data["idViaticosSucursal"];
             $opcion_id                 = $data["opcion_id"];
             $grupos_id                 = $data["grupos_id"];
-            $seguro_id                 = $data["seguro_id"];
             $horaSalida                = $data["horaSalida"];
             $horaRetorno               = $data["horaRetorno"];
             $tarifaAdministrativaTrans = $data["tarifaAdministrativaTrans"];
             $valorTiquete              = $data["valorTiquete"];
             $otroValor                 = $data["otroValor"];
+            $docAignacionValorViaticos = $data["docAignacionValorViaticos"];
+            $valorViaticosAsignados    = $data["valorViaticosAsignados"];
 
             $insertItinerario = Itinerario::create([
-                'solicitud_id'      => $idSolicitud,
-                'aerolinea_id'      => $aerolinea_id,
-                'viaticosSuc_id'    => $idViaticosSucursal,
-                'opcion_id'         => $opcion_id,
-                'grupo_id'          => $grupos_id,
-                'seguro_id'         => $seguro_id,
-                'horaSalida'        => $horaSalida,
-                'horaRetorno'       => $horaRetorno,
-                'tarifaAdminTrans'  => $tarifaAdministrativaTrans,
-                'valorTiquete'      => $valorTiquete,
-                'otroValor'         => $otroValor,
-                'docPerRegistra'    => $documento,
+                'solicitud_id'              => $idSolicitud,
+                'aerolinea_id'              => $aerolinea_id,
+                'viaticosSuc_id'            => $idViaticosSucursal,
+                'opcion_id'                 => $opcion_id,
+                'grupo_id'                  => $grupos_id,
+                'horaSalida'                => $horaSalida,
+                'horaRetorno'               => $horaRetorno,
+                'tarifaAdminTrans'          => $tarifaAdministrativaTrans,
+                'valorTiquete'              => $valorTiquete,
+                'otroValor'                 => $otroValor,
+                'docPerRegistra'            => $documento,
+                'docAignacionValorViaticos' => $docAignacionValorViaticos,
+                'valorViaticosAsignados'    => $valorViaticosAsignados,
             ]);
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
@@ -962,6 +1010,33 @@ class ViaticosController extends Controller
 
         return response()->json([
             "editTarifa" =>  true,
+        ], 200);
+    }
+
+    public function eliminaColaborador(Request $request)
+    {
+        $data = $request->all();
+        $update = GrupoRegistro::where("solicitud_id", $data["idSolicitud"])->where("colaborador_id", $data["documento"])->update([
+            'estado'         => 1,
+            'observaciones'  => $data["observaciones"],
+        ]);
+
+        return response()->json([
+            "eliminado" =>  true,
+        ], 200);
+    }
+
+    public function agregaColaborador(Request $request)
+    {
+        $data = $request->all();
+
+        $insertSolicitud = GrupoRegistro::create([
+            'solicitud_id'    => $data["idSolicitud"],
+            'colaborador_id'  => $data["datos"]["DOC_COLABORADOR"],
+        ]);
+
+        return response()->json([
+            "insert" =>  true,
         ], 200);
     }
 }

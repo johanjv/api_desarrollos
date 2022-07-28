@@ -32,5 +32,7 @@ class Itinerario extends Model
         'otroValor',
         'valorHotelNoche',
         'docPerRegistra',
+        'docAignacionValorViaticos',
+        'valorViaticosAsignados',
     ];
 }
