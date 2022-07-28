@@ -142,7 +142,8 @@ return [
     'residuos'      => env('APP_RESIDUOS', 10034),
     'firma'         => env('APP_FIRMA', 10037),
     'viaticos'      => env('APP_VIATICOS', 10035),
-    'escalas'      => env('APP_ESCALAS', 10039),
+    'escalas'       => env('APP_ESCALAS', 10039),
+    'vacunacion'    => env('APP_VACUNACION', 10044),
 
 
     /*

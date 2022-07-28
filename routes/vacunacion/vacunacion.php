@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::prefix("vacunacion")->group(function(){
-        Route::get('getTiposDoc',    'vacunacion\VacunacionController@getTiposDoc');
+        Route::get('getTiposDoc',       'vacunacion\VacunacionController@getTiposDoc');
+        Route::get('getEsquemas',       'vacunacion\VacunacionController@getEsquemas');
+        Route::post('saveEsquema',      'vacunacion\VacunacionController@saveEsquema');
+        Route::post('saveUpdEsquema',   'vacunacion\VacunacionController@saveUpdEsquema');
     });
 });
