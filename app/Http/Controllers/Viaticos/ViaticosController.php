@@ -473,65 +473,52 @@ class ViaticosController extends Controller
     public function insertItinerarios(Request $request)
     {
         $data = $request->all();
+        $datosIndividual = json_decode($data["colaboradores"]);
         $documento = Auth::user()->nro_doc;
         $correos = explode(",", $data["correos"]);
 
-        $misArchivosASQL = [];
-        if ($request->hasFile("files")) {
-            $files = $request->file("files");
-            foreach ($files as $uno) {
-                //$rt = $uno->getClientOriginalName();
-                $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
-                copy($uno, $rt);
-                foreach ($correos as $value) {
-                    Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
-                }
-            }
-        }
-
         if ($request->hasFile("files") > 0) {
             $idSolicitud               = $data["idSolicitud"];
-            $aerolinea_id              = $data["aerolinea_id"];
-            $hotel_id                  = $data["hotel_id"];
-            $idViaticosSucursal        = $data["idViaticosSucursal"];
-            $opcion_id                 = $data["opcion_id"];
-            $grupos_id                 = $data["grupos_id"];
-            $acomodacion_id            = $data["acomodacion_id"];
-            $seguro_id                 = $data["seguro_id"];
-            $horaSalida                = $data["horaSalida"];
-            $horaRetorno               = $data["horaRetorno"];
-            $tarifaAdministrativaTrans = $data["tarifaAdministrativaTrans"];
-            $tarifaAdministrativaHosp  = $data["tarifaAdministrativaHosp"];
-            $valorTiquete              = $data["valorTiquete"];
-            $otroValor                 = $data["otroValor"];
-            $valorHotelNoche           = $data["valorPorNoche"];
-            $docAignacionValorViaticos = $data["docAignacionValorViaticos"];
-            $valorViaticosAsignados    = $data["valorViaticosAsignados"];
-
-            $insertItinerario = Itinerario::create([
-                'solicitud_id'              => $idSolicitud,
-                'aerolinea_id'              => $aerolinea_id,
-                'hotel_id'                  => $hotel_id,
-                'viaticosSuc_id'            => $idViaticosSucursal,
-                'opcion_id'                 => $opcion_id,
-                'grupo_id'                  => $grupos_id,
-                'acomodacion_id'            => $acomodacion_id,
-                'seguro_id'                 => $seguro_id,
-                'horaSalida'                => $horaSalida,
-                'horaRetorno'               => $horaRetorno,
-                'tarifaAdminTrans'          => $tarifaAdministrativaTrans,
-                'tarifaAdminHosp'           => $tarifaAdministrativaHosp,
-                'valorTiquete'              => $valorTiquete,
-                'otroValor'                 => $otroValor,
-                'valorHotelNoche'           => $valorHotelNoche,
-                'docPerRegistra'            => $documento,
-                'docAignacionValorViaticos' => $docAignacionValorViaticos,
-                'valorViaticosAsignados'    => $valorViaticosAsignados,
-            ]);
+            foreach ($datosIndividual as $dat) {
+                $insertItinerario = Itinerario::create([
+                    'solicitud_id'              => $data["idSolicitud"],
+                    'aerolinea_id'              => $dat->detalleViaje->aerolinea->idAreolineas,
+                    'hotel_id'                  => isset($dat->detalleViaje->hotel->idHoteles) ? $dat->detalleViaje->hotel->idHoteles : null,
+                    'viaticosSuc_id'            => $data["idViaticosSucursal"],
+                    'opcion_id'                 => $dat->detalleViaje->opcion->idOpcion,
+                    'grupo_id'                  => $dat->detalleViaje->grupos->idGrupos,
+                    'acomodacion_id'            => isset($dat->detalleViaje->habitacion->idAcomodacion) ? $dat->detalleViaje->habitacion->idAcomodacion : null,
+                    'seguro_id'                 => isset($dat->detalleViaje->valSeguro->idSeguro) ? $dat->detalleViaje->valSeguro->idSeguro : null,
+                    'horaSalida'                => $dat->detalleViaje->horaSalida,
+                    'horaRetorno'               => $dat->detalleViaje->horaRetorno,
+                    'tarifaAdminTrans'          => $dat->detalleViaje->tarifaAdministrativaTrans,
+                    'tarifaAdminHosp'           => $dat->detalleViaje->tarifaAdministrativaHosp,
+                    'valorTiquete'              => $dat->detalleViaje->valorTiquete,
+                    'otroValor'                 => $dat->detalleViaje->otroValor,
+                    'valorHotelNoche'           => isset($dat->detCalculo->valorPorNoche) ? $dat->detCalculo->valorPorNoche : null,
+                    'docPerRegistra'            => $documento,
+                    'docAignacionValorViaticos' => $data["docAignacionValorViaticos"],
+                    'valorViaticosAsignados'    => $data["valorViaticosAsignados"],
+                    'docPerViaja'               => $dat->DOC_COLABORADOR,
+                ]);
+            }
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
                 'aprobado'  => 4,
             ]);
+
+            if ($request->hasFile("files")) {
+                $files = $request->file("files");
+
+                foreach ($files as $uno) {
+                    //$rt = $uno->getClientOriginalName();
+                    $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
+                    copy($uno, $rt);
+                    foreach ($correos as $value) {
+                        Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
+                    }
+                }
+            }
 
             return response()->json([
                 "insertItinerario" =>  true,
@@ -923,69 +910,6 @@ class ViaticosController extends Controller
                 ->where("solicitud_id", $item->idSolicitud)->get();
         });
         return response()->json(["aprobacion" => $aprobacion, "status" => "ok"]);
-    }
-
-    public function insertItinerariosNo(Request $request)
-    {
-        $data = $request->all();
-        $documento = Auth::user()->nro_doc;
-        $correos = explode(",", $data["correos"]);
-
-        $misArchivosASQL = [];
-        if ($request->hasFile("files")) {
-            $files = $request->file("files");
-            foreach ($files as $uno) {
-                //$rt = $uno->getClientOriginalName();
-                $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
-                copy($uno, $rt);
-                foreach ($correos as $value) {
-                    Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
-                }
-            }
-        }
-
-        if ($request->hasFile("files") > 0) {
-            $idSolicitud               = $data["idSolicitud"];
-            $aerolinea_id              = $data["aerolinea_id"];
-            $idViaticosSucursal        = $data["idViaticosSucursal"];
-            $opcion_id                 = $data["opcion_id"];
-            $grupos_id                 = $data["grupos_id"];
-            $horaSalida                = $data["horaSalida"];
-            $horaRetorno               = $data["horaRetorno"];
-            $tarifaAdministrativaTrans = $data["tarifaAdministrativaTrans"];
-            $valorTiquete              = $data["valorTiquete"];
-            $otroValor                 = $data["otroValor"];
-            $docAignacionValorViaticos = $data["docAignacionValorViaticos"];
-            $valorViaticosAsignados    = $data["valorViaticosAsignados"];
-
-            $insertItinerario = Itinerario::create([
-                'solicitud_id'              => $idSolicitud,
-                'aerolinea_id'              => $aerolinea_id,
-                'viaticosSuc_id'            => $idViaticosSucursal,
-                'opcion_id'                 => $opcion_id,
-                'grupo_id'                  => $grupos_id,
-                'horaSalida'                => $horaSalida,
-                'horaRetorno'               => $horaRetorno,
-                'tarifaAdminTrans'          => $tarifaAdministrativaTrans,
-                'valorTiquete'              => $valorTiquete,
-                'otroValor'                 => $otroValor,
-                'docPerRegistra'            => $documento,
-                'docAignacionValorViaticos' => $docAignacionValorViaticos,
-                'valorViaticosAsignados'    => $valorViaticosAsignados,
-            ]);
-            //aprobado # 4 es cuando queda ya finalizado el registro
-            $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
-                'aprobado'  => 4,
-            ]);
-
-            return response()->json([
-                "insertItinerario" =>  true,
-            ], 200);
-        } else {
-            return response()->json([
-                "sinArchivos" =>  true,
-            ], 200);
-        }
     }
 
     public function getTarifaSucursales(Request $request)
