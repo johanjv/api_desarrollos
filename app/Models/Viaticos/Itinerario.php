@@ -34,5 +34,6 @@ class Itinerario extends Model
         'docPerRegistra',
         'docAignacionValorViaticos',
         'valorViaticosAsignados',
+        'docPerViaja',
     ];
 }
