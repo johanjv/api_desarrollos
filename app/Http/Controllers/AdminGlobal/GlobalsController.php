@@ -365,7 +365,7 @@ class GlobalsController extends Controller
             }
         } else if ($idDesarrollo == config('app.vacunacion')) {
             if (in_array(config('app.superAdmin'), $permisos) || in_array(config('app.administrador'), $permisos)) {
-               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->get();
+               $modulos    = Modulos::where('desarrollo_id', $idDesarrollo)->orderBy('orden', 'ASC')->get();
                $loads = ['submodulos'];
                $modulos->load($loads);
             } else {
