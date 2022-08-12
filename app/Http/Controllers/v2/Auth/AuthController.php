@@ -177,55 +177,55 @@ class AuthController extends Controller
             if ($key != 'count') {
 
                 /* ROLES DE HVSEDES */
-                if ($value == 'CN=AGSuperAdmin') {
+                if ($value == 'CN=APD_AGSuperAdmin') {
                     array_push($rolUser, 1);
-                } elseif ($value == 'CN=AGAdministrador') {
+                } elseif ($value == 'CN=APD_AGAdministrador') {
                     array_push($rolUser, 2);
-                } elseif ($value == 'CN=HVConsultor') {
+                } elseif ($value == 'CN=APD_HVConsultor') {
                     array_push($rolUser, 3);
-                } elseif ($value == 'CN=HVSupervisor') {
+                } elseif ($value == 'CN=APD_HVSupervisor') {
                     array_push($rolUser, 4);
-                } elseif ($value == 'CN=HVAdmServHab') {
+                } elseif ($value == 'CN=APD_HVAdmServHab') {
                     array_push($rolUser, 5);
-                } elseif ($value == 'CN=HVAdmInfra') {
+                } elseif ($value == 'CN=APD_HVAdmInfra') {
                     array_push($rolUser, 6);
-                } elseif ($value == 'CN=HVTalentoHumo') {
+                } elseif ($value == 'CN=APD_HVTalentoHumo') {
                     array_push($rolUser, 7);
-                } elseif ($value == 'CN=HVAdmTH') {
+                } elseif ($value == 'CN=APD_HVAdmTH') {
                     array_push($rolUser, 8);
                 }
 
                 /* ROLES DE FACTUCONTROL */
-                elseif ($value == 'CN=RadicadorFactu') {
+                elseif ($value == 'CN=APD_RadicadorFactu') {
                     array_push($rolUser, 9);
-                } elseif ($value == 'CN=CoordinadorFactu') {
+                } elseif ($value == 'CN=APD_CoordinadorFactu') {
                     array_push($rolUser, 10);
-                } elseif ($value == 'CN=TesoreriaFactu') {
+                } elseif ($value == 'CN=APD_TesoreriaFactu') {
                     array_push($rolUser, 11);
-                } elseif ($value == 'CN=Atencion') {
+                } elseif ($value == 'CN=APD_Atencion') {
                     array_push($rolUser, 12);
-                } elseif ($value == 'CN=AdminFac') {
+                } elseif ($value == 'CN=APD_AdminFac') {
                     array_push($rolUser, 14);
                 }
 
                 /* ROLES DE CITOLOGÍAS */
-                elseif ($value == 'CN=ProfCitologias') {
+                elseif ($value == 'CN=APD_ProfCitologias') {
                     array_push($rolUser, 13);
                 }
 
                 /* ROLES DE MAMITAS */
-                elseif ($value == 'CN=Mamitas2_0') {
+                elseif ($value == 'CN=APD_Mamitas2_0') {
                     array_push($rolUser, 15);
                 }
 
                 /* ROLES DE RESIDUOS */
-                elseif ($value == 'CN=SupAdmResiduos') {
+                elseif ($value == 'CN=APD_SupAdmResiduos') {
                     array_push($rolUser, 16);
                 }
-                elseif ($value == 'CN=AdmResiduos') {
+                elseif ($value == 'CN=APD_AdmResiduos') {
                     array_push($rolUser, 17);
                 }
-                elseif ($value == 'CN=UsersResiduos') {
+                elseif ($value == 'CN=APD_UsersResiduos') {
                     array_push($rolUser, 18);
                 }
 
