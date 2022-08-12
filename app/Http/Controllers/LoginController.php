@@ -225,10 +225,10 @@ class LoginController extends Controller
                     array_push($rolUser, 17);
                 } elseif ($value == 'CN=APD_UsersResiduos') {
                     array_push($rolUser, 18);
-                } elseif ($value == 'CN=APD_APD_Firma_digital1_0') {
+                } elseif ($value == 'CN=APD_Firma_digital1_0') {
                     array_push($rolUser, 19);
                 }
-                /* viaticos */ elseif ($value == 'CN=APD_APD_ViaticosAdmin') {
+                /* viaticos */ elseif ($value == 'CN=APD_ViaticosAdmin') {
                     array_push($rolUser, 20);
                 }
             }
