@@ -35,5 +35,8 @@ class Itinerario extends Model
         'docAignacionValorViaticos',
         'valorViaticosAsignados',
         'docPerViaja',
+        'obsOtroValor',
+        'transAeroDomiAeropuerto',
+        'transInternos',
     ];
 }

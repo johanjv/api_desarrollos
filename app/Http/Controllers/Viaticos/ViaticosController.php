@@ -259,7 +259,7 @@ class ViaticosController extends Controller
                 ->pluck('CORREO');
             array_push($toatalCorreos, $correoColaboradores[0]);
         }
-
+        //array_push($toatalCorreos, "lenidl@virreysolisips.com.co");
         if ($dias > 2) {
             //1 es para aprobado el 2 es para rechazado y el 3 para anulado
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
@@ -414,7 +414,7 @@ class ViaticosController extends Controller
     public function getHoteles(Request $request)
     {
         $data = $request->all();
-        $hoteles = Hoteles::selectRaw('idHoteles, id_dep_ciudad, nomHotel')
+        $hoteles = Hoteles::selectRaw('idHoteles, id_dep_ciudad, nomHotel, desCena')
             ->where("id_dep_ciudad", $data["idCiudadDestino"])->get();
         return response()->json(["hoteles" => $hoteles, "status" => "ok"]);
     }
@@ -474,6 +474,7 @@ class ViaticosController extends Controller
     {
         $data = $request->all();
         $datosIndividual = json_decode($data["colaboradores"]);
+
         $documento = Auth::user()->nro_doc;
         $correos = explode(",", $data["correos"]);
 
@@ -498,8 +499,11 @@ class ViaticosController extends Controller
                     'valorHotelNoche'           => isset($dat->detCalculo->valorPorNoche) ? $dat->detCalculo->valorPorNoche : null,
                     'docPerRegistra'            => $documento,
                     'docAignacionValorViaticos' => $data["docAignacionValorViaticos"],
-                    'valorViaticosAsignados'    => $data["valorViaticosAsignados"],
+                    'valorViaticosAsignados'    => $dat->totalRecorridos,
                     'docPerViaja'               => $dat->DOC_COLABORADOR,
+                    'obsOtroValor'              => isset($dat->detalleViaje->obsOtroValor) ? $dat->detalleViaje->obsOtroValor : "",
+                    'transAeroDomiAeropuerto'   => $dat->detalleViaje->transAeroDomiAeropuerto,
+                    'transInternos'             => $dat->detalleViaje->transInternos,
                 ]);
             }
             //aprobado # 4 es cuando queda ya finalizado el registro
@@ -540,7 +544,9 @@ class ViaticosController extends Controller
         $toatalCorreos = [];
         foreach ($documentosCol as $key => $value) {
             $datosColaborador = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.COLABORADORES AS COL')
-                ->selectRaw('COL.DOC_COLABORADOR, COL.NOMB_COLABORADOR, COL.CORREO')
+                ->selectRaw('COL.DOC_COLABORADOR, COL.NOMB_COLABORADOR, COL.CORREO, cargos.COD_CARGO, nomcargo.NOMBRE_CARGO')
+                ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS cargos', 'COL.DOC_COLABORADOR', '=', 'cargos.DOC_COLABORADOR')
+                ->join('dbo.CARGOS AS nomcargo', 'cargos.COD_CARGO', '=', 'nomcargo.COD_CARGO')
                 ->where("COL.DOC_COLABORADOR", $value["colaborador_id"])
                 ->get();
             array_push($toatalCorreos, $datosColaborador[0]);
@@ -605,7 +611,7 @@ class ViaticosController extends Controller
     public function getHotelesAdm(Request $request)
     {
         $data = $request->all();
-        $hoteles = Hoteles::selectRaw('idHoteles, id_dep_ciudad, nomHotel, estado, SUC.SUC_DEPARTAMENTO')
+        $hoteles = Hoteles::selectRaw('idHoteles, id_dep_ciudad, nomHotel, estado, desCena, SUC.SUC_DEPARTAMENTO')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DEPARTAMENTO', '=', 'id_dep_ciudad')
             ->distinct()
             ->orderBy('nomHotel', 'ASC')
@@ -620,6 +626,7 @@ class ViaticosController extends Controller
             'id_dep_ciudad' => $request["idDepartamento"],
             'nomHotel'      => $request["nomHotel"],
             'estado'        => $request["estado"],
+            'desCena'       => $request["desCena"],
         ]);
         return response()->json([
             "update" =>  $update
@@ -633,7 +640,8 @@ class ViaticosController extends Controller
         $insertHotel = Hoteles::create([
             'id_dep_ciudad' => $data["idDepartamento"],
             'nomHotel'      => $data["nomHotel"],
-            'estado'        => 1
+            'estado'        => 1,
+            'desCena'       => 0
         ]);
 
         return response()->json([

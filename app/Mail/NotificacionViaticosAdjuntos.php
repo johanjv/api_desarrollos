@@ -33,8 +33,8 @@ class NotificacionViaticosAdjuntos extends Mailable
      */
     public function build()
     {
-        return $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Viáticos')
-            ->subject('Notificación de Viáticos - FINALIZADO')
+        return $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Viaje')
+            ->subject('Notificación de Viaje-Programación')
         ->view('mailsViaticos.notificacionViaticosAdjuntos')->attach(public_path($this->datos));
     }
 }

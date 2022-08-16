@@ -19,5 +19,6 @@ class Hoteles extends Model
         'id_dep_ciudad',
         'nomHotel',
         'estado',
+        'desCena',
     ];
 }
