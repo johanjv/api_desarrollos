@@ -12,9 +12,25 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::prefix("vacunacion")->group(function(){
-        Route::get('getTiposDoc',       'vacunacion\VacunacionController@getTiposDoc');
-        Route::get('getEsquemas',       'vacunacion\VacunacionController@getEsquemas');
-        Route::post('saveEsquema',      'vacunacion\VacunacionController@saveEsquema');
-        Route::post('saveUpdEsquema',   'vacunacion\VacunacionController@saveUpdEsquema');
+
+        Route::get('getTiposDoc',       'vacunacion\ParametricosController@getTiposDoc');
+        Route::get('getEsquemas',       'vacunacion\ParametricosController@getEsquemas');
+        Route::get('getSexo',           'vacunacion\ParametricosController@getSexo');
+        Route::post('saveEsquema',      'vacunacion\ParametricosController@saveEsquema');
+        Route::post('saveUpdEsquema',   'vacunacion\ParametricosController@saveUpdEsquema');
+
+        Route::get('getRegimen',            'vacunacion\ParametricosController@getRegimen');
+        Route::get('getAseguradora',        'vacunacion\ParametricosController@getAseguradora');
+        Route::get('getPoblacional',        'vacunacion\ParametricosController@getPoblacional');
+        Route::get('getPaises',             'vacunacion\ParametricosController@getPaises');
+        Route::get('getDepartamentos',      'vacunacion\ParametricosController@getDepartamentos');
+        Route::get('getMunicipios',         'vacunacion\ParametricosController@getMunicipios');
+        Route::get('getPertenencias',       'vacunacion\ParametricosController@getPertenencias');
+        Route::get('getCondicionesSalud',   'vacunacion\ParametricosController@getCondicionesSalud');
+
+        Route::get('getRegistrosPrevios',   'vacunacion\RegistroPrevioController@getRegistrosPrevios');
+        Route::post('savePreRegistro',      'vacunacion\RegistroPrevioController@savePreRegistro');
+
+        Route::get('getPrevios',      'vacunacion\RegistroVacunaController@getPrevios');
     });
 });
