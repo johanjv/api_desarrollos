@@ -38,5 +38,6 @@ class Itinerario extends Model
         'obsOtroValor',
         'transAeroDomiAeropuerto',
         'transInternos',
+        'aeropuerto',
     ];
 }

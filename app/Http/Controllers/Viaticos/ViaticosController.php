@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\NotificacionResiduosAprobado;
 use App\Mail\NotificacionViaticosAdjuntos;
 use App\Mail\NotificacionViaticosAprobado;
+use App\Mail\NotificacionViaticosRegistro;
 use App\Mail\NotificacionViaticosRechazo;
 use App\Models\Hvsedes\TalentoHumano\Colaboradores;
 use App\Models\Residuos\ValidarMes;
@@ -25,6 +26,7 @@ use App\Models\Viaticos\Seguro;
 use App\Models\Viaticos\TarifaHoteles;
 use App\Models\Viaticos\TarifaViaticos;
 use App\Models\Viaticos\ViaticosAeropuerto;
+use App\Models\Viaticos\ViaticosCiudadAeropuerto;
 use App\User;
 use Illuminate\Http\Request;
 use DB;
@@ -63,6 +65,8 @@ class ViaticosController extends Controller
 
     public function insertSolicitud(Request $request)
     {
+        $correoDirectivos = $request["directivos"]["correo"];
+        $nombreDirectivo = $request["directivos"]["name"] . " " . $request["directivos"]["last_name"];
         $fecSalida = $request["fecSalida"];
         $fecRetorno = $request["fecRetorno"];
         $fechaActual = date('Y-m-d');
@@ -120,9 +124,19 @@ class ViaticosController extends Controller
                         'colaborador_id'  => $value["documento"],
                     ]);
                 }
+                $datos = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
+                    ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,SOL.idCiudadOrigen, SOL.idCiudadDestino, 
+                SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+                    ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
+                    ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
+                    ->where('SOL.idSolicitud', $data->idSolicitud)
+                    ->distinct()
+                    ->first();
+
+                Mail::to($correoDirectivos)->send(new NotificacionViaticosRegistro($data, $nombreDirectivo, $datos));
                 return response()->json([
                     "insertSolicitud" =>  true,
-                    "idSolicitud" =>  $data->idSolicitud
+                    "idSolicitud"     =>  $data->idSolicitud
                 ], 200);
             }
         } else {
@@ -474,7 +488,6 @@ class ViaticosController extends Controller
     {
         $data = $request->all();
         $datosIndividual = json_decode($data["colaboradores"]);
-
         $documento = Auth::user()->nro_doc;
         $correos = explode(",", $data["correos"]);
 
@@ -503,7 +516,8 @@ class ViaticosController extends Controller
                     'docPerViaja'               => $dat->DOC_COLABORADOR,
                     'obsOtroValor'              => isset($dat->detalleViaje->obsOtroValor) ? $dat->detalleViaje->obsOtroValor : "",
                     'transAeroDomiAeropuerto'   => $dat->detalleViaje->transAeroDomiAeropuerto,
-                    'transInternos'             => $dat->detalleViaje->transInternos,
+                    'transInternos'             => str_replace('.', '', $dat->detalleViaje->transInternos),
+                    'aeropuerto'                => $dat->detalleViaje->aeropuerto->aeropuerto,
                 ]);
             }
             //aprobado # 4 es cuando queda ya finalizado el registro
@@ -969,6 +983,57 @@ class ViaticosController extends Controller
 
         return response()->json([
             "insert" =>  true,
+        ], 200);
+    }
+
+    public function getViaticosCiudadAeropuerto(Request $request)
+    {
+        $data = $request->all();
+        $viaticosCiudadAeropuerto = ViaticosCiudadAeropuerto::selectRaw('id, idDepartamento, aeropuerto, valorIda, valorVuelta, total, estado')
+            ->where("idDepartamento", $data["idCiudadOrigen"])->get();
+        return response()->json(["viaticosCiudadAeropuerto" => $viaticosCiudadAeropuerto, "status" => "ok"]);
+    }
+
+    public function getViaticosAeropuerto(Request $request)
+    {
+        $viaticos = ViaticosCiudadAeropuerto::selectRaw('id, idDepartamento, aeropuerto, valorIda, valorVuelta, total, estado, SUC.SUC_DEPARTAMENTO, SUC.SUC_CODIGO_DEPARTAMENTO')
+            ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUC', 'SUC.SUC_CODIGO_DEPARTAMENTO', '=', 'idDepartamento')
+            ->distinct("SUC.SUC_DEPARTAMENTO")
+            ->orderBy('SUC.SUC_DEPARTAMENTO', 'ASC')
+            ->get();
+        return response()->json(["viaticos" => $viaticos, "status" => "ok"]);
+    }
+
+    public function editarTarifaAeropuerto(Request $request)
+    {
+        $data = $request->all();
+        $valorTotal = $data["valorIda"] + $data["valorVuelta"];
+        $update = ViaticosCiudadAeropuerto::where("id", $data["idAeropuerto"])->update([
+            'aeropuerto'  => $data["aeropuerto"],
+            'valorIda'    => $data["valorIda"],
+            'valorVuelta' => $data["valorVuelta"],
+            'total'       => $valorTotal,
+        ]);
+
+        return response()->json([
+            "editTarifa" =>  true,
+        ], 200);
+    }
+    public function insertTarifaAeropuerto(Request $request)
+    {
+        $data = $request->all();
+        $valorTotal = $data["valorIda"] + $data["valorVuelta"];
+        $insertTarifa = ViaticosCiudadAeropuerto::create([
+            'idDepartamento' => $data["departamento"]["SUC_CODIGO_DEPARTAMENTO"],
+            'aeropuerto'     => $data["aeropuerto"],
+            'valorIda'       => $data["valorIda"],
+            'valorVuelta'    => $data["valorVuelta"],
+            'total'          => $valorTotal,
+            'estado'         => 1,
+        ]);
+
+        return response()->json([
+            "insertTarifa" =>  true,
         ], 200);
     }
 }
