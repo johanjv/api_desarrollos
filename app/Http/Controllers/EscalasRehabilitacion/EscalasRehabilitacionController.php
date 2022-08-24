@@ -109,6 +109,7 @@ class EscalasRehabilitacionController extends Controller
 
     public function saveRegistroAfi(Request $request)
     {
+        /* return $request['unidad']; */
 
         $abandonoDesc =  null;
 
