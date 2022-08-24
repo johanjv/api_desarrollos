@@ -8,10 +8,9 @@
 </head>
 
 <body>
-    <p style="background-color: brown">
     <h1>Hola!.</h1>
     <p>
-        Te informamos que el viaje # {{$RegistroSolicitud->idSolicitud}} fue <span class="badge badge-success">APROBADO</span>.<br><br>
+        {{$nombreDirectivo}} Te informamos que el viaje # {{$data->idSolicitud}} fue registrado de forma correcta, por favor ingrese al aplicativo de viáticos para realizar la aprobación del viaje.
     </p>
     <table class="default" align="center" border="1">
         <tr>
@@ -22,15 +21,15 @@
             <th>Fecha Retorno</th>
         </tr>
         <tr align="center">
-            <td>{{$RegistroSolicitud->idSolicitud}}</td>
-            <td>{{$datos->DepOrigen}}</td>
-            <td>{{$datos->DepDestino}}</td>
-            <td>{{$datos->fechaSalida}}</td>
-            <td>{{$datos->fechaRetorno}}</td>
+            <td>{{$data->idSolicitud}}</td>
+            <td>{{$departamentos->DepOrigen}}</td>
+            <td>{{$departamentos->DepDestino}}</td>
+            <td>{{$data->fechaSalida}}</td>
+            <td>{{$data->fechaRetorno}}</td>
         </tr>
     </table><br><br>
     <strong>Este mensaje es una notificación automática, por lo tanto le solicitamos no responder a esta dirección.</strong>
-    </p>
+
 </body>
 
 </html>

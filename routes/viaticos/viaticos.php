@@ -56,5 +56,10 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/eliminaColaborador', 'Viaticos\ViaticosController@eliminaColaborador');
         Route::post('/usuariodal', 'Viaticos\ViaticosController@usuariodal');
         Route::post('/agregaColaborador', 'Viaticos\ViaticosController@agregaColaborador');
+        Route::post('/getViaticosCiudadAeropuerto', 'Viaticos\ViaticosController@getViaticosCiudadAeropuerto');
+        Route::get('/getViaticosAeropuerto', 'Viaticos\ViaticosController@getViaticosAeropuerto');
+        Route::post('/editarTarifaAeropuerto', 'Viaticos\ViaticosController@editarTarifaAeropuerto');
+        Route::post('/getDepartamentos', 'Viaticos\ViaticosController@getDepartamentos');
+        Route::post('/insertTarifaAeropuerto', 'Viaticos\ViaticosController@insertTarifaAeropuerto');
     });
 });
