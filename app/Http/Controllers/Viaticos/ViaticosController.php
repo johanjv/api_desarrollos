@@ -476,7 +476,6 @@ class ViaticosController extends Controller
             ->where("codSuc", $data["idCiudadDestino"])->get();
         return response()->json(["valorAeropuerto" => $valorAeropuerto, "status" => "ok"]);
     }
-
     public function getSeguro(Request $request)
     {
         $seguro = Seguro::selectRaw('idSeguro, nomSeguro, estado')
