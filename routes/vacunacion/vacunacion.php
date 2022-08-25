@@ -27,6 +27,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('getMunicipios',         'vacunacion\ParametricosController@getMunicipios');
         Route::get('getPertenencias',       'vacunacion\ParametricosController@getPertenencias');
         Route::get('getCondicionesSalud',   'vacunacion\ParametricosController@getCondicionesSalud');
+        Route::get('getPreguntasRespuestas','vacunacion\ParametricosController@getPreguntasRespuestas');
 
         Route::get('getRegistrosPrevios',   'vacunacion\RegistroPrevioController@getRegistrosPrevios');
         Route::post('savePreRegistro',      'vacunacion\RegistroPrevioController@savePreRegistro');

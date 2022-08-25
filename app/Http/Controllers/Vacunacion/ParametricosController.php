@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Vacunacion;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vacunacion\Esquema;
+use App\Models\Vacunacion\Pregunta;
 use App\Models\Vacunacion\Registro;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -133,6 +134,15 @@ class ParametricosController extends Controller
 
         return response()->json([
             "condiciones" => $condiciones
+        ], 200);
+    }
+
+    public function getPreguntasRespuestas(Request $request)
+    {
+        $preguntas = Pregunta::with('respuestas')->get();
+
+        return response()->json([
+            "preguntas" => $preguntas
         ], 200);
     }
 
