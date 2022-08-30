@@ -514,27 +514,42 @@ class ViaticosController extends Controller
                     'valorViaticosAsignados'    => $dat->totalRecorridos,
                     'docPerViaja'               => $dat->DOC_COLABORADOR,
                     'obsOtroValor'              => isset($dat->detalleViaje->obsOtroValor) ? $dat->detalleViaje->obsOtroValor : "",
-                    'transAeroDomiAeropuerto'   => $dat->detalleViaje->transAeroDomiAeropuerto,
-                    'transInternos'             => str_replace('.', '', $dat->detalleViaje->transInternos),
-                    'aeropuerto'                => $dat->detalleViaje->aeropuerto->aeropuerto,
+                    'transAeroDomiAeropuerto'   => str_replace('.', '', $dat->detalleViaje->transAeroDomiAeropuerto),
+                    'transInternos'             => $dat->detalleViaje->transInternos,
+                    'aeropuerto'                => isset($dat->detalleViaje->aeropuerto->aeropuerto) ? $dat->detalleViaje->aeropuerto->aeropuerto : "",
+                    'varlorTotalRecorrido'      => $dat->detCalculo->totalViaticosAsignados,
                 ]);
             }
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
                 'aprobado'  => 4,
             ]);
+            $datosTabla = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
+                ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,SOL.idCiudadOrigen, SOL.idCiudadDestino, 
+            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+                ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
+                ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
+                ->where('SOL.idSolicitud', $idSolicitud)
+                ->distinct()
+                ->first();
+
+            foreach ($datosIndividual as $item) {
+                $item->detalleItinerario = Itinerario::where('docPerViaja', $item->DOC_COLABORADOR)->where('solicitud_id', $idSolicitud)->first();
+            }
 
             if ($request->hasFile("files")) {
                 $files = $request->file("files");
 
+                $rt2 = [];
                 foreach ($files as $uno) {
                     //$rt = $uno->getClientOriginalName();
                     $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
+                    array_push($rt2, "uploads/viaticos/" . $uno->getClientOriginalName());
                     copy($uno, $rt);
-                    foreach ($correos as $value) {
-                        Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
-                    }
                 }
+            }
+            foreach ($datosIndividual as $value) {
+                Mail::to($value->CORREO)->send(new NotificacionViaticosAdjuntos($rt2, $datosTabla, $datosIndividual[0]->totalRecorridos, $value->detCalculo->totalViaticosAsignados));
             }
 
             return response()->json([
