@@ -550,7 +550,8 @@ class ViaticosController extends Controller
             }
             foreach ($datosIndividual as $value) {
                 $valorTotalRecorrido = $value->detCalculo->totalViaticosAsignados - $datosIndividual[0]->totalRecorridos;
-                Mail::to($value->CORREO)->send(new NotificacionViaticosAdjuntos($rt2, $datosTabla, $datosIndividual[0]->totalRecorridos, $valorTotalRecorrido));
+                Mail::to($value->CORREO)->send(new NotificacionViaticosAdjuntos($rt2, $datosTabla, $datosIndividual[0]->totalRecorridos, $valorTotalRecorrido,
+                $value->NOMB_COLABORADOR, $value->NOMBRE_CARGO, $value->COD_CARGO));
             }
 
             return response()->json([

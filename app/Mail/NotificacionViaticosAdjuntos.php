@@ -17,13 +17,19 @@ class NotificacionViaticosAdjuntos extends Mailable
     public $datosTabla;
     public $totalRecorridos;
     public $totalViaticos;
+    public $nombre;
+    public $cargo;
+    public $codigo;
 
-    public function __construct($rt2, $datosTabla, $totalRecorridos, $totalViaticos)
+    public function __construct($rt2, $datosTabla, $totalRecorridos, $totalViaticos, $nombre, $cargo, $codigo)
     {
         $this->rt2             = $rt2;
         $this->datosTabla      = $datosTabla;
         $this->totalRecorridos = $totalRecorridos;
         $this->totalViaticos   = $totalViaticos;
+        $this->nombre          = $nombre;
+        $this->cargo           = $cargo;
+        $this->codigo          = $codigo;
     }
 
 

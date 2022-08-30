@@ -21,6 +21,10 @@
             <th>Fecha Retorno</th>
             <th>Total Viáticos</th>
             <th>A quién se le asigne Aeropuerto-Ciudad Destino y Ciudad Destino-Aeropuerto:</th>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Código</th>
+
         </tr>
         <tr align="center">
             <td>{{$datosTabla->idSolicitud}}</td>
@@ -30,6 +34,9 @@
             <td>{{$datosTabla->fechaRetorno}}</td>
             <td>{{$totalViaticos}}</td>
             <td>{{$totalRecorridos}}</td>
+            <td>{{$nombre}}</td>
+            <td>{{$cargo}}</td>
+            <td>{{$codigo}}</td>
         </tr>
     </table>
     <ol>
