@@ -65,7 +65,7 @@
                                                                                             Su contraseña para visualizar el archivo es su número de documento.
                                                                                         </h1>
                                                                                         <h1 style="color:#444;display:block;font-family:Helvetica;font-size:20px;line-height:100%;text-align:center;margin:0 0 10px" align="center">
-                                                                                            <br><a href="https://consentimientos.virreysolisips.com.co:1557/consentimiento/{{$consentimiento->id}}">Tu Consentimiento Informado AQUÍ</a>
+                                                                                            <br><a href="http://10.10.6.74:8011/consentimiento/?item={{$consentimiento->id}}">Tu Consentimiento Informado AQUÍ</a>
                                                                                         </h1>
                                                                                         <br>
                                                                                         <br>
