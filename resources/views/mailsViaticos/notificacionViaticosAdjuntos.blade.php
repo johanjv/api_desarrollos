@@ -9,35 +9,38 @@
 
 <body>
     <h1>Hola!.</h1>
-    <p>Te informamos que el viaje ha sido programado de forma correcta, a continuación, encontraras las recomendaciones generales de viaje e información
-        del transportye, hospedaje y viáticos.
+    <p>Le informamos que el viaje ha sido programado de forma correcta, a continuación encontrará las recomendaciones generales de viaje e información
+        del transporte, hospedaje y viáticos.
     </p>
-    <table class="default" align="center" border="1">
-        <tr>
-            <th># Solicitud</th>
-            <th>Ciudad Origen</th>
-            <th>Ciudad Destino</th>
-            <th>Fecha Salida</th>
-            <th>Fecha Retorno</th>
-            <th>Total Viáticos</th>
-            <th>A quién se le asigne Aeropuerto-Ciudad Destino y Ciudad Destino-Aeropuerto:</th>
-            <th>Nombre</th>
-            <th>Cargo</th>
-            <th>Código</th>
-
-        </tr>
-        <tr align="center">
-            <td>{{$datosTabla->idSolicitud}}</td>
-            <td>{{$datosTabla->DepOrigen}}</td>
-            <td>{{$datosTabla->DepDestino}}</td>
-            <td>{{$datosTabla->fechaSalida}}</td>
-            <td>{{$datosTabla->fechaRetorno}}</td>
-            <td>{{$totalViaticos}}</td>
-            <td>{{$totalRecorridos}}</td>
-            <td>{{$nombre}}</td>
-            <td>{{$cargo}}</td>
-            <td>{{$codigo}}</td>
-        </tr>
+    <table BORDER CELLPADDING=7 CELLSPACING=0>
+        <thead style="background-color: #84baa7;">
+            <tr>
+                <th># Solicitud</th>
+                <th>Ciudad Origen</th>
+                <th>Ciudad Destino</th>
+                <th>Fecha Salida</th>
+                <th>Fecha Retorno</th>
+                <th>Total Viáticos</th>
+                <th>Valor Aeropuerto-Ciudad Destino</th>
+                <th>Nombre</th>
+                <th>Cargo</th>
+                <th>Código</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr align="center">
+                <td>{{$datosTabla->idSolicitud}}</td>
+                <td>{{$datosTabla->DepOrigen}}</td>
+                <td>{{$datosTabla->DepDestino}}</td>
+                <td>{{$datosTabla->fechaSalida}}</td>
+                <td>{{$datosTabla->fechaRetorno}}</td>
+                <td>{{$totalViaticos}}</td>
+                <td>{{$totalRecorridos}}</td>
+                <td>{{$nombre}}</td>
+                <td>{{$cargo}}</td>
+                <td>{{$codigo}}</td>
+            </tr>
+        </tbody>
     </table>
     <ol>
         <li>Para los traslados aéreos realizar check in de acuerdo a políticas de la aerolinea.</li>
