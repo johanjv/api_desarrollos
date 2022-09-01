@@ -144,6 +144,7 @@ return [
     'viaticos'      => env('APP_VIATICOS', 10035),
     'escalas'       => env('APP_ESCALAS', 10039),
     'vacunacion'    => env('APP_VACUNACION', 10044),
+    'agenda'        => env('APP_AGENDA', 10047),
 
 
     /*
