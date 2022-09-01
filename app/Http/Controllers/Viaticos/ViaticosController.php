@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\NotificacionResiduosAprobado;
 use App\Mail\NotificacionViaticosAdjuntos;
 use App\Mail\NotificacionViaticosAprobado;
+use App\Mail\NotificacionViaticosCopiaCorreo;
 use App\Mail\NotificacionViaticosRegistro;
 use App\Mail\NotificacionViaticosRechazo;
 use App\Models\Hvsedes\TalentoHumano\Colaboradores;
@@ -192,10 +193,20 @@ class ViaticosController extends Controller
         $datos = [];
 
         foreach ($usersList as $user) {
+
+            $datosColaborador = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.COLABORADORES AS COL')
+                ->selectRaw('COL.DOC_COLABORADOR, COL.NOMB_COLABORADOR, COL.CORREO, cargos.COD_CARGO, nomcargo.NOMBRE_CARGO')
+                ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS cargos', 'COL.DOC_COLABORADOR', '=', 'cargos.DOC_COLABORADOR')
+                ->join('dbo.CARGOS AS nomcargo', 'cargos.COD_CARGO', '=', 'nomcargo.COD_CARGO')
+                ->where("COL.DOC_COLABORADOR", $user['DOC_COLABORADOR'])
+                ->get();
+
             $cadaUno = array(
                 'DOC_COLABORADOR'  => $user['DOC_COLABORADOR'],
                 'NOMB_COLABORADOR' => $user['NOMB_COLABORADOR'],
-                'CORREO'           => $user['CORREO']
+                'CORREO'           => $user['CORREO'],
+                'NOMBRE_CARGO'     => $datosColaborador[0]->NOMBRE_CARGO,
+                'COD_CARGO'        => $datosColaborador[0]->COD_CARGO
             );
             array_push($datos, $cadaUno);
         }
@@ -489,6 +500,7 @@ class ViaticosController extends Controller
         $datosIndividual = json_decode($data["colaboradores"]);
         $documento = Auth::user()->nro_doc;
         $correos = explode(",", $data["correos"]);
+        $correosCopia = explode(",", $data["correosCopia"]);
 
         if ($request->hasFile("files") > 0) {
             $idSolicitud               = $data["idSolicitud"];
@@ -548,10 +560,35 @@ class ViaticosController extends Controller
                     copy($uno, $rt);
                 }
             }
+            $datosCopiaCorreo = [];
             foreach ($datosIndividual as $value) {
                 $valorTotalRecorrido = $value->detCalculo->totalViaticosAsignados - $datosIndividual[0]->totalRecorridos;
-                Mail::to($value->CORREO)->send(new NotificacionViaticosAdjuntos($rt2, $datosTabla, $datosIndividual[0]->totalRecorridos, $valorTotalRecorrido,
-                $value->NOMB_COLABORADOR, $value->NOMBRE_CARGO, $value->COD_CARGO));
+                Mail::to($value->CORREO)->send(new NotificacionViaticosAdjuntos(
+                    $rt2,
+                    $datosTabla,
+                    $datosIndividual[0]->totalRecorridos,
+                    $valorTotalRecorrido,
+                    $value->NOMB_COLABORADOR,
+                    $value->NOMBRE_CARGO,
+                    $value->COD_CARGO
+                ));
+                $datosColaboradores = (object) array(
+                    "datosTabla"          => $datosTabla,
+                    "totalRecorridos"     => $datosIndividual[0]->totalRecorridos,
+                    "valorTotalRecorrido" => $valorTotalRecorrido,
+                    "NOMB_COLABORADOR"    => $value->NOMB_COLABORADOR,
+                    "NOMBRE_CARGO"        => $value->NOMBRE_CARGO,
+                    "COD_CARGO"           => $value->COD_CARGO,
+                );
+                array_push($datosCopiaCorreo, $datosColaboradores);
+            }
+
+            foreach ($correosCopia as $copia) {
+                Mail::to($copia)->send(new NotificacionViaticosCopiaCorreo(
+                    $rt2,
+                    $datosTabla,
+                    $datosCopiaCorreo,
+                ));
             }
 
             return response()->json([
