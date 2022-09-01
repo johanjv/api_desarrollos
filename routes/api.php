@@ -74,4 +74,8 @@ Route::get('getSedesLogin',  'LoginController@getSedesLogin');
 /* Certificados Escolares generar PDF */
 Route::post('generarPdf',  'CertificadosEscolares\CertificadosEscolaresController@generarPdf');
 
+Route::get('getConsentimieto', 'Consentimientos\ConsentimientosController@getConsentimieto');
+Route::post('saveAccionConsentimiento', 'Consentimientos\ConsentimientosController@saveAccionConsentimiento');
+
+
 
