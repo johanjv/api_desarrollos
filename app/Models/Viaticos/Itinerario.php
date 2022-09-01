@@ -39,5 +39,6 @@ class Itinerario extends Model
         'transAeroDomiAeropuerto',
         'transInternos',
         'aeropuerto',
+        'varlorTotalRecorrido',
     ];
 }

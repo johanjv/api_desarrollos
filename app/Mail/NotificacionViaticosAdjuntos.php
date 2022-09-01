@@ -13,16 +13,23 @@ use Illuminate\Queue\SerializesModels;
 class NotificacionViaticosAdjuntos extends Mailable
 {
     use Queueable, SerializesModels;
+    public $rt2;
+    public $datosTabla;
+    public $totalRecorridos;
+    public $totalViaticos;
+    public $nombre;
+    public $cargo;
+    public $codigo;
 
-    public $RegistroSolicitud;
-    public $RegistroSolicitudObs;
-    public $datos;
-
-    public function __construct($datos)
+    public function __construct($rt2, $datosTabla, $totalRecorridos, $totalViaticos, $nombre, $cargo, $codigo)
     {
-        $this->RegistroSolicitud    = null;
-        $this->RegistroSolicitudObs = null;
-        $this->datos                = $datos;
+        $this->rt2             = $rt2;
+        $this->datosTabla      = $datosTabla;
+        $this->totalRecorridos = $totalRecorridos;
+        $this->totalViaticos   = $totalViaticos;
+        $this->nombre          = $nombre;
+        $this->cargo           = $cargo;
+        $this->codigo          = $codigo;
     }
 
 
@@ -33,8 +40,10 @@ class NotificacionViaticosAdjuntos extends Mailable
      */
     public function build()
     {
-        return $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Viaje')
+        foreach ($this->rt2 as $r) {
+            $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Viaje')
             ->subject('Notificación de Viaje-Programación')
-        ->view('mailsViaticos.notificacionViaticosAdjuntos')->attach(public_path($this->datos));
+            ->view('mailsViaticos.notificacionViaticosAdjuntos')->attach(public_path($r));
+        }
     }
 }
