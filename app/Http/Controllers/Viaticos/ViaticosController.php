@@ -771,8 +771,24 @@ class ViaticosController extends Controller
 
     public function getMillas(Request $request)
     {
-        $millas = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro')->get();
-        return response()->json(["millas" => $millas, "status" => "ok"]);
+        $millas = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro, restar')->get();
+
+        $suma = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro, restar')->where("restar", 0)->get();
+        $resta = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro, restar')->where("restar", 1)->get();
+
+        $cantidadMillasSumadas = 0;
+        foreach ($suma as $value) {
+            $cantidadMillasSumadas += $value->cantidadMillas;
+        }
+
+        $cantidadMillasRestadas = 0;
+        foreach ($resta as $value) {
+            $cantidadMillasRestadas += $value->cantidadMillas;
+        }
+
+        $cantidadMillas = $cantidadMillasSumadas - $cantidadMillasRestadas;
+
+        return response()->json(["millas" => $millas, "cantidadMillas" => $cantidadMillas, "status" => "ok"]);
     }
 
     public function insertMillas(Request $request)
@@ -784,6 +800,7 @@ class ViaticosController extends Controller
             'cantidadMillas' => $data["cantidadMillas"],
             'Observaciones'  => $data["observaciones"],
             'docRegistro'    => $documento,
+            'restar'         => $data["resta"],
         ]);
 
         return response()->json([
