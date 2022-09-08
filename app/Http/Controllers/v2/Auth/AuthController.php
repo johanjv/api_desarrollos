@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AdminGlobal\Modulos;
 use App\Models\Bitacora\Bitacora;
+use App\Models\GestionPaciente\Consultorios;
 use App\User;
 use DB;
 
@@ -235,6 +236,14 @@ class AuthController extends Controller
                 } elseif ($value == 'CN=APD_AdminEscalas') {
                     array_push($rolUser, 22);
                 }
+
+                elseif ($value == 'CN=APD_MedGP') {
+                    array_push($rolUser, 23);
+                } elseif ($value == 'CN=APD_FrontGP') {
+                    array_push($rolUser, 24);
+                }
+
+
             }
         }
         return $rolUser;
@@ -248,6 +257,12 @@ class AuthController extends Controller
 
         /* REGISTRO EN BITACORA */
         Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'LOGOUT SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+
+        if ($request["idApp"] == 10050) {
+            Consultorios::where('doc_prof', $request->user()->nro_doc)->update([
+                'doc_prof' => null
+            ]);
+        }
 
         return response()->json(["message" => "Sesion Finalizada"]);
     }
