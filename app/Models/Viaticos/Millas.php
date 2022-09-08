@@ -20,5 +20,6 @@ class Millas extends Model
         'Observaciones',
         'docRegistro',
         'restar',
+        'transportePrincipal',
     ];
 }

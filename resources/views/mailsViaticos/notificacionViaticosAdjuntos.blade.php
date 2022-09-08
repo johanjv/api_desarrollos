@@ -16,14 +16,15 @@
         <thead style="background-color: #84baa7;">
             <tr>
                 <th># Solicitud</th>
-                <th>Ciudad Origen</th>
-                <th>Ciudad Destino</th>
+                <th>Departamento Origen</th>
+                <th>Departamento Destino</th>
                 <th>Fecha Salida</th>
                 <th>Fecha Retorno</th>
                 <th>Total Viáticos</th>
-                <th>Valor Aeropuerto-Ciudad Destino</th>
+                <th>Valor Aeropuerto-Departamento Destino</th>
                 <th>Nombre</th>
                 <th>Cargo</th>
+                <th>Documento</th>
                 <th>Código</th>
             </tr>
         </thead>
@@ -35,9 +36,10 @@
                 <td>{{$datosTabla->fechaSalida}}</td>
                 <td>{{$datosTabla->fechaRetorno}}</td>
                 <td>{{$totalViaticos}}</td>
-                <td>{{$totalRecorridos}}</td>
+                <td>{{ $DOC_COLABORADOR != $docAignacionValorViaticos ? 0 : $totalRecorridos}}</td>
                 <td>{{$nombre}}</td>
                 <td>{{$cargo}}</td>
+                <td>{{$DOC_COLABORADOR}}</td>
                 <td>{{$codigo}}</td>
             </tr>
         </tbody>
