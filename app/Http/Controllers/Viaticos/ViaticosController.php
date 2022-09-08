@@ -134,7 +134,24 @@ class ViaticosController extends Controller
                     ->distinct()
                     ->first();
 
-                Mail::to($correoDirectivos)->send(new NotificacionViaticosRegistro($data, $nombreDirectivo, $datos));
+                $datosColaborador = [];
+                foreach ($nomColaborador as $value) {
+                    $cargo = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.COLABORADORES AS COL')
+                        ->selectRaw('COL.DOC_COLABORADOR, COL.NOMB_COLABORADOR, COL.CORREO, cargos.COD_CARGO, nomcargo.NOMBRE_CARGO')
+                        ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS cargos', 'COL.DOC_COLABORADOR', '=', 'cargos.DOC_COLABORADOR')
+                        ->join('dbo.CARGOS AS nomcargo', 'cargos.COD_CARGO', '=', 'nomcargo.COD_CARGO')
+                        ->where("COL.DOC_COLABORADOR", $value['documento'])
+                        ->get();
+                    $datosColaboradores = (object) array(
+                        "nombres"      => $value["nombres"],
+                        "documento"    => $value["documento"],
+                        "COD_CARGO"    => $cargo[0]->COD_CARGO,
+                        "NOMBRE_CARGO" => $cargo[0]->NOMBRE_CARGO,
+                    );
+                    array_push($datosColaborador, $datosColaboradores);
+                }
+                Mail::to($correoDirectivos)->send(new NotificacionViaticosRegistro($data, $nombreDirectivo, $datos, $datosColaborador));
+
                 return response()->json([
                     "insertSolicitud" =>  true,
                     "idSolicitud"     =>  $data->idSolicitud
@@ -423,6 +440,11 @@ class ViaticosController extends Controller
     }
     public function getAerolineas(Request $request)
     {
+        $aerolineas = Aerolineas::where('estado', 1)->select('*')->get();
+        return response()->json(["aerolineas" => $aerolineas, "status" => "ok"]);
+    }
+    public function getAerolineasAdmin(Request $request)
+    {
         $aerolineas = Aerolineas::select('*')->get();
         return response()->json(["aerolineas" => $aerolineas, "status" => "ok"]);
     }
@@ -570,15 +592,19 @@ class ViaticosController extends Controller
                     $valorTotalRecorrido,
                     $value->NOMB_COLABORADOR,
                     $value->NOMBRE_CARGO,
-                    $value->COD_CARGO
+                    $value->COD_CARGO,
+                    $value->DOC_COLABORADOR,
+                    $data["docAignacionValorViaticos"],
                 ));
                 $datosColaboradores = (object) array(
-                    "datosTabla"          => $datosTabla,
-                    "totalRecorridos"     => $datosIndividual[0]->totalRecorridos,
-                    "valorTotalRecorrido" => $valorTotalRecorrido,
-                    "NOMB_COLABORADOR"    => $value->NOMB_COLABORADOR,
-                    "NOMBRE_CARGO"        => $value->NOMBRE_CARGO,
-                    "COD_CARGO"           => $value->COD_CARGO,
+                    "datosTabla"                => $datosTabla,
+                    "totalRecorridos"           => $datosIndividual[0]->totalRecorridos,
+                    "valorTotalRecorrido"       => $valorTotalRecorrido,
+                    "NOMB_COLABORADOR"          => $value->NOMB_COLABORADOR,
+                    "NOMBRE_CARGO"              => $value->NOMBRE_CARGO,
+                    "COD_CARGO"                 => $value->COD_CARGO,
+                    "DOC_COLABORADOR"           => $value->DOC_COLABORADOR,
+                    "docAignacionValorViaticos" => $data["docAignacionValorViaticos"],
                 );
                 array_push($datosCopiaCorreo, $datosColaboradores);
             }
@@ -771,7 +797,14 @@ class ViaticosController extends Controller
 
     public function getMillas(Request $request)
     {
-        $millas = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro')->get();
+        $millas = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro, restar, transportePrincipal, A.idAreolineas, A.nomAerolinea, A.estado')
+            ->Leftjoin('VIATICOS.aerolineas as A', 'A.idAreolineas', '=', 'transportePrincipal')
+            ->get();
+
+        $millas->map(function ($item) {
+            $item->calculoTotal = (floatval($item->cantidadMillas) - floatval($item->restar));
+        });
+
         return response()->json(["millas" => $millas, "status" => "ok"]);
     }
 
@@ -781,9 +814,10 @@ class ViaticosController extends Controller
         $documento = Auth::user()->nro_doc;
 
         $insertMillas = Millas::create([
-            'cantidadMillas' => $data["cantidadMillas"],
-            'Observaciones'  => $data["observaciones"],
-            'docRegistro'    => $documento,
+            'cantidadMillas'      => $data["cantidadMillas"],
+            'Observaciones'       => $data["observaciones"],
+            'docRegistro'         => $documento,
+            'transportePrincipal' => $data["transportePrincipal"]["idAreolineas"],
         ]);
 
         return response()->json([
@@ -797,6 +831,7 @@ class ViaticosController extends Controller
         $update = Millas::where("idMillas", $data["idMillas"])->update([
             'cantidadMillas' => $data["cantidadMillas"],
             'Observaciones'  => $data["observaciones"],
+            'restar'         => $data["restaMillas"],
         ]);
 
         return response()->json([
@@ -823,6 +858,7 @@ class ViaticosController extends Controller
         $data = $request->all();
         $update = Aerolineas::where("idAreolineas", $data["idAreolineas"])->update([
             'nomAerolinea' => $data["nomAerolinea"],
+            'estado'       => $data["estado"],
         ]);
 
         return response()->json([

@@ -17,8 +17,8 @@
         <thead style="background-color: #84baa7;">
             <tr>
                 <th># Solicitud</th>
-                <th>Ciudad Origen</th>
-                <th>Ciudad Destino</th>
+                <th>Departamento Origen</th>
+                <th>Departamento Destino</th>
                 <th>Fecha Salida</th>
                 <th>Fecha Retorno</th>
             </tr>

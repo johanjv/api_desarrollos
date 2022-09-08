@@ -61,5 +61,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('/editarTarifaAeropuerto', 'Viaticos\ViaticosController@editarTarifaAeropuerto');
         Route::post('/getDepartamentos', 'Viaticos\ViaticosController@getDepartamentos');
         Route::post('/insertTarifaAeropuerto', 'Viaticos\ViaticosController@insertTarifaAeropuerto');
+        Route::get('/getAerolineasAdmin', 'Viaticos\ViaticosController@getAerolineasAdmin');
     });
 });

@@ -16,20 +16,34 @@
         <thead style="background-color: #84baa7;">
             <tr>
                 <th># Solicitud</th>
-                <th>Ciudad Origen</th>
-                <th>Ciudad Destino</th>
+                <th>Departamento Origen</th>
+                <th>Departamento Destino</th>
                 <th>Fecha Salida</th>
                 <th>Fecha Retorno</th>
+                <th>Nombre Colaborador</th>
+                <th>Documento Colaborador</th>
+                <th>Cargo Colaborador</th>
+                <th>Código Colaborador</th>
             </tr>
         </thead>
         <tbody>
-            <tr align="center">
-                <td>{{$data->idSolicitud}}</td>
-                <td>{{$departamentos->DepOrigen}}</td>
-                <td>{{$departamentos->DepDestino}}</td>
-                <td>{{$data->fechaSalida}}</td>
-                <td>{{$data->fechaRetorno}}</td>
-            </tr>
+            <?php
+            foreach ($datosColaborador as $value) {
+            ?>
+                <tr align="center">
+                    <td>{{$data->idSolicitud}}</td>
+                    <td>{{$departamentos->DepOrigen}}</td>
+                    <td>{{$departamentos->DepDestino}}</td>
+                    <td>{{$data->fechaSalida}}</td>
+                    <td>{{$data->fechaRetorno}}</td>
+                    <td>{{$value->nombres}}</td>
+                    <td>{{$value->documento}}</td>
+                    <td>{{$value->NOMBRE_CARGO}}</td>
+                    <td>{{$value->COD_CARGO}}</td>
+                </tr>
+            <?php
+            }
+            ?>
         </tbody>
     </table><br><br>
     <strong>Este mensaje es una notificación automática, por lo tanto le solicitamos no responder a esta dirección.</strong>

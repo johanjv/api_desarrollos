@@ -15,14 +15,15 @@
         <thead style="background-color: #84baa7;">
             <tr>
                 <th># Solicitud</th>
-                <th>Ciudad Origen</th>
-                <th>Ciudad Destino</th>
+                <th>Departamento Origen</th>
+                <th>Departamento Destino</th>
                 <th>Fecha Salida</th>
                 <th>Fecha Retorno</th>
                 <th>Nombre Colaborador</th>
                 <th>Cargo Colaborador</th>
+                <th>Documento Colaborador</th>
                 <th>Código Colaborador</th>
-                <th>Valor Aeropuerto-Ciudad Destino</th>
+                <th>Valor Aeropuerto-Departamento Destino</th>
                 <th>Total Viáticos</th>
 
             </tr>
@@ -40,8 +41,9 @@
                     <td>{{$datosTabla->fechaRetorno}}</td>
                     <td>{{$value->NOMB_COLABORADOR}}</td>
                     <td>{{$value->NOMBRE_CARGO}}</td>
+                    <td>{{$value->DOC_COLABORADOR}}</td>
                     <td>{{$value->COD_CARGO}}</td>
-                    <td>{{$value->totalRecorridos}}</td>
+                    <td>{{$value->DOC_COLABORADOR != $value->docAignacionValorViaticos ? 0 : $value->totalRecorridos}}</td>
                     <td>{{$value->valorTotalRecorrido}}</td>
                 </tr>
             <?php

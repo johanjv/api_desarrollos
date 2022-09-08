@@ -20,16 +20,20 @@ class NotificacionViaticosAdjuntos extends Mailable
     public $nombre;
     public $cargo;
     public $codigo;
+    public $DOC_COLABORADOR;
+    public $docAignacionValorViaticos;
 
-    public function __construct($rt2, $datosTabla, $totalRecorridos, $totalViaticos, $nombre, $cargo, $codigo)
+    public function __construct($rt2, $datosTabla, $totalRecorridos, $totalViaticos, $nombre, $cargo, $codigo, $DOC_COLABORADOR, $docAignacionValorViaticos)
     {
-        $this->rt2             = $rt2;
-        $this->datosTabla      = $datosTabla;
-        $this->totalRecorridos = $totalRecorridos;
-        $this->totalViaticos   = $totalViaticos;
-        $this->nombre          = $nombre;
-        $this->cargo           = $cargo;
-        $this->codigo          = $codigo;
+        $this->rt2                       = $rt2;
+        $this->datosTabla                = $datosTabla;
+        $this->totalRecorridos           = $totalRecorridos;
+        $this->totalViaticos             = $totalViaticos;
+        $this->nombre                    = $nombre;
+        $this->cargo                     = $cargo;
+        $this->codigo                    = $codigo;
+        $this->DOC_COLABORADOR           = $DOC_COLABORADOR;
+        $this->docAignacionValorViaticos = $docAignacionValorViaticos;
     }
 
 
@@ -42,8 +46,8 @@ class NotificacionViaticosAdjuntos extends Mailable
     {
         foreach ($this->rt2 as $r) {
             $this->from('desarrollovs@virreysolisips.com.co', 'Gestión de Viaje')
-            ->subject('Notificación de Viaje-Programación')
-            ->view('mailsViaticos.notificacionViaticosAdjuntos')->attach(public_path($r));
+                ->subject('Notificación de Viaje-Programación')
+                ->view('mailsViaticos.notificacionViaticosAdjuntos')->attach(public_path($r));
         }
     }
 }
