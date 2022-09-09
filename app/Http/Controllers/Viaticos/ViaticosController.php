@@ -585,6 +585,11 @@ class ViaticosController extends Controller
             $datosCopiaCorreo = [];
             foreach ($datosIndividual as $value) {
                 $valorTotalRecorrido = $value->detCalculo->totalViaticosAsignados - $datosIndividual[0]->totalRecorridos;
+                if ($value->DOC_COLABORADOR == $data["docAignacionValorViaticos"]) {
+                    $totalViaticosAsignados = $value->detCalculo->totalViaticosAsignados;
+                } else {
+                    $totalViaticosAsignados = $value->detCalculo->totalViaticosAsignados - $datosIndividual[0]->totalRecorridos;
+                }
                 Mail::to($value->CORREO)->send(new NotificacionViaticosAdjuntos(
                     $rt2,
                     $datosTabla,
@@ -595,6 +600,7 @@ class ViaticosController extends Controller
                     $value->COD_CARGO,
                     $value->DOC_COLABORADOR,
                     $data["docAignacionValorViaticos"],
+                    $totalViaticosAsignados,
                 ));
                 $datosColaboradores = (object) array(
                     "datosTabla"                => $datosTabla,
@@ -605,6 +611,7 @@ class ViaticosController extends Controller
                     "COD_CARGO"                 => $value->COD_CARGO,
                     "DOC_COLABORADOR"           => $value->DOC_COLABORADOR,
                     "docAignacionValorViaticos" => $data["docAignacionValorViaticos"],
+                    "totalViaticosAsignados"    => $totalViaticosAsignados,
                 );
                 array_push($datosCopiaCorreo, $datosColaboradores);
             }

@@ -25,7 +25,7 @@
                 <th>Código Colaborador</th>
                 <th>Valor Aeropuerto-Departamento Destino</th>
                 <th>Total Viáticos</th>
-
+                <th>Total Viáticos Asignados</th>
             </tr>
         </thead>
         <tbody>
@@ -33,7 +33,6 @@
             foreach ($datosCopiaCorreo as $value) {
             ?>
                 <tr align="center">
-
                     <td>{{$datosTabla->idSolicitud}}</td>
                     <td>{{$datosTabla->DepOrigen}}</td>
                     <td>{{$datosTabla->DepDestino}}</td>
@@ -45,6 +44,7 @@
                     <td>{{$value->COD_CARGO}}</td>
                     <td>{{$value->DOC_COLABORADOR != $value->docAignacionValorViaticos ? 0 : $value->totalRecorridos}}</td>
                     <td>{{$value->valorTotalRecorrido}}</td>
+                    <td>{{$value->totalViaticosAsignados}}</td>
                 </tr>
             <?php
             }
