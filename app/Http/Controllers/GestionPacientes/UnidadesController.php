@@ -1,0 +1,121 @@
+<?php
+
+namespace App\Http\Controllers\GestionPacientes;
+use App\Http\Controllers\Controller;
+use App\Models\GestionPaciente\Consultorios;
+use App\Models\Unidad;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class UnidadesController extends Controller
+{
+    public function getConsultoriosPerUnidad(Request $request)
+    {
+
+        $consultorios = Consultorios::with('profesional')->where('id_unidad', $request['unidad'])->where('doc_prof', Auth::user()->nro_doc)->get();
+        $seleccion = null;
+
+        if (COUNT($consultorios) > 0) {
+            $seleccion = $consultorios;
+        }else{
+            $seleccion = null;
+        }
+
+        $select = $seleccion == null ? null : $seleccion[0];
+
+        $consultorios = Consultorios::with('profesional')->where('id_unidad', $request['unidad'])->where('doc_prof', null)->get();
+        $consultoriosOcupados = Consultorios::with('profesional')->where('id_unidad', $request['unidad'])->where('doc_prof', '!=', null)->get();
+
+        return response()->json([
+            "seleccion"     => $select,
+            "consultorios"  => $consultorios,
+            "consultoriosOcupados"  => $consultoriosOcupados,
+        ], 200);
+    }
+
+    public function asignarConsultorio(Request $request)
+    {
+        $asignacion = Consultorios::where('id_unidad', $request['item']['unidad'])->where('id', $request['item']['consultorio'])->update([
+            'doc_prof' => Auth::user()->nro_doc
+        ]);
+
+        $consultorios = Consultorios::with('profesional')->where('id_unidad', $request['item']['unidad'])->where('doc_prof', Auth::user()->nro_doc)->get();
+        $seleccion = null;
+
+        if (COUNT($consultorios) > 0) {
+            $seleccion = $consultorios;
+        }else{
+            $seleccion = null;
+        }
+
+        $select = $seleccion == null ? null : $seleccion[0];
+
+        $consultorios = Consultorios::with('profesional')->where('id_unidad', $request['item']['unidad'])->where('doc_prof', null)->get();
+        $consultoriosOcupados = Consultorios::with('profesional')->where('id_unidad', $request['item']['unidad'])->where('doc_prof', '!=', null)->get();
+
+        return response()->json([
+            "asignacion"  => $asignacion,
+            "seleccion"     => $select,
+            "consultorios"  => $consultorios,
+            "consultoriosOcupados"  => $consultoriosOcupados,
+        ], 200);
+
+    }
+
+
+    public function saveConsultorio(Request $request)
+    {
+
+        Consultorios::create([
+            'nombre' => $request['nombreConsultorio'],
+            'id_unidad' => $request['unidad']
+        ]);
+
+        $unidades = Unidad::all();
+
+        $unidades->map(function($item){
+            $item->cantConsultorios = Consultorios::where('id_unidad', $item->ID_UNIDAD)->count();
+        });
+
+        $conteoUnidad = [];
+
+        foreach ($unidades as $unidad) {
+            if ($unidad['cantConsultorios'] > 0) {
+                array_push($conteoUnidad, $unidad);
+            }
+        }
+
+        $consultorios = Consultorios::all();
+
+        return response()->json([
+            "conteoUnidad"  => $conteoUnidad,
+            "consultorios"  => $consultorios
+        ], 200);
+
+    }
+
+    public function getConteoConsultorios(Request $request)
+    {
+        $unidades = Unidad::all();
+
+        $unidades->map(function($item){
+            $item->cantConsultorios = Consultorios::where('id_unidad', $item->ID_UNIDAD)->count();
+        });
+
+        $conteoUnidad = [];
+
+        foreach ($unidades as $unidad) {
+            if ($unidad['cantConsultorios'] > 0) {
+                array_push($conteoUnidad, $unidad);
+            }
+        }
+
+        $consultorios = Consultorios::all();
+
+        return response()->json([
+            "conteoUnidad"  => $conteoUnidad,
+            "consultorios"  => $consultorios,
+        ], 200);
+
+    }
+}
