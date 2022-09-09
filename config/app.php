@@ -126,7 +126,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Variables de entorno personalizadas
+    | Variables de entorno personalizadas para los Desarrollos
     |--------------------------------------------------------------------------
     |
     | Estas son las variables definidas para cada desarrollo y asi poder
@@ -144,7 +144,7 @@ return [
     'viaticos'      => env('APP_VIATICOS', 10035),
     'escalas'       => env('APP_ESCALAS', 10039),
     'vacunacion'    => env('APP_VACUNACION', 10044),
-    'agenda'        => env('APP_AGENDA', 10047),
+    'agenda'        => env('APP_AGENDA', 10050),
 
 
     /*
@@ -265,6 +265,19 @@ return [
 
     'UsersEscalas' => env('APP_USERSESCALAS', 21),
     'AdminEscalas' => env('APP_ADMINESCALAS', 22),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles GESTIÓN DE PACIENTES
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'adminGP' => env('APP_ADMINGP', 25),
 
     /*
     |--------------------------------------------------------------------------

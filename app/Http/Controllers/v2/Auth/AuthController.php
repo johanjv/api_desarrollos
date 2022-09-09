@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\AdminGlobal\Modulos;
 use App\Models\Bitacora\Bitacora;
 use App\Models\GestionPaciente\Consultorios;
+use App\Models\GestionPaciente\Medicos;
 use App\User;
 use DB;
 
@@ -237,10 +238,13 @@ class AuthController extends Controller
                     array_push($rolUser, 22);
                 }
 
+                /* ROLES DE GESTIÓN DE PACIENTES*/
                 elseif ($value == 'CN=APD_MedGP') {
                     array_push($rolUser, 23);
                 } elseif ($value == 'CN=APD_FrontGP') {
                     array_push($rolUser, 24);
+                }elseif ($value == 'CN=APD_AdminGP') {
+                    array_push($rolUser, 25);
                 }
 
 
@@ -262,6 +266,7 @@ class AuthController extends Controller
             Consultorios::where('doc_prof', $request->user()->nro_doc)->update([
                 'doc_prof' => null
             ]);
+            Medicos::where('docMedico', $request->user()->nro_doc)->delete();
         }
 
         return response()->json(["message" => "Sesion Finalizada"]);

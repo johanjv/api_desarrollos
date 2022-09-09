@@ -20,7 +20,8 @@ class Medicos extends Model
         'docMedico',
         'nombMedico',
         'estado',
-        'cupo'
+        'cupo',
+        'unidad'
     ];
 
     /* public function profesional()

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GestionPacientes;
 use App\Http\Controllers\Controller;
 use App\Models\GestionPaciente\Consultorios;
+use App\Models\GestionPaciente\Medicos;
 use App\Models\Unidad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,6 +53,13 @@ class UnidadesController extends Controller
 
         $consultorios = Consultorios::with('profesional')->where('id_unidad', $request['item']['unidad'])->where('doc_prof', null)->get();
         $consultoriosOcupados = Consultorios::with('profesional')->where('id_unidad', $request['item']['unidad'])->where('doc_prof', '!=', null)->get();
+
+        Medicos::create([
+            'docMedico'     => Auth::user()->nro_doc,
+            'nombMedico'    => Auth::user()->name . ' ' . Auth::user()->last_name,
+            'estado'        => 1,
+            'unidad'        => $request['item']['unidad']
+        ]);
 
         return response()->json([
             "asignacion"  => $asignacion,
