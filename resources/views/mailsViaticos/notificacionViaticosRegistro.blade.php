@@ -8,7 +8,7 @@
 </head>
 
 <body>
-    <h1>Hola!..</h1>
+    <h1>Hola!.</h1>
     <p>
         {{$nombreDirectivo}} Le informamos que el viaje # {{$data->idSolicitud}} fue registrado de forma correcta, por favor ingrese al aplicativo de viáticos para realizar la aprobación del viaje.
     </p>
