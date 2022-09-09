@@ -8,11 +8,11 @@
 </head>
 
 <body>
-    <h1>Hola!.</h1>
+    <h1>Hola!..</h1>
     <p>
         {{$nombreDirectivo}} Le informamos que el viaje # {{$data->idSolicitud}} fue registrado de forma correcta, por favor ingrese al aplicativo de viáticos para realizar la aprobación del viaje.
     </p>
-    <table border CELLPADDING=7 CELLSPACING=0>
+    <table BORDER CELLPADDING=7 CELLSPACING=0>
         <thead style="background-color: #84baa7;">
             <tr>
                 <th># Solicitud</th>
