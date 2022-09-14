@@ -5,8 +5,10 @@ use App\Http\Controllers\Controller;
 use App\Models\GestionPaciente\Consultorios;
 use App\Models\GestionPaciente\Medicos;
 use App\Models\Unidad;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class UnidadesController extends Controller
 {
@@ -108,6 +110,7 @@ class UnidadesController extends Controller
 
         $unidades->map(function($item){
             $item->cantConsultorios = Consultorios::where('id_unidad', $item->ID_UNIDAD)->count();
+            $item->consultorios = Consultorios::where('id_unidad', $item->ID_UNIDAD)->get();
         });
 
         $conteoUnidad = [];
@@ -126,4 +129,22 @@ class UnidadesController extends Controller
         ], 200);
 
     }
+
+    public function liberarConsultorio(Request $request)
+    {
+
+        $user = User::where('nro_doc', $request['medico']['docMedico'])->pluck('id')->first();
+
+        DB::table('oauth_access_tokens')->where('user_id', intval($user))->delete();
+        Medicos::where('docMedico', $request['medico']['docMedico'])->delete();
+
+        $medicos = Medicos::with('consultorio')->where('estado', 1)->where('unidad', $request['unidadActiva'])->orderBy('cupo', 'ASC')->get();
+
+        return response()->json([
+            'user'    => $user,
+            'medicos' => $medicos,
+        ], 200);
+
+    }
+
 }

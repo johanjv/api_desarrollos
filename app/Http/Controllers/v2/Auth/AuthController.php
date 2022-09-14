@@ -308,7 +308,7 @@ class AuthController extends Controller
           }
         ldap_close($ldapconn);
         return $array;
-   }
+    }
 
 
 }

@@ -24,9 +24,9 @@ class Medicos extends Model
         'unidad'
     ];
 
-    /* public function profesional()
+    public function consultorio()
     {
-        return $this->hasOne(User::class, 'nro_doc', 'doc_prof');
-    } */
+        return $this->hasOne(Consultorios::class, 'doc_prof', 'docMedico');
+    }
 
 }

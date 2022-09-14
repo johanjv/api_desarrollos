@@ -14,12 +14,9 @@ class DashController extends Controller
     {
 
         $medicosDisponibles = Medicos::where('estado', 1)->where('unidad', $request['unidadActiva'])->get();
-        $agendasDisponibles = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('estadoAtencion', 'ASC')->get();
-        //$registroDelDia     = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->get();
 
-        //$medicos = Agenda::with('profesional','consultorio')->distinct('GESTIONPACIENTES.citas.medicoAsignado')->join('users', 'users.nro_doc', 'GESTIONPACIENTES.citas.medicoAsignado')->get();
+        $agendasDisponibles = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'DESC')->orderBy('estadoAtencion', 'ASC')->get();
 
-        /* select distinct medicoAsignado from [GESTIONPACIENTES].[citas] inner join [users] on [users].[nro_doc] = [GESTIONPACIENTES].[citas].medicoAsignado */
 
         $medicos = DB::table('GESTIONPACIENTES.citas')->select('medicoAsignado')->where('CODIGOIPS', $request['unidadActiva'])
             ->join('users', 'users.nro_doc', 'GESTIONPACIENTES.citas.medicoAsignado')->distinct()->get();
@@ -35,14 +32,27 @@ class DashController extends Controller
         });
 
 
-        $medicosDisponibles->map(function($item){
-            $item->cantidadAtenciones = Agenda::where('medicoAsignado', $item->docMedico)->where('estadoAtencion', 2)->count();
+        $medicosDisponibles->map(function($item) use($request){
+            /* $item->cantidadAtenciones = Agenda::where('medicoAsignado', $item->docMedico)->where('estadoAtencion', 2)->count(); */
+            $item->cantidadAsignados  = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
+            $item->cantidadEsperando = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
+            $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
+            $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
+            $item->dataMedico         = User::where('nro_doc', $item->medicoAsignado)->first();
         });
+
+        $dataGrafico = array([
+            'cantidadAsignados'  => Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->where('estadoAtencion', 0)->where('facturado', 1)->count(),
+            'cantidadEsperando'  => Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->whereIn('Estado', ['131', '132'])->count(),
+            'cantidadAtendiendo' => Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->whereIn('Estado', ['131', '132'])->count(),
+            'cantidadAtendidos'  => Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->whereIn('Estado', ['131', '132'])->count(),
+        ]);
 
         return response()->json([
             "medicosDisponibles"    => $medicosDisponibles,
             "agendasDisponibles"    => $agendasDisponibles,
-            "medicos"               => $medicos
+            "medicos"               => $medicos,
+            "dataGrafico"           => $dataGrafico
         ], 200);
     }
 }
