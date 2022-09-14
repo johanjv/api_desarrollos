@@ -85,6 +85,7 @@ class UnidadesController extends Controller
 
         $unidades->map(function($item){
             $item->cantConsultorios = Consultorios::where('id_unidad', $item->ID_UNIDAD)->count();
+            $item->consultorios = Consultorios::where('id_unidad', $item->ID_UNIDAD)->get();
         });
 
         $conteoUnidad = [];
