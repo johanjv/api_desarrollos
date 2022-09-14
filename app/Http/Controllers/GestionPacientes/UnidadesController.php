@@ -58,7 +58,7 @@ class UnidadesController extends Controller
 
         Medicos::create([
             'docMedico'     => Auth::user()->nro_doc,
-            'nombMedico'    => Auth::user()->name . ' ' . Auth::user()->last_name,
+            'nombMedico'    => strtoupper(Auth::user()->name . ' ' . Auth::user()->last_name),
             'estado'        => 1,
             'unidad'        => $request['item']['unidad']
         ]);
@@ -77,7 +77,7 @@ class UnidadesController extends Controller
     {
 
         Consultorios::create([
-            'nombre' => $request['nombreConsultorio'],
+            'nombre' => strtoupper($request['nombreConsultorio']),
             'id_unidad' => $request['unidad']
         ]);
 
