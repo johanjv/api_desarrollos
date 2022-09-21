@@ -27,5 +27,6 @@ Route::middleware(['auth:api'])->group(function () {
 
         /* DashController */
         Route::get('getDetalleDash',      'GestionPacientes\DashController@getDetalleDash');
+        Route::post('updateVariablesMed', 'GestionPacientes\DashController@updateVariablesMed');
     });
 });

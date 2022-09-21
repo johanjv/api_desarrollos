@@ -12,21 +12,19 @@ class Turnos extends Model
 
     protected  $table = "GESTIONPACIENTES.turnos";
 
-    const CREATED_AT = 'fecha_asignacion';
+    const CREATED_AT = 'fecha_turno';
     const UPDATED_AT = null;
 
     protected $fillable = [
         'id',
         'docMedico',
-        'docPaciente',
-        'estadoAtencion',
-        'fecha_ini_atencion',
-        'fecha_fin_atencion',
+        'ini_turno',
+        'fin_turno',
+        'meta',
+        'cupo',
+        'unidad',
+        'horas_turno'
     ];
 
-    /* public function profesional()
-    {
-        return $this->hasOne(User::class, 'nro_doc', 'doc_prof');
-    } */
 
 }

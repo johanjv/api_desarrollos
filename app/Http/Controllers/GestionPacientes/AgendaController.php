@@ -17,16 +17,16 @@ class AgendaController extends Controller
     {
         if ($request['tipoUser'] == 'front') {
 
-            $agendaOrden        = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
-            $agendaPendiente    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', '!=', 2)->get();
-            $agendaAtendidos    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
+            $agendaOrden        = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
+            $agendaPendiente    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', '!=', 2)->orderBy('fecha_asignado', 'ASC')->get();
+            $agendaAtendidos    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
         }
 
         if ($request['tipoUser'] == 'medico'){
 
-            $agendaOrden        = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
-            $agendaPendiente    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->where('medicoAsignado', Auth::user()->nro_doc)->get();
-            $agendaAtendidos    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
+            $agendaOrden        = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
+            $agendaPendiente    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->where('medicoAsignado', Auth::user()->nro_doc)->orderBy('fecha_asignado', 'ASC')->get();
+            $agendaAtendidos    = Agenda::with('profesional','consultorio')->where('medicoAsignado', Auth::user()->nro_doc)->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
         }
 
         return response()->json([
@@ -43,7 +43,7 @@ class AgendaController extends Controller
 
         if (COUNT($validarMedicos) > 0) {
 
-            $paciente = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
+            $paciente = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
                 'facturado' => 1,
                 'frontAsignador' => Auth::user()->nro_doc
             ]);
@@ -57,14 +57,9 @@ class AgendaController extends Controller
                 foreach ($medicos as $medico) {
                     if ($medico->cupo == 0) {
 
-                        Turnos::create([
-                            'docMedico' => $medico['docMedico'],
-                            'docPaciente' => $request['infoModal']['DocIden'],
-                        ]);
-
-                        Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
+                        Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
                             'medicoAsignado' => $medico['docMedico'],
-                            'fecha_asignado' => date('Y-m-d h:m:s'),
+                            'fecha_asignado' => date('Y-m-d h:i:s'),
                             'tipoAsignacion' => $request['infoModal']['tipoAsignacion']
                         ]);
 
@@ -74,9 +69,9 @@ class AgendaController extends Controller
 
                         $medicoASignado = $medico['nombMedico'];
 
-                        $agendaOrden        = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
-                        $agendaPendiente    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->get();
-                        $agendaAtendidos    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
+                        $agendaOrden        = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
+                        $agendaPendiente    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->orderBy('fecha_asignado', 'ASC')->get();
+                        $agendaAtendidos    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
 
                         return response()->json([
                             'agendaOrden'       => $agendaOrden,
@@ -91,14 +86,9 @@ class AgendaController extends Controller
 
                 if ($asignarA == 1) {
 
-                    Turnos::create([
-                        'docMedico' => $medicos[0]['docMedico'],
-                        'docPaciente' => $request['infoModal']['DocIden'],
-                    ]);
-
-                    Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
+                    Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
                         'medicoAsignado' => $medicos[0]['docMedico'],
-                        'fecha_asignado' => date('Y-m-d h:m:s'),
+                        'fecha_asignado' => date('Y-m-d h:i:s'),
                         'tipoAsignacion' => $request['infoModal']['tipoAsignacion']
                     ]);
 
@@ -111,14 +101,10 @@ class AgendaController extends Controller
             }
 
             if ($request['infoModal']['tipoAsignacion'] == 'manual') {
-                Turnos::create([
-                    'docMedico' => $request['infoModal']['medico'],
-                    'docPaciente' => $request['infoModal']['DocIden'],
-                ]);
 
-                Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
+                Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('DocIden', $request['infoModal']['DocIden'])->update([
                     'medicoAsignado' => $request['infoModal']['medico'],
-                    'fecha_asignado' => date('Y-m-d h:m:s'),
+                    'fecha_asignado' => date('Y-m-d h:i:s'),
                     'tipoAsignacion' => $request['infoModal']['tipoAsignacion']
                 ]);
 
@@ -137,9 +123,9 @@ class AgendaController extends Controller
 
 
 
-        $agendaOrden        = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
-        $agendaPendiente    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->get();
-        $agendaAtendidos    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
+        $agendaOrden        = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
+        $agendaPendiente    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->orderBy('fecha_asignado', 'ASC')->get();
+        $agendaAtendidos    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
 
         return response()->json([
             'agendaOrden'       => $agendaOrden,
@@ -165,12 +151,12 @@ class AgendaController extends Controller
 
         Agenda::where('DocIden', $request['paciente']['DocIden'])->update([
             'estadoAtencion'    => $request['accion'] == 'ini' ? 1 : 2,
-            $fecha              => date('Y-m-d h:m:s')
+            $fecha              => date('Y-m-d h:i:s')
         ]);
 
-        $agendaOrden        = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
-        $agendaPendiente    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->where('medicoAsignado', Auth::user()->nro_doc)->get();
-        $agendaAtendidos    = Agenda::with('profesional','consultorio')->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
+        $agendaOrden        = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
+        $agendaPendiente    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->where('medicoAsignado', Auth::user()->nro_doc)->orderBy('fecha_asignado', 'ASC')->get();
+        $agendaAtendidos    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
 
         return response()->json([
             'agendaOrden'       => $agendaOrden,
