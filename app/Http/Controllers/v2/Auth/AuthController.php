@@ -250,6 +250,11 @@ class AuthController extends Controller
                 }
 
 
+                elseif ($value == 'CN=APD_usersConsentimientos') {
+                    array_push($rolUser, 30);
+                }
+
+
             }
         }
         return $rolUser;
