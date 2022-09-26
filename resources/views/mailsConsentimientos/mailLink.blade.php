@@ -53,19 +53,17 @@
                                                                                     <div style="color:#505050;font-family:Helvetica;font-size:14px;line-height:150%;text-align:left">
                                                                                         <br>
                                                                                         <h5 style="color:#444;display:block;font-family:Helvetica;font-size:22px;line-height:100%;text-align:justify;margin:0 0 10px" align="center">
-                                                                                            Saludos Cordiales {{ $datosAfiliado->Nombre_Completo }}.<br><br>
+                                                                                            Cordial saludo Sr(a). {{ $datosAfiliado->Nombre_Completo }}.<br><br>
                                                                                         </h5>
-                                                                                        <h5  style="color:#444;display:block;font-family:Helvetica;font-size:22px;line-height:100%;text-align:justify;margin:0 0 10px" align="center">
-                                                                                            Ya está disponible el Consentimiento Informado, para tu próxima Teleconsulta.<br><br>
-                                                                                        </h5>
-                                                                                        <h1 style="color:#444;display:block;font-family:Helvetica;font-size:20px;line-height:100%;text-align:justify;margin:0 0 10px" align="center">
-                                                                                            Por favor ingresa en el siguiente enlace para que puedas verificarlo.<br><br>
-                                                                                        </h1>
-                                                                                        <h1 style="color:#444;display:block;font-family:Helvetica;font-size:20px;line-height:100%;text-align:justify;margin:0 0 10px" align="center">
-                                                                                            Su contraseña para visualizar el archivo es su número de documento.
-                                                                                        </h1>
+
+                                                                                        <p  style="color:#444;display:block;font-family:Helvetica;font-size:22px;line-height:100%;text-align:justify;margin:0 0 10px" align="center">
+                                                                                            Ya se encuentra disponible el Consentimiento Informado para su consulta virtual.<br><br>
+                                                                                            Por favor ingrese en el siguiente enlace para verificarlo y especificar si ACEPTA o RECHAZA las condiciones de la atención.<br><br>
+                                                                                            Su contraseña para visualizar el archivo es su número de documento de identidad.
+                                                                                        </p>
+
                                                                                         <h1 style="color:#444;display:block;font-family:Helvetica;font-size:20px;line-height:100%;text-align:center;margin:0 0 10px" align="center">
-                                                                                            <br><a href="https://consentimientos.virreysolisips.com.co:1557/consentimiento/?item={{$consentimiento->id}}">Tu Consentimiento Informado AQUÍ</a>
+                                                                                            <br><a href="https://consentimientos.virreysolisips.com.co:1557/consentimiento/?item={{$consentimiento->id}}">Haz clic AQUÍ para visualizarlo (Consentimiento Informado)</a>
                                                                                         </h1>
                                                                                         <br>
                                                                                         <br>
@@ -80,13 +78,13 @@
                                                             <tr>
                                                                 <td valign="top" style="border-collapse:collapse;">
                                                                     <p style="padding: 10px; text-align: -webkit-center;">
-                                                                        Este correo, y cualquiera de sus anexos, contiene datos confidenciales de y su contenido es para uso exclusivo de sus destinatarios, por lo que queda prohibido el poder compartir o copiar estos datos por terceros. Si usted lo recibiera por error, por favor, informar al remitente y destruya el mensaje con todas sus copias. Antes de imprimir, por favor piense en el medio ambiente.
-                                                                        <br>
-                                                                        <br>
-                                                                        This message, its content and any document attached there to is for the exclusive use of its intended recipients and contains privileged, proprietary, or otherwise private information. Therefore any disclosure, copying or use by third parties of this information is prohibited. If you receive this in error please notify the sender and delete the message. Before printing, think about the Environment.
-                                                                        <br>
-                                                                        <br>
-                                                                        Todos los derechos reservados
+                                                                        Este correo y cualquiera de sus anexos contienen datos confidenciales que serán para uso
+                                                                        exclusivo de sus destinatarios, quienes se responsabilizarán de su custodia. Queda prohibido
+                                                                        compartir o copiar estos datos a terceros. Antes de imprimir piense en el medio ambiente.
+                                                                    </p>
+                                                                    <br>
+                                                                    <p style="padding: 10px; text-align: -webkit-center;">
+                                                                        Si usted recibe esta información por error, favor, informar al remitente y destruya el mensaje con todas sus copias.
                                                                     </p>
                                                                 </td>
                                                             </tr>
