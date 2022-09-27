@@ -134,17 +134,18 @@ return [
     |
     */
 
-    'admGlobal'     => env('APP_ADMINGLOBAL', 1),
-    'hvSedes'       => env('APP_HVSEDES', 25),
-    'factuControl'  => env('APP_FACTUCONTROL', 10024),
-    'citologias'    => env('APP_CITOLOGIAS', 10025),
-    'mamitas'       => env('APP_MAMITAS', 10031),
-    'residuos'      => env('APP_RESIDUOS', 10034),
-    'firma'         => env('APP_FIRMA', 10037),
-    'viaticos'      => env('APP_VIATICOS', 10035),
-    'escalas'       => env('APP_ESCALAS', 10039),
-    'vacunacion'    => env('APP_VACUNACION', 10044),
-    'agenda'        => env('APP_AGENDA', 10050),
+    'admGlobal'       => env('APP_ADMINGLOBAL', 1),
+    'hvSedes'         => env('APP_HVSEDES', 25),
+    'factuControl'    => env('APP_FACTUCONTROL', 10024),
+    'citologias'      => env('APP_CITOLOGIAS', 10025),
+    'mamitas'         => env('APP_MAMITAS', 10031),
+    'residuos'        => env('APP_RESIDUOS', 10034),
+    'firma'           => env('APP_FIRMA', 10037),
+    'viaticos'        => env('APP_VIATICOS', 10035),
+    'escalas'         => env('APP_ESCALAS', 10039),
+    'vacunacion'      => env('APP_VACUNACION', 10044),
+    'consentimientos' => env('APP_CONSENTIMIENTOS', 10047),
+    'agenda'          => env('APP_AGENDA', 10050),
 
 
     /*
@@ -278,6 +279,20 @@ return [
     */
 
     'adminGP' => env('APP_ADMINGP', 25),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles CONSENTIMIENTOS INFORMADOS
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'usersConsentimientos' => env('APP_USERSCONSENTIMIENTOS', 30),
+
+
 
     /*
     |--------------------------------------------------------------------------

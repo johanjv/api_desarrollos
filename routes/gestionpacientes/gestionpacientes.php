@@ -16,7 +16,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::get('getConsultoriosPerUnidad',  'GestionPacientes\UnidadesController@getConsultoriosPerUnidad');
         Route::post('asignarConsultorio',       'GestionPacientes\UnidadesController@asignarConsultorio');
         Route::post('saveConsultorio',          'GestionPacientes\UnidadesController@saveConsultorio');
-        Route::get('getConteoConsultorios',    'GestionPacientes\UnidadesController@getConteoConsultorios');
+        Route::get('getConteoConsultorios',     'GestionPacientes\UnidadesController@getConteoConsultorios');
+        Route::post('liberarConsultorio',        'GestionPacientes\UnidadesController@liberarConsultorio');
 
         /* AgendaController */
         Route::get('getAgenda',             'GestionPacientes\AgendaController@getAgenda');
@@ -26,5 +27,6 @@ Route::middleware(['auth:api'])->group(function () {
 
         /* DashController */
         Route::get('getDetalleDash',      'GestionPacientes\DashController@getDetalleDash');
+        Route::post('updateVariablesMed', 'GestionPacientes\DashController@updateVariablesMed');
     });
 });
