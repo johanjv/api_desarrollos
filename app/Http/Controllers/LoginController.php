@@ -303,7 +303,6 @@ class LoginController extends Controller
 
     public function getSedesLogin(Request $request)
     {
-        return "william";
         if (isset($request["idApp"])) {
             $sedes = DB::table('UNIDADES_ESTANDAR')->get();
         } else {

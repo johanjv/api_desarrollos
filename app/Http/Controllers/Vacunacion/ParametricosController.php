@@ -42,7 +42,7 @@ class ParametricosController extends Controller
         $esquema = Esquema::where('id', $request['params']['id'])->update([
             'nomb_esquema'  => strtoupper($request['params']['nomb_esquema']),
             'nro_dosis'     => $request['params']['nro_dosis'],
-            'estado'     => $request['params']['estado']
+            'estado'        => $request['params']['estado']
         ]);
 
         $esquemas = Esquema::all();
