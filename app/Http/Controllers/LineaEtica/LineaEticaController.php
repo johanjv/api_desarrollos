@@ -12,6 +12,7 @@ class LineaEticaController extends Controller
 {
     public function getRegistros(Request $request)
     {
+        /* comentario */
         if (isset($request['inicio']) && isset($request['final'])){
 
         $registros=Registros::whereBetween('Fecha_radicacion', [$request['inicio'],$request['final']])->get();
