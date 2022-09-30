@@ -84,14 +84,19 @@ class RouteServiceProvider extends ServiceProvider
                 require base_path('routes/GestionResiduos/GestionResiduos.php');
                 require base_path('routes/viaticos/viaticos.php');
                 require base_path('routes/FirmaDigital/FirmaDigital.php');
-                require base_path('routes/vacunacion/vacunacion.php');
-                require base_path('routes/escalas/escalas.php');
-                require base_path('routes/lineaEtica/lineaEtica.php');
-
-
 
                 /* RUTAS VERSION 2 */
                 require base_path('routes/v2/auth/auth.php');
+
+                /* AJUSTAR A RUTAS V2 */
+
+                require base_path('routes/vacunacion/vacunacion.php');
+                require base_path('routes/escalas/escalas.php');
+                require base_path('routes/consentimientos/consentimientos.php');
+                require base_path('routes/consentimientos/consentimientos.php');
+                require base_path('routes/gestionpacientes/gestionpacientes.php');
+                require base_path('routes/lineaEtica/lineaEtica.php');
+
             });
     }
 }

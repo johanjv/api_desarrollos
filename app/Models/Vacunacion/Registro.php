@@ -11,7 +11,7 @@ class Registro extends Model
 
     protected  $table = "VACUNACION.registro";
 
-    const CREATED_AT = null;
+    const CREATED_AT = "fecha_registro";
     const UPDATED_AT = null;
 
     protected $fillable = [

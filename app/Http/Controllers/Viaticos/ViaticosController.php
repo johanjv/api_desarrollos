@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\NotificacionResiduosAprobado;
 use App\Mail\NotificacionViaticosAdjuntos;
 use App\Mail\NotificacionViaticosAprobado;
+use App\Mail\NotificacionViaticosCopiaCorreo;
 use App\Mail\NotificacionViaticosRegistro;
 use App\Mail\NotificacionViaticosRechazo;
 use App\Models\Hvsedes\TalentoHumano\Colaboradores;
@@ -133,7 +134,24 @@ class ViaticosController extends Controller
                     ->distinct()
                     ->first();
 
-                Mail::to($correoDirectivos)->send(new NotificacionViaticosRegistro($data, $nombreDirectivo, $datos));
+                $datosColaborador = [];
+                foreach ($nomColaborador as $value) {
+                    $cargo = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.COLABORADORES AS COL')
+                        ->selectRaw('COL.DOC_COLABORADOR, COL.NOMB_COLABORADOR, COL.CORREO, cargos.COD_CARGO, nomcargo.NOMBRE_CARGO')
+                        ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS cargos', 'COL.DOC_COLABORADOR', '=', 'cargos.DOC_COLABORADOR')
+                        ->join('dbo.CARGOS AS nomcargo', 'cargos.COD_CARGO', '=', 'nomcargo.COD_CARGO')
+                        ->where("COL.DOC_COLABORADOR", $value['documento'])
+                        ->get();
+                    $datosColaboradores = (object) array(
+                        "nombres"      => $value["nombres"],
+                        "documento"    => $value["documento"],
+                        "COD_CARGO"    => $cargo[0]->COD_CARGO,
+                        "NOMBRE_CARGO" => $cargo[0]->NOMBRE_CARGO,
+                    );
+                    array_push($datosColaborador, $datosColaboradores);
+                }
+                Mail::to($correoDirectivos)->send(new NotificacionViaticosRegistro($data, $nombreDirectivo, $datos, $datosColaborador));
+
                 return response()->json([
                     "insertSolicitud" =>  true,
                     "idSolicitud"     =>  $data->idSolicitud
@@ -192,10 +210,20 @@ class ViaticosController extends Controller
         $datos = [];
 
         foreach ($usersList as $user) {
+
+            $datosColaborador = DB::connection('sqlsrv')->table('HOJADEVIDASEDES.COLABORADORES AS COL')
+                ->selectRaw('COL.DOC_COLABORADOR, COL.NOMB_COLABORADOR, COL.CORREO, cargos.COD_CARGO, nomcargo.NOMBRE_CARGO')
+                ->join('HOJADEVIDASEDES.CARGOS_COLABORADOR AS cargos', 'COL.DOC_COLABORADOR', '=', 'cargos.DOC_COLABORADOR')
+                ->join('dbo.CARGOS AS nomcargo', 'cargos.COD_CARGO', '=', 'nomcargo.COD_CARGO')
+                ->where("COL.DOC_COLABORADOR", $user['DOC_COLABORADOR'])
+                ->get();
+
             $cadaUno = array(
                 'DOC_COLABORADOR'  => $user['DOC_COLABORADOR'],
                 'NOMB_COLABORADOR' => $user['NOMB_COLABORADOR'],
-                'CORREO'           => $user['CORREO']
+                'CORREO'           => $user['CORREO'],
+                'NOMBRE_CARGO'     => $datosColaborador[0]->NOMBRE_CARGO,
+                'COD_CARGO'        => $datosColaborador[0]->COD_CARGO
             );
             array_push($datos, $cadaUno);
         }
@@ -412,6 +440,11 @@ class ViaticosController extends Controller
     }
     public function getAerolineas(Request $request)
     {
+        $aerolineas = Aerolineas::where('estado', 1)->select('*')->get();
+        return response()->json(["aerolineas" => $aerolineas, "status" => "ok"]);
+    }
+    public function getAerolineasAdmin(Request $request)
+    {
         $aerolineas = Aerolineas::select('*')->get();
         return response()->json(["aerolineas" => $aerolineas, "status" => "ok"]);
     }
@@ -476,7 +509,6 @@ class ViaticosController extends Controller
             ->where("codSuc", $data["idCiudadDestino"])->get();
         return response()->json(["valorAeropuerto" => $valorAeropuerto, "status" => "ok"]);
     }
-
     public function getSeguro(Request $request)
     {
         $seguro = Seguro::selectRaw('idSeguro, nomSeguro, estado')
@@ -490,6 +522,7 @@ class ViaticosController extends Controller
         $datosIndividual = json_decode($data["colaboradores"]);
         $documento = Auth::user()->nro_doc;
         $correos = explode(",", $data["correos"]);
+        $correosCopia = explode(",", $data["correosCopia"]);
 
         if ($request->hasFile("files") > 0) {
             $idSolicitud               = $data["idSolicitud"];
@@ -515,27 +548,80 @@ class ViaticosController extends Controller
                     'valorViaticosAsignados'    => $dat->totalRecorridos,
                     'docPerViaja'               => $dat->DOC_COLABORADOR,
                     'obsOtroValor'              => isset($dat->detalleViaje->obsOtroValor) ? $dat->detalleViaje->obsOtroValor : "",
-                    'transAeroDomiAeropuerto'   => $dat->detalleViaje->transAeroDomiAeropuerto,
-                    'transInternos'             => str_replace('.', '', $dat->detalleViaje->transInternos),
-                    'aeropuerto'                => $dat->detalleViaje->aeropuerto->aeropuerto,
+                    'transAeroDomiAeropuerto'   => str_replace('.', '', $dat->detalleViaje->transAeroDomiAeropuerto),
+                    'transInternos'             => $dat->detalleViaje->transInternos,
+                    'aeropuerto'                => isset($dat->detalleViaje->aeropuerto->aeropuerto) ? $dat->detalleViaje->aeropuerto->aeropuerto : "",
+                    'varlorTotalRecorrido'      => $dat->detCalculo->totalViaticosAsignados,
                 ]);
             }
             //aprobado # 4 es cuando queda ya finalizado el registro
             $insertSolicitud = RegistroSolicitud::where('idSolicitud', $idSolicitud)->update([
                 'aprobado'  => 4,
             ]);
+            $datosTabla = DB::connection('sqlsrv')->table('VIATICOS.Solicitud AS SOL')
+                ->selectRaw('SOL.idSolicitud, SOL.docPerAprobacion, SOL.fechaSalida, SOL.fechaRetorno,SOL.idCiudadOrigen, SOL.idCiudadDestino, 
+            SUCOri.SUC_DEPARTAMENTO AS DepOrigen, SUCDes.SUC_DEPARTAMENTO AS DepDestino, SOL.aprobado')
+                ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCOri', 'SUCOri.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadOrigen')
+                ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS SUCDes', 'SUCDes.SUC_CODIGO_DEPARTAMENTO', '=', 'SOL.idCiudadDestino')
+                ->where('SOL.idSolicitud', $idSolicitud)
+                ->distinct()
+                ->first();
+
+            foreach ($datosIndividual as $item) {
+                $item->detalleItinerario = Itinerario::where('docPerViaja', $item->DOC_COLABORADOR)->where('solicitud_id', $idSolicitud)->first();
+            }
 
             if ($request->hasFile("files")) {
                 $files = $request->file("files");
 
+                $rt2 = [];
                 foreach ($files as $uno) {
                     //$rt = $uno->getClientOriginalName();
                     $rt = "uploads/viaticos/" . $uno->getClientOriginalName();
+                    array_push($rt2, "uploads/viaticos/" . $uno->getClientOriginalName());
                     copy($uno, $rt);
-                    foreach ($correos as $value) {
-                        Mail::to($value)->send(new NotificacionViaticosAdjuntos($rt));
-                    }
                 }
+            }
+            $datosCopiaCorreo = [];
+            foreach ($datosIndividual as $value) {
+                $valorTotalRecorrido = $value->detCalculo->totalViaticosAsignados - $datosIndividual[0]->totalRecorridos;
+                if ($value->DOC_COLABORADOR == $data["docAignacionValorViaticos"]) {
+                    $totalViaticosAsignados = $value->detCalculo->totalViaticosAsignados;
+                } else {
+                    $totalViaticosAsignados = $value->detCalculo->totalViaticosAsignados - $datosIndividual[0]->totalRecorridos;
+                }
+                Mail::to($value->CORREO)->send(new NotificacionViaticosAdjuntos(
+                    $rt2,
+                    $datosTabla,
+                    $datosIndividual[0]->totalRecorridos,
+                    $valorTotalRecorrido,
+                    $value->NOMB_COLABORADOR,
+                    $value->NOMBRE_CARGO,
+                    $value->COD_CARGO,
+                    $value->DOC_COLABORADOR,
+                    $data["docAignacionValorViaticos"],
+                    $totalViaticosAsignados,
+                ));
+                $datosColaboradores = (object) array(
+                    "datosTabla"                => $datosTabla,
+                    "totalRecorridos"           => $datosIndividual[0]->totalRecorridos,
+                    "valorTotalRecorrido"       => $valorTotalRecorrido,
+                    "NOMB_COLABORADOR"          => $value->NOMB_COLABORADOR,
+                    "NOMBRE_CARGO"              => $value->NOMBRE_CARGO,
+                    "COD_CARGO"                 => $value->COD_CARGO,
+                    "DOC_COLABORADOR"           => $value->DOC_COLABORADOR,
+                    "docAignacionValorViaticos" => $data["docAignacionValorViaticos"],
+                    "totalViaticosAsignados"    => $totalViaticosAsignados,
+                );
+                array_push($datosCopiaCorreo, $datosColaboradores);
+            }
+
+            foreach ($correosCopia as $copia) {
+                Mail::to($copia)->send(new NotificacionViaticosCopiaCorreo(
+                    $rt2,
+                    $datosTabla,
+                    $datosCopiaCorreo,
+                ));
             }
 
             return response()->json([
@@ -718,7 +804,14 @@ class ViaticosController extends Controller
 
     public function getMillas(Request $request)
     {
-        $millas = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro')->get();
+        $millas = Millas::selectRaw('idMillas, cantidadMillas, Observaciones, docRegistro, restar, transportePrincipal, A.idAreolineas, A.nomAerolinea, A.estado')
+            ->Leftjoin('VIATICOS.aerolineas as A', 'A.idAreolineas', '=', 'transportePrincipal')
+            ->get();
+
+        $millas->map(function ($item) {
+            $item->calculoTotal = (floatval($item->cantidadMillas) - floatval($item->restar));
+        });
+
         return response()->json(["millas" => $millas, "status" => "ok"]);
     }
 
@@ -728,9 +821,10 @@ class ViaticosController extends Controller
         $documento = Auth::user()->nro_doc;
 
         $insertMillas = Millas::create([
-            'cantidadMillas' => $data["cantidadMillas"],
-            'Observaciones'  => $data["observaciones"],
-            'docRegistro'    => $documento,
+            'cantidadMillas'      => $data["cantidadMillas"],
+            'Observaciones'       => $data["observaciones"],
+            'docRegistro'         => $documento,
+            'transportePrincipal' => $data["transportePrincipal"]["idAreolineas"],
         ]);
 
         return response()->json([
@@ -744,6 +838,7 @@ class ViaticosController extends Controller
         $update = Millas::where("idMillas", $data["idMillas"])->update([
             'cantidadMillas' => $data["cantidadMillas"],
             'Observaciones'  => $data["observaciones"],
+            'restar'         => $data["restaMillas"],
         ]);
 
         return response()->json([
@@ -770,6 +865,7 @@ class ViaticosController extends Controller
         $data = $request->all();
         $update = Aerolineas::where("idAreolineas", $data["idAreolineas"])->update([
             'nomAerolinea' => $data["nomAerolinea"],
+            'estado'       => $data["estado"],
         ]);
 
         return response()->json([

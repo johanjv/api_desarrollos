@@ -16,12 +16,14 @@ class NotificacionViaticosRegistro extends Mailable
     public $data;
     public $nombreDirectivo;
     public $departamentos;
+    public $datosColaborador;
 
-    public function __construct(RegistroSolicitud $data, $nombreDirectivo, $departamentos)
+    public function __construct(RegistroSolicitud $data, $nombreDirectivo, $departamentos, $datosColaborador)
     {
-        $this->data            = $data;
-        $this->nombreDirectivo = $nombreDirectivo;
-        $this->departamentos   = $departamentos;
+        $this->data             = $data;
+        $this->nombreDirectivo  = $nombreDirectivo;
+        $this->departamentos    = $departamentos;
+        $this->datosColaborador = $datosColaborador;
     }
 
     /**

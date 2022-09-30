@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AdminGlobal\Modulos;
 use App\Models\Bitacora\Bitacora;
+use App\Models\GestionPaciente\Consultorios;
+use App\Models\GestionPaciente\Medicos;
 use App\User;
 use DB;
 
@@ -95,6 +97,8 @@ class AuthController extends Controller
                 /* funcion para obtener los roles disponibles del usuario segun el LDAP */
                 $rolUser = $this->rolesUser($usuario);
 
+                $pass = bcrypt($request['password']);
+
                 User::create([
                     'nro_doc'       => $detalleUser[0]['wwwhomepage'][0],
                     'name'          => $detalleUser[0]['givenname'][0],
@@ -104,7 +108,7 @@ class AuthController extends Controller
                     'rol'           => json_encode($rolUser),
                     'cargo'         => $detalleUser[0]['description'][0],
                     'empresa'       => $detalleUser[0]['physicaldeliveryofficename'][0],
-                    'password'      => bcrypt($request['password']),
+                    'password'      => $pass,
                     'is_director'   => 1,
                     'estado'        => 1
                 ]);
@@ -235,6 +239,22 @@ class AuthController extends Controller
                 } elseif ($value == 'CN=APD_AdminEscalas') {
                     array_push($rolUser, 22);
                 }
+
+                /* ROLES DE GESTIÓN DE PACIENTES*/
+                elseif ($value == 'CN=APD_MedGP') {
+                    array_push($rolUser, 23);
+                } elseif ($value == 'CN=APD_FrontGP') {
+                    array_push($rolUser, 24);
+                }elseif ($value == 'CN=APD_AdminGP') {
+                    array_push($rolUser, 25);
+                }
+
+
+                elseif ($value == 'CN=APD_UsersConsentimientos') {
+                    array_push($rolUser, 30);
+                }
+
+
             }
         }
         return $rolUser;
@@ -242,12 +262,30 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
+
+
+        if ($request["idApp"] == 10050) {
+
+            Consultorios::where('doc_prof', $request->user()->nro_doc)->update([
+                'doc_prof' => null
+            ]);
+
+            Medicos::where('docMedico', $request->user()->nro_doc)->update([
+                'estado'    => 0,
+                'cupo'      => 0,
+                'unidad'    => null
+            ]);
+        }
+
+        /* REGISTRO EN BITACORA */
+        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'LOGOUT SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+
         $request->user()->tokens()->delete();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        /* REGISTRO EN BITACORA */
-        Bitacora::create(['ID_APP' => $request["idApp"],'USER_ACT' => $request->user()->nro_doc,'ACCION' => 'LOGOUT SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $request->user()->empresa]);
+
+
 
         return response()->json(["message" => "Sesion Finalizada"]);
     }
@@ -288,7 +326,7 @@ class AuthController extends Controller
           }
         ldap_close($ldapconn);
         return $array;
-   }
+    }
 
 
 }

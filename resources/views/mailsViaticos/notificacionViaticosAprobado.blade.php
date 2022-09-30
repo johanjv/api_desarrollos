@@ -11,23 +11,27 @@
     <p style="background-color: brown">
     <h1>Hola!.</h1>
     <p>
-        Te informamos que el viaje # {{$RegistroSolicitud->idSolicitud}} fue <span class="badge badge-success">APROBADO</span>.<br><br>
+        Le informamos que el viaje # {{$RegistroSolicitud->idSolicitud}} fue <span class="badge badge-success">APROBADO</span>.<br><br>
     </p>
-    <table class="default" align="center" border="1">
-        <tr>
-            <th># Solicitud</th>
-            <th>Ciudad Origen</th>
-            <th>Ciudad Destino</th>
-            <th>Fecha Salida</th>
-            <th>Fecha Retorno</th>
-        </tr>
-        <tr align="center">
-            <td>{{$RegistroSolicitud->idSolicitud}}</td>
-            <td>{{$datos->DepOrigen}}</td>
-            <td>{{$datos->DepDestino}}</td>
-            <td>{{$datos->fechaSalida}}</td>
-            <td>{{$datos->fechaRetorno}}</td>
-        </tr>
+    <table BORDER CELLPADDING=7 CELLSPACING=0>
+        <thead style="background-color: #84baa7;">
+            <tr>
+                <th># Solicitud</th>
+                <th>Departamento Origen</th>
+                <th>Departamento Destino</th>
+                <th>Fecha Salida</th>
+                <th>Fecha Retorno</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr align="center">
+                <td>{{$RegistroSolicitud->idSolicitud}}</td>
+                <td>{{$datos->DepOrigen}}</td>
+                <td>{{$datos->DepDestino}}</td>
+                <td>{{$datos->fechaSalida}}</td>
+                <td>{{$datos->fechaRetorno}}</td>
+            </tr>
+        </tbody>
     </table><br><br>
     <strong>Este mensaje es una notificación automática, por lo tanto le solicitamos no responder a esta dirección.</strong>
     </p>
