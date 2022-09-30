@@ -249,9 +249,13 @@ class AuthController extends Controller
                     array_push($rolUser, 25);
                 }
 
-
+                /* ROLES DE CONSENTIMIENTO INFORMADO*/
                 elseif ($value == 'CN=APD_UsersConsentimientos') {
                     array_push($rolUser, 30);
+                }
+                /* ROLES DE LINEA ETICA*/
+                elseif ($value == 'CN=APD_LineaEtica') {
+                    array_push($rolUser, 40);
                 }
 
 
