@@ -86,6 +86,7 @@ class RouteServiceProvider extends ServiceProvider
                 require base_path('routes/FirmaDigital/FirmaDigital.php');
                 require base_path('routes/vacunacion/vacunacion.php');
                 require base_path('routes/escalas/escalas.php');
+                require base_path('routes/lineaEtica/lineaEtica.php');
 
 
 
