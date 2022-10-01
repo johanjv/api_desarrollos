@@ -15,6 +15,8 @@ class AgendaController extends Controller
 {
     public function getAgenda(Request $request)
     {
+        $medico = null;
+
         if ($request['tipoUser'] == 'front') {
 
             $agendaOrden        = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
@@ -23,16 +25,17 @@ class AgendaController extends Controller
         }
 
         if ($request['tipoUser'] == 'medico' || $request['tipoUser'] == 'admin'){
-
+            $medico             = Medicos::with('consultorio')->where('estado', 1)->where('unidad', $request['unidadActiva'])->where('docMedico', Auth::user()->nro_doc)->first();
             $agendaOrden        = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'ASC')->get();
             $agendaPendiente    = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->whereIn('estadoAtencion', [0,1])->where('medicoAsignado', Auth::user()->nro_doc)->orderBy('fecha_asignado', 'ASC')->get();
             $agendaAtendidos    = Agenda::with('profesional','consultorio')->where('medicoAsignado', Auth::user()->nro_doc)->whereBetween('Fecha', [date('Y-m-d 00:00:00.000'), date('Y-m-d 23:59:59.999')])->where('CODIGOIPS', $request['unidadActiva'])->where('facturado', 1)->where('estadoAtencion', 2)->get();
         }
 
         return response()->json([
-            'agendaOrden' => $agendaOrden,
-            'agendaPendiente' => $agendaPendiente,
-            'agendaAtendidos' => $agendaAtendidos
+            'agendaOrden'       => $agendaOrden,
+            'agendaPendiente'   => $agendaPendiente,
+            'agendaAtendidos'   => $agendaAtendidos,
+            'medico'            => $medico
         ], 200);
     }
 
@@ -164,5 +167,7 @@ class AgendaController extends Controller
             'agendaAtendidos'   => $agendaAtendidos,
         ], 200);
     }
+
+
 
 }
