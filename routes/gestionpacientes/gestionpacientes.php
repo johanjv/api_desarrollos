@@ -17,14 +17,16 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('asignarConsultorio',       'GestionPacientes\UnidadesController@asignarConsultorio');
         Route::post('saveConsultorio',          'GestionPacientes\UnidadesController@saveConsultorio');
         Route::get('getConteoConsultorios',     'GestionPacientes\UnidadesController@getConteoConsultorios');
-        Route::post('liberarConsultorio',        'GestionPacientes\UnidadesController@liberarConsultorio');
+        Route::post('liberarConsultorio',       'GestionPacientes\UnidadesController@liberarConsultorio');
 
         /* AgendaController */
         Route::get('getAgenda',             'GestionPacientes\AgendaController@getAgenda');
         Route::post('asignarPaciente',      'GestionPacientes\AgendaController@asignarPaciente');
         Route::get('getMedicosDisponibles', 'GestionPacientes\AgendaController@getMedicosDisponibles');
         Route::post('atenderPaciente',      'GestionPacientes\AgendaController@atenderPaciente');
-
+        Route::post('addExtra',             'GestionPacientes\AgendaController@addExtra');
+        Route::post('cambiarEstadoPaciente','GestionPacientes\AgendaController@cambiarEstadoPaciente');
+        
         /* DashController */
         Route::get('getDetalleDash',      'GestionPacientes\DashController@getDetalleDash');
         Route::post('updateVariablesMed', 'GestionPacientes\DashController@updateVariablesMed');

@@ -29,7 +29,7 @@ class DashController extends Controller
 
         $agendasDisponibles = Agenda::with('profesional','consultorio')
             ->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
-            ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])
+            ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])
             ->orderBy('facturado', 'DESC')
             ->orderBy('estadoAtencion', 'ASC')
         ->get();
@@ -40,50 +40,50 @@ class DashController extends Controller
         ->get();
 
         $medicos->map(function($item) use($request, $fechaDesde, $fechaHasta){
-            $item->cantidadAsignados  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['131', '132'])->count();
-            $item->cantidadEsperando  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['131', '132'])->count();
-            $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['131', '132'])->count();
-            $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['131', '132'])->count();
+            $item->cantidadAsignados  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadEsperando  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
             $item->dataMedico         = User::where('nro_doc', $item->medicoAsignado)->first();
             $item->dashMedico         = Turnos::where('docMedico', $item->medicoAsignado)->whereBetween('fecha_turno', [$fechaDesde, $fechaHasta])->where('unidad', $request['unidadActiva'])->first();
         });
 
 
         $medicosDisponibles->map(function($item) use($request, $fechaDesde, $fechaHasta){
-            $item->cantidadAsignados  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
-            $item->cantidadEsperando = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
-            $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
-            $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['131', '132'])->count();
+            $item->cantidadAsignados  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadEsperando = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
             $item->dataMedico         = User::where('nro_doc', $item->docMedico)->first();
             $item->dashMedico         = Turnos::where('docMedico', $item->docMedico)->whereBetween('fecha_turno', [$fechaDesde, $fechaHasta])->where('unidad', $request['unidadActiva'])->first();
         });
 
         $dataGrafico = array([
-            'cantidadAsignados'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->where('estadoAtencion', 0)->where('facturado', 1)->count(),
-            'cantidadEsperando'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->whereIn('Estado', ['131', '132'])->count(),
-            'cantidadAtendiendo' => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->whereIn('Estado', ['131', '132'])->count(),
-            'cantidadAtendidos'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->whereIn('Estado', ['131', '132'])->count(),
+            'cantidadAsignados'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])->where('estadoAtencion', 0)->where('facturado', 1)->count(),
+            'cantidadEsperando'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->whereIn('Estado', ['127','131', '132'])->count(),
+            'cantidadAtendiendo' => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->whereIn('Estado', ['127','131', '132'])->count(),
+            'cantidadAtendidos'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->whereIn('Estado', ['127','131', '132'])->count(),
         ]);
 
         /* FIN DE PESTAÑA 1 */
 
         /* PESTAÑA  1 DEL DASHBOARD */
 
-        $agenda     = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('facturado', 'DESC')->orderBy('estadoAtencion', 'ASC')->count();
+        $agenda     = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])->orderBy('facturado', 'DESC')->orderBy('estadoAtencion', 'ASC')->count();
 
         $atendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
             ->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)
-            ->whereIn('Estado', ['131', '132'])
+            ->whereIn('Estado', ['127','131', '132'])
         ->count();
 
         $estadoAgenda = $atendidos != null ? (($atendidos/$agenda)*100) : 0;
         /* $estadoAgenda = (($atendidos/$agenda)*100); */
 
         $inicioAgenda     = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
-            ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('Fecha', 'DESC')->first();
+            ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])->orderBy('Fecha', 'DESC')->first();
 
         $finalAgenda     = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
-            ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['131', '132'])->orderBy('Fecha', 'ASC')->first();
+            ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])->orderBy('Fecha', 'ASC')->first();
 
         $fechaActual = date('h');
 
