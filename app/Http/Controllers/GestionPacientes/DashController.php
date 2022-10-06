@@ -30,6 +30,7 @@ class DashController extends Controller
         $agendasDisponibles = Agenda::with('profesional','consultorio')
             ->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
             ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])
+            ->orderBy('FECHA', 'ASC')
             ->orderBy('facturado', 'DESC')
             ->orderBy('estadoAtencion', 'ASC')
         ->get();
