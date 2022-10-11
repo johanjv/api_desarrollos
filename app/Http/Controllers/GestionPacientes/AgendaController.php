@@ -19,23 +19,25 @@ class AgendaController extends Controller
     {
         $medico = null;
         $medicos = null;
-        $fechaDesde = isset($request['fechaDesde']) ? $request['fechaDesde']."T00:00:00.000" : date('Y-m-d h:i:s');
-        $fechaHasta = isset($request['fechaHasta']) ? $request['fechaHasta']."T23:59:59.999" : date('Y-m-d h:i:s');
-
+        $fechaDesde = isset($request['fechaDesde']) ? $request['fechaDesde']."T00:00:00.000" : date('Y-m-d')."T00:00:00.000";
+        $fechaHasta = isset($request['fechaHasta']) ? $request['fechaHasta']."T23:59:59.999" : date('Y-m-d')."T23:59:59.999";
+        //return $fechaDesde;
 
         if ($request['tipoUser'] == 'front') {
             
             $medicos = Medicos::where('GESTIONPACIENTES.medicosDisponibles.estado', 1)
                 ->join('GESTIONPACIENTES.turnos', 'GESTIONPACIENTES.turnos.docMedico', 'GESTIONPACIENTES.medicosDisponibles.docMedico')
                 ->where('GESTIONPACIENTES.medicosDisponibles.unidad', $request['unidadActiva'])
-                ->whereBetween('fecha_turno', [$fechaDesde, $fechaHasta])
+                ->where('fecha_turno', date('Y-m-d'))
             ->get();
 
+            //return $medicos[0]['docMedico'];
+            
             $medicos->map(function($item) use($request, $fechaDesde, $fechaHasta){
-                $item->cantidadAsignados  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
-                $item->cantidadEsperando  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
-                $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
-                $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
+                $item->cantidadAsignados  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
+                $item->cantidadEsperando  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
+                $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
+                $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
                 $item->dataMedico         = User::where('nro_doc', $item->medicoAsignado)->first();
                 $item->dashMedico         = Turnos::where('docMedico', $item->medicoAsignado)->whereBetween('fecha_turno', [$fechaDesde, $fechaHasta])->where('unidad', $request['unidadActiva'])->first();
             });
