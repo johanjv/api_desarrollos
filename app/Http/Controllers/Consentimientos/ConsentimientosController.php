@@ -28,10 +28,10 @@ class ConsentimientosController extends Controller
             'doc_pac'               => $request['Documento'],
             'servicio_id'           => $request['servicio'],
             'isResponsable'         => strtoupper($request['isResponsable']), 
-            'doc_responsable'       => $request['responsable_Documento'],
-            'nombre_responsable'    => strtoupper($request['responsable_Nombre_Completo']),
+            'doc_responsable'       => isset($request['responsable_Documento']) ? $request['responsable_Documento'] : null,
+            'nombre_responsable'    => isset($request['responsable_Nombre_Completo']) ? strtoupper($request['responsable_Nombre_Completo']) : null,
             'email'                 => strtoupper($request['Email']),
-            'parentezco'            => $request['parentezco']['parentezco']
+            'parentezco'            => isset($request['parentezco']['parentezco']) ? $request['parentezco']['parentezco'] : null
         ]);
         $consentimiento = RegistroConsentimiento::with('servicio')->latest('id')->first();
         Mail::to($request['Email'])->send(new MailConsentimiento ($datosAfiliado, $consentimiento));
