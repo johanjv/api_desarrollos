@@ -210,9 +210,11 @@ class FactucontrolController extends Controller
 
     public function proveedores(Request $request)
     {
-        $proveedores = DB::connection('sqlsrv')->table('FACTUCONTROL.proveedor')
-            ->orderBy('razon_social', 'ASC')
-            ->get();
+        $proveedores = Proveedores::orderBy('razon_social', 'ASC')->get();
+
+        $proveedores->map(function($item){
+            $item->proveedor_compuesto = $item->nit . " " . $item->razon_social;
+        });
         return response()->json(["proveedores" => $proveedores, "status" => "ok"]);
     }
 
@@ -585,7 +587,7 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->orderBy('id_caso', 'DESC')
-        ->get();
+            ->get();
 
         /* $casosRegistradoOld3 = DB::connection('sqlsrv')->table('FACTUCONTROL.caso AS caso')->where('caso.id_estado', 1)->where('users.documento', $documento)->where('caso.nuevo', null)
             ->selectRaw('DISTINCT caso.fecha_creacion,
@@ -639,9 +641,9 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('FACTUCONTROL.sucursal AS sucursal', 'caso.id_sucursal', '=', 'sucursal.id_sucursal')
             ->orderBy('id_caso', 'DESC')
-        ->get();
+            ->get();
 
-          //  return $documento;
+        //  return $documento;
 
         $casosRegistradoNew = DB::table('FACTUCONTROL.caso AS caso')
             ->selectRaw('DISTINCT caso.fecha_creacion,
@@ -663,15 +665,15 @@ class FactucontrolController extends Controller
             ->join('FACTUCONTROL.categoria AS categoria', 'caso.id_categoria', '=', 'categoria.id_categoria')
             ->join('FACTUCONTROL.proveedor AS p', 'caso.id_proveedor', '=', 'p.id_proveedor')
             ->join('HOJADEVIDASEDES.SUC_SUCURSAL AS sucursal', 'caso.id_sucursal', '=', 'sucursal.SUC_CODIGO_DEPARTAMENTO', 'LEFT')
-            
+
             ->where('caso.id_estado', 1)
-            ->where('caso.nuevo', 1) 
+            ->where('caso.nuevo', 1)
             ->where('caso.id_tema_user', $documento)
             /* 
             */
 
             ->orderBy('id_caso', 'DESC')
-        ->get();
+            ->get();
 
         $casosRegistradoOld = [];
 
