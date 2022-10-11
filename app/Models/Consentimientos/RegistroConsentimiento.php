@@ -22,6 +22,17 @@ class RegistroConsentimiento extends Model
         'verificado',
         'doc_prof_verifico',
         'estado',
+        'servicio_id',
+        'isResponsable',
+        'doc_responsable',
+        'nombre_responsable',
+        'email',
+        'parentezco'
     ];
+
+    public function servicio()
+    {
+        return $this->hasOne('App\Models\Consentimientos\Servicios', 'id', 'servicio_id');
+    }
 
 }

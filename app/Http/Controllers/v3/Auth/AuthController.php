@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\v2\Auth;
+namespace App\Http\Controllers\v3\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -18,6 +18,8 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+
+        /* return $request->all(); */
 
         $request->validate([
             'username' => ['required'],

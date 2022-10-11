@@ -146,6 +146,7 @@ return [
     'vacunacion'      => env('APP_VACUNACION', 10044),
     'consentimientos' => env('APP_CONSENTIMIENTOS', 10047),
     'agenda'          => env('APP_AGENDA', 10050),
+    'lineaetica'      => env('APP_LINEAETICA', 10052),
 
 
     /*
@@ -291,6 +292,19 @@ return [
     */
 
     'usersConsentimientos' => env('APP_USERSCONSENTIMIENTOS', 30),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Grupos disponibles LINEA ETICA
+    |--------------------------------------------------------------------------
+    |
+    | Estos son los grupos disponoibles desde LDAP
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'usersLineaetica' => env('APP_USERSLINEAETICA', 40),
+
 
 
 
