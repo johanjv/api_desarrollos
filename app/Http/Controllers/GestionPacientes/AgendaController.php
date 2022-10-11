@@ -18,6 +18,7 @@ class AgendaController extends Controller
     public function getAgenda(Request $request)
     {
         $medico = null;
+        $medicos = null;
         $fechaDesde = isset($request['fechaDesde']) ? $request['fechaDesde']."T00:00:00.000" : date('Y-m-d h:i:s');
         $fechaHasta = isset($request['fechaHasta']) ? $request['fechaHasta']."T23:59:59.999" : date('Y-m-d h:i:s');
 
