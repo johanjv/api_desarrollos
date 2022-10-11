@@ -18,6 +18,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('validarConsentimiento', 'Consentimientos\ConsentimientosController@validarConsentimiento');
         Route::get('getConsentimientosValidados', 'Consentimientos\ConsentimientosController@getConsentimientosValidados');
         Route::get('imprimir', 'Consentimientos\ConsentimientosController@imprimir');
+        Route::get('getServicios', 'Consentimientos\ConsentimientosController@getServicios');
 
     });
 });

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\MailConsentimiento;
 use App\Models\Api_Afiliados_Interna\Afiliados;
 use App\Models\Consentimientos\RegistroConsentimiento;
+use App\Models\Consentimientos\Servicios;
 use Barryvdh\DomPDF\Facade as PDF;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,11 +19,21 @@ class ConsentimientosController extends Controller
 {
     public function enviarLink(Request $request)
     {
+        //return $request->all();
+
         $datosAfiliado = $request->all();
         $datosAfiliado = (object)$datosAfiliado;
 
-        RegistroConsentimiento::create([ 'doc_pac' => $request['Documento'] ]);
-        $consentimiento = RegistroConsentimiento::latest('id')->first();
+        RegistroConsentimiento::with('servicio')->create([ 
+            'doc_pac'               => $request['Documento'],
+            'servicio_id'           => $request['servicio'],
+            'isResponsable'         => strtoupper($request['isResponsable']), 
+            'doc_responsable'       => $request['responsable_Documento'],
+            'nombre_responsable'    => strtoupper($request['responsable_Nombre_Completo']),
+            'email'                 => strtoupper($request['Email']),
+            'parentezco'            => $request['parentezco']['parentezco']
+        ]);
+        $consentimiento = RegistroConsentimiento::with('servicio')->latest('id')->first();
         Mail::to($request['Email'])->send(new MailConsentimiento ($datosAfiliado, $consentimiento));
 
         if (Mail::failures()) {
@@ -40,10 +51,14 @@ class ConsentimientosController extends Controller
     public function getConsentimieto(Request $request)
     {
 
-        $sql = RegistroConsentimiento::where('id', $request['id']);
+        $sql = RegistroConsentimiento::with('servicio')->where('id', $request['id']);
 
         $consentimiento = isset($request['clave']) ? $sql->where('doc_pac', $request['clave'])->first() : $sql->first();
         $afiliado = Afiliados::where('Documento', $request['clave'])->first();
+
+        if ($afiliado == null) {
+            $afiliado = Afiliados::where('Documento', $consentimiento->doc_pac)->first();
+        }
 
         return response()->json([
             "consentimiento"    => $consentimiento,
@@ -54,22 +69,24 @@ class ConsentimientosController extends Controller
     public function saveAccionConsentimiento(Request $request)
     {
 
-        RegistroConsentimiento::where('id', $request['item']['idConsentimiento'])->update([
+        RegistroConsentimiento::with('servicio')->where('id', $request['item']['idConsentimiento'])->update([
             'fecha_firma' => date('Y-m-d h:m:s'),
             'firma' => $request['item']['aprobado'],
         ]);
 
-       $consentimiento = RegistroConsentimiento::where('id', $request['item']['idConsentimiento'])->first();
+       $consentimiento = RegistroConsentimiento::with('servicio')->where('id', $request['item']['idConsentimiento'])->first();
+       $afiliado = Afiliados::where('Documento', $consentimiento->doc_pac)->first();
+
 
         return response()->json([
             "consentimiento" => $consentimiento,
+            "afiliado" => $afiliado,
         ], 200);
     }
 
-
     public function getConsentimietoUser(Request $request)
     {
-        $consentimiento = RegistroConsentimiento::where('doc_pac', $request['clave'])->orderBy('fecha_envio', 'DESC')->get();
+        $consentimiento = RegistroConsentimiento::with('servicio')->where('doc_pac', $request['clave'])->orderBy('fecha_envio', 'DESC')->get();
 
         $consentimiento->map(function ($item){
             $item->afiliado = Afiliados::where('Documento', $item->doc_pac)->pluck('Nombre_Completo')->first();
@@ -91,7 +108,7 @@ class ConsentimientosController extends Controller
     public function validarConsentimiento(Request $request)
     {
 
-        RegistroConsentimiento::where('id', $request['item']['idConsentimiento'])->update([
+        RegistroConsentimiento::with('servicio')->where('id', $request['item']['idConsentimiento'])->update([
             'fecha_firma' => date('Y-m-d h:m:s'),
             'verificado' => 1,
             'doc_prof_verifico' => Auth::user()->nro_doc
@@ -100,7 +117,7 @@ class ConsentimientosController extends Controller
 
     public function getConsentimientosValidados(Request $request)
     {
-        $consentimientos = RegistroConsentimiento::where('doc_prof_verifico', Auth::user()->nro_doc)->orderBy('fecha_envio', 'DESC')->get();
+        $consentimientos = RegistroConsentimiento::with('servicio')->where('doc_prof_verifico', Auth::user()->nro_doc)->orderBy('fecha_envio', 'DESC')->get();
 
         $consentimientos->map(function ($item){
             $item->afiliado = Afiliados::where('Documento', $item->doc_pac)->pluck('Nombre_Completo')->first();
@@ -167,6 +184,17 @@ class ConsentimientosController extends Controller
 
         return response()->download($archivo, 'filename.pdf', $headers);
     }
+
+    public function getServicios(Request $request)
+    {
+        $servicios = Servicios::where('tipo', $request['poblacion'])->get();
+
+        return response()->json([
+            "servicios"    => $servicios
+        ], 200);
+    }
+    
+    
 
 
 
