@@ -1399,7 +1399,7 @@ class HVSedesController extends Controller
 
         $cargoNuevo = Cargo::create([
             'COD_CARGO'     => strtoupper($data["cod_cargo"]),
-            'NOMBRE_CARGO'  => strtoupper($data["nomb_cargo"])
+            'NOMBRE_CARGO'  => $data["nomb_cargo"]
         ]);
 
         $cargos = Cargo::all();
