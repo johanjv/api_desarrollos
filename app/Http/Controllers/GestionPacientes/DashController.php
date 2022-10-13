@@ -45,6 +45,7 @@ class DashController extends Controller
             $item->cantidadEsperando  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
             $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
             $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->medicoAsignado)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadInasistentes  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 5)->whereIn('Estado', ['127','131', '132'])->count();
             $item->dataMedico         = User::where('nro_doc', $item->medicoAsignado)->first();
             $item->dashMedico         = Turnos::where('docMedico', $item->medicoAsignado)->whereBetween('fecha_turno', [$fechaDesde, $fechaHasta])->where('unidad', $request['unidadActiva'])->first();
         });
@@ -55,6 +56,7 @@ class DashController extends Controller
             $item->cantidadEsperando = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
             $item->cantidadAtendiendo = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
             $item->cantidadAtendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->where('medicoAsignado', $item->docMedico)->whereIn('Estado', ['127','131', '132'])->count();
+            $item->cantidadInasistentes  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 5)->whereIn('Estado', ['127','131', '132'])->count();
             $item->dataMedico         = User::where('nro_doc', $item->docMedico)->first();
             $item->dashMedico         = Turnos::where('docMedico', $item->docMedico)->whereBetween('fecha_turno', [$fechaDesde, $fechaHasta])->where('unidad', $request['unidadActiva'])->first();
         });
@@ -64,21 +66,26 @@ class DashController extends Controller
             'cantidadEsperando'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 0)->whereIn('Estado', ['127','131', '132'])->count(),
             'cantidadAtendiendo' => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 1)->whereIn('Estado', ['127','131', '132'])->count(),
             'cantidadAtendidos'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)->whereIn('Estado', ['127','131', '132'])->count(),
+            'cantidadInasistentes'  => Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 5)->whereIn('Estado', ['127','131', '132'])->count(),
         ]);
 
         /* FIN DE PESTAÑA 1 */
 
         /* PESTAÑA  1 DEL DASHBOARD */
 
-        $agenda     = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])->orderBy('facturado', 'DESC')->orderBy('estadoAtencion', 'ASC')->count();
+        $agenda     = Agenda::with('profesional','consultorio')->where('isAgendado', 1)->whereBetween('Fecha', [$fechaDesde, $fechaHasta])->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])->orderBy('facturado', 'DESC')->orderBy('estadoAtencion', 'ASC')->count();
 
         $atendidos  = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
-            ->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 2)
+            ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('estadoAtencion', [2])
+            ->whereIn('Estado', ['127','131', '132'])
+        ->count();
+
+        $inasistentes = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
+            ->where('CODIGOIPS', $request['unidadActiva'])->where('estadoAtencion', 5)
             ->whereIn('Estado', ['127','131', '132'])
         ->count();
 
         $estadoAgenda = $atendidos != null ? (($atendidos/$agenda)*100) : 0;
-        /* $estadoAgenda = (($atendidos/$agenda)*100); */
 
         $inicioAgenda     = Agenda::with('profesional','consultorio')->whereBetween('Fecha', [$fechaDesde, $fechaHasta])
             ->where('CODIGOIPS', $request['unidadActiva'])->whereIn('Estado', ['127','131', '132'])->orderBy('Fecha', 'DESC')->first();
@@ -100,8 +107,9 @@ class DashController extends Controller
             "estadoAgenda"          => $estadoAgenda,
 
             "fechaActual"           => $fechaActual,
-            'inicioAgenda'           => $inicioAgenda,
+            'inicioAgenda'          => $inicioAgenda,
             'finalAgenda'           => $finalAgenda,
+            'inasistentes'          => $inasistentes
 
         ], 200);
     }

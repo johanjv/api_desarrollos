@@ -207,7 +207,8 @@ class AgendaController extends Controller
                 'DocIden'           => $request['afiliado']['Documento'],
                 'NombreSolicit'     => $request['afiliado']['PrimerNombre'] . " " . $request['afiliado']['SegundoNombre'],
                 'ApellidosSolicit'  => $request['afiliado']['PrimerApellido'] . " " . $request['afiliado']['SegundoApellido'],
-                'nap'               => $request['nap']
+                'nap'               => $request['nap'],
+                'isAgendado'        => 0
             ]);
             $statusInsert = 1;
         }

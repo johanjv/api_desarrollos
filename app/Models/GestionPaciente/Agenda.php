@@ -45,7 +45,8 @@ class Agenda extends Model
         'facturado',
         'estadoAtencion',
         'medicoAsignado',
-        'observaciones'
+        'observaciones',
+        'isAgendado'
     ];
 
     public function profesional()
