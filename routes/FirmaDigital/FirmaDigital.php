@@ -19,5 +19,8 @@ Route::middleware(['auth:api'])->group(function () {
         Route::post('saveNew',              'FirmaDigital\FirmaDigitalController@saveNew');
         Route::get('getImage',              'FirmaDigital\FirmaDigitalController@getImage');
         Route::post('saveBit',              'FirmaDigital\FirmaDigitalController@saveBit');
+
+        Route::post('importPlantaFirma',         'FirmaDigital\FirmaDigitalController@importPlantaFirma');
+
     });
 });

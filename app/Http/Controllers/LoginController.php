@@ -304,7 +304,9 @@ class LoginController extends Controller
     public function getSedesLogin(Request $request)
     {
         if (isset($request["idApp"])) {
-            $sedes = DB::table('UNIDADES_ESTANDAR')->get();
+            if ($request["idApp"] == 10050) {
+                $sedes = DB::table('UNIDADES_ESTANDAR')->whereIn('ID_UNIDAD', [31219])->get();
+            }
         } else {
             $sedes = DB::table('UNIDADES_ESTANDAR')->get();
         }

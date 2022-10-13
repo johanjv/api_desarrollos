@@ -2,18 +2,30 @@
 
 namespace App\Http\Controllers\FirmaDigital;
 
-use App\Http\Controllers\Controller;
-use App\Models\Bitacora\Bitacora;
+use App\Models\FirmaDigital\Colaborador;
 use App\Models\FirmaDigital\Direccion;
-use App\Models\Hvsedes\TalentoHumano\Colaboradores;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Models\Bitacora\Bitacora;
+use Illuminate\Http\Request;
+use App\Imports\FirmaImport;
+use App\Models\FirmaDigital\CargosColab;
+
+
+
+
 
 class FirmaDigitalController extends Controller
 {
+    private $excel;
+
+    public function __construct(Excel $excel)
+    {
+        $this->excel = $excel;
+    }
+
     public function getDireccion(Request $request)
     {
         $direccion = Direccion::all();
@@ -26,10 +38,16 @@ class FirmaDigitalController extends Controller
 
     public function getDettaleColaborador (Request $request)
     {
-        $colab = Colaboradores::with([
+
+        $colab = Colaborador::with([
             'cargos' => function($q){
                 return $q->with('cargoDetalle');
-            }])->where('DOC_COLABORADOR', $request["doc"])->first();
+            }])->where('documento', $request["doc"])->first();
+
+        /* $colab = Colaboradores::with([
+            'cargos' => function($q){
+                return $q->with('cargoDetalle');
+            }])->where('DOC_COLABORADOR', $request["doc"])->first(); */
 
         return response()->json([
             "colab"   => $colab,
@@ -115,6 +133,48 @@ class FirmaDigitalController extends Controller
         ]);
     }
 
-    
+    public function importPlantaFirma(Request $request){
+       
 
+        set_time_limit(8000);
+        try {
+            $request->validate([
+                'import_file' => 'required|file|mimes:xls,xlsx'
+            ]);
+
+            $path = $request->file('import_file');
+
+            $excelFile = Excel::toCollection(new FirmaImport, $path);
+        
+            CargosColab::truncate();
+            Colaborador::truncate();
+
+            foreach ($excelFile[0] as $row) {
+                $doc    = trim($row['documento']);
+                $nomb   = trim($row['apellidos_y_nombres']);
+                $cargo  = trim($row['cod_cargo']);
+
+                Colaborador::create([
+                    'documento'       => $doc,
+                    'nombreCompleto'  => $nomb,
+                ]);
+
+                CargosColab::create([
+                    'documento' => $doc,
+                    'codCargo'  => $cargo
+                ]);
+
+            }
+            $status = 1;
+        } catch (\Throwable $th) {
+            $status = 0;
+        }
+        
+
+
+
+        return response()->json([
+            "status" => $status,
+        ], 200);
+    }
 }
