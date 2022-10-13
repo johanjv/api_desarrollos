@@ -212,7 +212,7 @@ class FactucontrolController extends Controller
     {
         $proveedores = Proveedores::orderBy('razon_social', 'ASC')->get();
 
-        $proveedores->map(function($item){
+        $proveedores->map(function ($item) {
             $item->proveedor_compuesto = $item->nit . " " . $item->razon_social;
         });
         return response()->json(["proveedores" => $proveedores, "status" => "ok"]);
@@ -412,11 +412,13 @@ class FactucontrolController extends Controller
         $datos = [];
 
         foreach ($usersList as $user) {
-            $cadaUno = array(
-                'documento' => $user['nro_doc'],
-                'nombres'   => $user['name'] . " " . $user['last_name']
-            );
-            array_push($datos, $cadaUno);
+            if ($user['is_factucontrol'] != 2) {
+                $cadaUno = array(
+                    'documento' => $user['nro_doc'],
+                    'nombres'   => $user['name'] . " " . $user['last_name']
+                );
+                array_push($datos, $cadaUno);
+            }
         }
 
 
