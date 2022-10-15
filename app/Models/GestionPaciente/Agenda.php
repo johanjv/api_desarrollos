@@ -46,7 +46,8 @@ class Agenda extends Model
         'estadoAtencion',
         'medicoAsignado',
         'observaciones',
-        'isAgendado'
+        'isAgendado',
+        'prioridad'
     ];
 
     public function profesional()
