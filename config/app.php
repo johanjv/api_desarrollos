@@ -151,6 +151,30 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Variables de entorno personalizadas para los Desarrollos VERSION 2
+    |--------------------------------------------------------------------------
+    |
+    | Estas son las variables definidas para cada desarrollo y asi poder
+    | obtener los modulos correspondientes a cada auno.
+    |
+    */
+
+    'aplicativos' => [
+        'PruebaApp2' => [
+            'id'            => 10059,
+            'estrategia'    => 'EstrategiaPruebaApp2',
+        ],
+        'PruebaApp' => [
+            'id'            => 10054,
+            'estrategia'    => 'EstrategiaPruebaApp',
+        ]        
+    ],
+
+    'ultimoPermiso' => 6,
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Grupos disponibles HVSEDES
     |--------------------------------------------------------------------------
     |
