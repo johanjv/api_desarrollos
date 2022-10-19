@@ -39,18 +39,38 @@ class AuthController extends Controller
             {
                 if (Hash::check($request['password'], $user->password)) { //valido si la contraseña y el usuario son correctos
                     /* VALIDAR PERMISOS DEL USARIO POR APLICATIVO */
-                    //return $request->idDesarrollo;
-
 
                     $gruposLDAP = $usuario[0]['memberof'];
                     $individual = implode(",", $gruposLDAP);
                     $grupos = explode(",", $individual);
 
                     $permisos = $this->validacionPermisosPerApp($grupos, $request->idDesarrollo);
+                    
+                    if ($permisos->permiso == 1) {
 
+                        User::with('roles')->where('email', $request->username)->where('is_directory', 1)->update([
+                            'rol' => json_encode($permisos->roles),
+                        ]);
+                        
+                        $tokenUser = $user->createToken('Auth Token')->accessToken;
+                        $request->session()->regenerate();
+                        
+                        /* REGISTRO EN BITACORA */
+                        Bitacora::create(['ID_APP' => $request["idDesarrollo"],'USER_ACT' => $user["nro_doc"],'ACCION' => 'LOGIN SUCCESS','FECHA' => date('Y-m-d h:i:s'),'USER_EMPRESA' => $user["empresa"]]);
+                        
+                        return response()->json([
+                            "estado" => $permisos->permiso,
+                            "user" => $user,
+                            "token" => isset($tokenUser) ? $tokenUser : null
+                        ], 200);
+                    }else{
+                        return response()->json([
+                            "estado" => 3,
+                            "user" => null,
+                            "token" => null
+                        ], 200);
+                    }
 
-
-                    return $permisos;
                 }else{
                     return "ACTUALIZAR CONTRASEÑA";
                 }
@@ -73,7 +93,11 @@ class AuthController extends Controller
                     return "USER EXTERNO";
                 }
                 else {
-                    return "CREDENCIALES INCORRECTAS";
+                    return response()->json([
+                        "estado" => 2,
+                        "user" => null,
+                        "token" => null
+                    ], 200);
                 }
                 
 
