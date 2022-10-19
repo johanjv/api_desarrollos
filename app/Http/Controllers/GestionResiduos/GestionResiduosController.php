@@ -69,11 +69,23 @@ class GestionResiduosController extends Controller
             ->orderby('id_mes_ano', 'DESC')
         ->get()->toArray();
 
-        foreach ($periodosPrev as $periodo) {
+        $reversed = array_reverse($periodosPrev);
+
+        foreach ($reversed as $periodo) {
             if ($periodo['aprobado'] == 1) {
                 array_push($periodosDisp, $periodo);
             }
+            if ($periodo['aprobado'] == 2) {
+                /* array_push($periodosDisp, $periodo); */
+                break;
+            }
         }
+
+        /* $periodosPrev = array_reverse($periodosPrev); */
+        $periodosDisp = array_reverse($periodosDisp);
+        
+
+        //return $periodosPrev;
 
         if (COUNT($periodosDisp) == 0 ) {
 
@@ -94,6 +106,8 @@ class GestionResiduosController extends Controller
             $ultMesAprobado = substr($periodosDisp[0]['id_mes_ano'], 0, 2);
 
             $nuevoMesDisp = $ultMesAprobado == '12' ? '01' : str_pad(intval($ultMesAprobado) + 1, strlen($ultMesAprobado), '0', STR_PAD_LEFT);
+            
+            /* return $nuevoMesDisp; */
 
             $perNew = $nuevoMesDisp . date('Y');
 
@@ -354,44 +368,48 @@ class GestionResiduosController extends Controller
 
         //return $pendientes;
 
+        /* $pendientes->map(function ($item) use ($request, $tipoUser) {
+            if ($tipoUser == 1) {
+                $item->unidadesPendientes = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
+                    $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 3)
+                    ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                ->toSql();
+            }
+            if ($tipoUser == 2) {
+                
+            }
+        }); */
+
         $pendientes->map(function ($item) use ($request, $tipoUser) {
             if ($tipoUser == 1) {
                 $item->unidadesPendientes   = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
                     $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 3)
-                ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
-                ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
-                /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
-            ->get();
+                    ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                ->get();
 
                 $item->unidadesProceso  = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
                     $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 0)
-                ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-               /*  ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
-                ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
-                /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
-            ->get();
+                    ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                ->get();
 
                 $item->unidadesAprobadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
                     $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 1)
-                    ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                    /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
-                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
-                    /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
-                ->get();
+                        ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                        ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                    ->get();
 
                 $item->unidadesRechazadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
                     $q->where('unidad', $item->ID_UNIDAD);}])->where('aprobado', 2)
-                ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
-                ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
-                /* ->where('HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO',  $request['dep']) */
-            ->get();
+                    ->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
+                    ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $item->SUC_CODIGO_DEPARTAMENTO)
+                ->get();
             }
             if ($tipoUser == 2) {
                 $item->unidadesPendientes   = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
                     $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                    /* ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
                     ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])
                     ->where('aprobado', 3)
                 ->get();
@@ -404,14 +422,12 @@ class GestionResiduosController extends Controller
 
                 $item->unidadesAprobadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
                     $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                   /*  ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
                     ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])
                     ->where('aprobado', 1)
                 ->get();
 
                 $item->unidadesRechazadas = ValidarMes::with(['histR', 'userR', 'registros' => function ($q) use ($item) {
                     $q->where('unidad', $item->ID_UNIDAD);}])->join('UNIDADES_ESTANDAR', 'ID_UNIDAD', '=', 'RESIDUOS.aprobacion_mes.unidad')
-                   /*  ->join('HOJADEVIDASEDES.SUC_SUCURSAL', 'HOJADEVIDASEDES.SUC_SUCURSAL.SUC_CODIGO_DEPARTAMENTO', '=', 'UNIDADES_ESTANDAR.SED_COD_DEP') */
                     ->where('UNIDADES_ESTANDAR.SED_COD_DEP', $request['dep'])
                     ->where('aprobado', 2)
               ->get();
