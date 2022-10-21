@@ -4,7 +4,7 @@ namespace App\Permisos;
 
 use App\Models\AdminGlobal\Modulos;
 
-class EstrategiaPruebaApp {
+class EstrategiaLineaEtica {
 
     public function validarRol($grupos, $app)
     {
@@ -28,19 +28,11 @@ class EstrategiaPruebaApp {
                 *   ])
             */
             (object)([
-                'ap' =>  'CN=APD_Mamitas2_0',
-                'id' =>  15
+                'ap' =>  'CN=APD_LineaEtica',
+                'id' =>  40
             ]),
         
-            (object)([
-                'ap' =>  'CN=APD_SupAdmResiduos',
-                'id' =>  16
-            ]),
-
-            (object)([
-                'ap' =>  'CN=APD_MedGP',
-                'id' =>  25
-            ]),
+           
         );
 
         
@@ -66,7 +58,9 @@ class EstrategiaPruebaApp {
     public function getModulos($rolesUser, $app)
     {
         $permisos = json_decode($rolesUser);
-        
+        /*
+            *    Esta condicion debe mantenerse para que los administradores puedan visualizar todos los modulos
+        */
         if ((in_array(1, $permisos)) || (in_array(2, $permisos))) {
             $modulos    = Modulos::where('desarrollo_id', $app)->orderBy('orden', 'ASC')->get();
             $loads = ['submodulos'];

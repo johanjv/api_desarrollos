@@ -160,9 +160,9 @@ return [
     */
 
     'aplicativos' => [
-        'PruebaApp2' => [
-            'id'            => 10059,
-            'estrategia'    => 'EstrategiaPruebaApp2',
+        'lineaEtica' => [
+            'id'            => 10052,
+            'estrategia'    => 'EstrategiaLineaEtica',
         ],
         'PruebaApp' => [
             'id'            => 10054,
