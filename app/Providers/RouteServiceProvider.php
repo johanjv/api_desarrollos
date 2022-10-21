@@ -97,7 +97,13 @@ class RouteServiceProvider extends ServiceProvider
                 require base_path('routes/gestionpacientes/gestionpacientes.php');
                 require base_path('routes/lineaEtica/lineaEtica.php');
 
+<<<<<<< HEAD
                 /* RUTAS VERSION 3 */
+=======
+
+
+                /* RUTAS VERSION 2 */
+>>>>>>> v3
                 require base_path('routes/v3/auth/auth.php');
 
             });
