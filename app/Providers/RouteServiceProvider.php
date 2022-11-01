@@ -99,6 +99,7 @@ class RouteServiceProvider extends ServiceProvider
 
                 /* RUTAS VERSION 3 */
                 require base_path('routes/v3/auth/auth.php');
+                require base_path('routes/VideoConsulta/VideoConsulta.php');
 
             });
     }

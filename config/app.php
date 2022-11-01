@@ -167,7 +167,11 @@ return [
         'PruebaApp' => [
             'id'            => 10054,
             'estrategia'    => 'EstrategiaPruebaApp',
-        ]        
+        ],
+        'videoConsulta' => [
+            'id'            => 10055,
+            'estrategia'    => 'EstrategiavideoConsulta',
+        ],
     ],
 
     'ultimoPermiso' => 6,
